@@ -1,23 +1,53 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:16
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
 
-    container_name: codexa_postgres
+    restart: unless-stopped
 
-    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
 
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: codexa_db
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-codexa_db}?schema=public
 
     ports:
-      - "5432:5432"
+      - "${APP_PORT:-3001}:3000"
+
+    volumes:
+      - .:/app
+      - backend_node_modules:/app/node_modules
+
+  postgres:
+    image: postgres:16-bookworm
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-codexa_db}
+
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-codexa_db}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   postgres_data:
+  backend_node_modules:
