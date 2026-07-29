@@ -1,98 +1,364 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Codexa Website — Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API for the official Codexa website, built with NestJS, TypeScript, Prisma, and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Technology Stack
 
-## Description
+* Node.js 24
+* NestJS 11
+* TypeScript
+* PostgreSQL 16
+* Prisma ORM 7
+* Jest
+* Docker
+* Docker Compose
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Requirements
 
-## Project setup
+For the recommended Docker setup, you only need:
 
-```bash
-$ npm install
-```
+* Git
+* Docker
+* Docker Compose
 
-## Compile and run the project
+Node.js, npm, and PostgreSQL do not need to be installed locally.
+
+## Quick Start with Docker
+
+Clone the repository:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone git@github.com:Codexa-net/Codexa-Website.git
+cd Codexa-Website/backend
 ```
 
-## Run tests
+Build and start the backend and database:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker compose up --build -d
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Check the running services:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose ps
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The default services will be available at:
 
-## Resources
+* Backend API: http://localhost:3001
+* PostgreSQL: localhost:5432
 
-Check out a few resources that may come in handy when working with NestJS:
+Test the API:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+curl http://localhost:3001
+```
 
-## Support
+Expected response:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```text
+Hello World!
+```
 
-## Stay in touch
+## Environment Variables
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Docker Compose includes safe development defaults. To customize them, create a local `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Available variables:
+
+| Variable            |              Default | Description                                 |
+| ------------------- | -------------------: | ------------------------------------------- |
+| `APP_PORT`          |               `3001` | Backend port exposed on the host machine    |
+| `POSTGRES_PORT`     |               `5432` | PostgreSQL port exposed on the host machine |
+| `POSTGRES_USER`     |           `postgres` | PostgreSQL username                         |
+| `POSTGRES_PASSWORD` |           `postgres` | PostgreSQL password                         |
+| `POSTGRES_DB`       |          `codexa_db` | PostgreSQL database name                    |
+| `DATABASE_URL`      | Local PostgreSQL URL | Prisma database connection URL              |
+
+Never commit the `.env` file or production credentials.
+
+## Docker Services
+
+### Backend
+
+The backend service:
+
+* Runs NestJS using Node.js 24.
+* Installs exact dependency versions using `npm ci`.
+* Runs in watch mode during development.
+* Exposes the API through port `3001`.
+* Shares the source code with the host for live development.
+
+### PostgreSQL
+
+The database service:
+
+* Runs PostgreSQL 16.
+* Uses a health check before the backend starts.
+* Stores database data in a persistent Docker volume.
+* Remains available after stopping and restarting the containers.
+
+Inside Docker, the backend connects to the database using the service hostname:
+
+```text
+postgres
+```
+
+Do not use `localhost` for communication between Docker containers.
+
+## Common Docker Commands
+
+Start the project:
+
+```bash
+docker compose up -d
+```
+
+Rebuild and start after dependency or Dockerfile changes:
+
+```bash
+docker compose up --build -d
+```
+
+View backend logs:
+
+```bash
+docker compose logs -f backend
+```
+
+View PostgreSQL logs:
+
+```bash
+docker compose logs -f postgres
+```
+
+Check service status:
+
+```bash
+docker compose ps
+```
+
+Open a shell inside the backend container:
+
+```bash
+docker compose exec backend bash
+```
+
+Stop the project:
+
+```bash
+docker compose down
+```
+
+The database data remains saved after running `docker compose down`.
+
+To delete containers and database volumes:
+
+```bash
+docker compose down -v
+```
+
+> Warning: The `-v` option permanently deletes the local PostgreSQL data.
+
+## Development Commands
+
+Run a NestJS build check:
+
+```bash
+docker compose exec backend npm run build
+```
+
+Run unit tests:
+
+```bash
+docker compose exec backend npm test
+```
+
+Run tests once without watch mode:
+
+```bash
+docker compose exec backend npm test -- --runInBand
+```
+
+Run end-to-end tests:
+
+```bash
+docker compose exec backend npm run test:e2e
+```
+
+Format the source code:
+
+```bash
+docker compose exec backend npm run format
+```
+
+## Prisma Commands
+
+Generate Prisma Client:
+
+```bash
+docker compose exec backend npx prisma generate
+```
+
+Create a development migration:
+
+```bash
+docker compose exec backend npx prisma migrate dev --name migration_name
+```
+
+Apply existing migrations:
+
+```bash
+docker compose exec backend npx prisma migrate deploy
+```
+
+Open Prisma Studio:
+
+```bash
+docker compose exec backend npx prisma studio
+```
+
+Prisma Studio must be configured with an exposed port before it can be accessed from the host machine.
+
+> Coordinate changes to `prisma/schema.prisma` with the backend technical lead because it is shared by all backend modules.
+
+## Project Structure
+
+```text
+backend/
+├── prisma/
+│   └── schema.prisma
+├── src/
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   └── main.ts
+├── test/
+├── .dockerignore
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile
+├── package.json
+└── README.md
+```
+
+The project structure will expand as application modules are implemented.
+
+## Git Workflow
+
+The `main` branch contains the stable version of the project, while `develop` is used to integrate completed team tasks before release.
+
+Each team member must create a separate branch for the specific task assigned to them.
+
+Branch names should:
+
+* Describe the assigned task clearly.
+* Use English lowercase letters.
+* Use hyphens instead of spaces.
+* Contain only the code related to that task.
+
+Start every task branch from the latest version of `develop`:
+
+```bash
+git switch develop
+git pull origin develop
+git switch -c task-name
+```
+
+Replace `task-name` with the actual assigned task name.
+
+After completing the task:
+
+```bash
+git add .
+git commit -m "Complete task description"
+git push -u origin task-name
+```
+
+Then open a Pull Request from the task branch into `develop`.
+
+Each Pull Request must be reviewed and tested before it is merged. After a successful merge, the completed task branch can be deleted.
+
+Team members must not:
+
+* Push task code directly to `main` or `develop`.
+* Work on unrelated tasks inside the same branch.
+* Add another team member’s work to their branch without coordination.
+* Merge their own Pull Request without review.
+
+
+```bash
+git switch develop
+git pull origin develop
+git switch -c feature/contact-module
+```
+
+After completing a task:
+
+```bash
+git add .
+git commit -m "feat(contact): implement contact module"
+git push -u origin feature/contact-module
+```
+
+Open a Pull Request from the feature branch into `develop`.
+
+Do not push feature work directly to `main` or `develop`.
+
+## Planned Backend Modules
+
+* Authentication and authorization
+* Admin users and roles
+* Portfolio projects
+* Categories and technologies
+* Contact messages
+* Dashboard statistics
+* File uploads
+* API documentation
+* Automated tests
+
+## Troubleshooting
+
+### Port 3001 is already in use
+
+Create or edit `.env`:
+
+```env
+APP_PORT=3002
+```
+
+Then recreate the service:
+
+```bash
+docker compose up -d
+```
+
+### Port 5432 is already in use
+
+Change the PostgreSQL host port:
+
+```env
+POSTGRES_PORT=5433
+```
+
+The internal Docker database port remains `5432`.
+
+### View startup errors
+
+```bash
+docker compose logs backend --tail=200
+docker compose logs postgres --tail=200
+```
+
+## Repository
+
+[Codexa Website on GitHub](https://github.com/Codexa-net/Codexa-Website)
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This repository is private and intended for authorized Codexa team members.
