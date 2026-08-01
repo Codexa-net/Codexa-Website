@@ -1,204 +1,214 @@
-Codexa Website — Backend API
+# Codexa Website — Backend API
 
-Backend API for the official Codexa website, built with NestJS, TypeScript, Prisma, and PostgreSQL.
+Backend API for the official Codexa website, built with NestJS, TypeScript, Prisma, PostgreSQL, and JWT authentication.
 
-Technology Stack
+## Technology Stack
 
-Node.js 24
+- Node.js 24
+- NestJS 11
+- TypeScript
+- PostgreSQL 16
+- Prisma ORM 7
+- Prisma PostgreSQL Driver Adapter
+- JWT Authentication
+- bcrypt Password Hashing
+- NestJS Config
+- Class Validator
+- Class Transformer
+- Swagger / OpenAPI
+- Jest
+- npm
+- Docker
+- Docker Compose
 
-NestJS 11
+## Requirements
 
-TypeScript
+For the recommended Docker development setup, you only need:
 
-PostgreSQL 16
-
-Prisma ORM 7
-
-Prisma PostgreSQL Driver Adapter
-
-NestJS Config
-
-Class Validator and Class Transformer
-
-Swagger / OpenAPI
-
-Jest
-
-npm
-
-Docker
-
-Docker Compose
-
-Requirements
-
-For the recommended Docker setup, you only need:
-
-Git
-
-Docker
-
-Docker Compose
+- Git
+- Docker
+- Docker Compose
 
 Node.js, npm, and PostgreSQL do not need to be installed locally.
 
-Quick Start with Docker
+## Quick Start with Docker
 
 Clone the repository:
 
+```bash
 git clone git@github.com:Codexa-net/Codexa-Website.git
 cd Codexa-Website/backend
+```
 
-Optional: create a local environment file if you need to change the development defaults:
+Create the required local environment file:
 
+```bash
 cp .env.example .env
+```
+
+Generate a secure local JWT secret:
+
+```bash
+CODEXA_JWT_SECRET_VALUE=$(openssl rand -hex 32)
+
+sed -i \
+  "s/^JWT_SECRET=.*/JWT_SECRET=${CODEXA_JWT_SECRET_VALUE}/" \
+  .env
+
+unset CODEXA_JWT_SECRET_VALUE
+```
+
+Open `.env` and replace the initial admin password:
+
+```env
+ADMIN_SEED_PASSWORD=your_private_strong_password
+```
+
+Never commit the `.env` file or send its contents to another person.
 
 Build and start the backend and PostgreSQL:
 
+```bash
 docker compose up --build -d
+```
+
+Apply all existing database migrations:
+
+```bash
+docker compose exec backend npx prisma migrate deploy
+```
+
+Create the initial super admin:
+
+```bash
+docker compose exec backend npm run prisma:seed
+```
 
 Check the running services:
 
+```bash
 docker compose ps
+```
 
-The default services will be available at:
+The default services are available at:
 
-Backend API: http://localhost:3001
-
-Swagger UI: http://localhost:3001/api/docs
-
-PostgreSQL: localhost:5432
+- Backend API: http://localhost:3001
+- Swagger UI: http://localhost:3001/api/docs
+- PostgreSQL: `localhost:5432`
 
 Test the API:
 
+```bash
 curl http://localhost:3001
+```
 
 Expected response:
 
+```text
 Hello World!
+```
 
 Prisma Client is generated automatically before NestJS starts.
 
-Environment Variables
+## Environment Variables
 
-Docker Compose includes development defaults. To customize them, create a local .env file:
+The project uses `.env.example` as a safe configuration template.
 
+Create the local environment file with:
+
+```bash
 cp .env.example .env
+```
 
 Available variables:
 
-Variable
-
-Default
-
-Description
-
-APP_PORT
-
-3001
-
-Backend port exposed on the host machine
-
-CORS_ORIGIN
-
-http://localhost:3000
-
-Frontend origin allowed to access the API
-
-POSTGRES_PORT
-
-5432
-
-PostgreSQL port exposed on the host machine
-
-POSTGRES_USER
-
-postgres
-
-PostgreSQL username
-
-POSTGRES_PASSWORD
-
-postgres
-
-PostgreSQL password
-
-POSTGRES_DB
-
-codexa_db
-
-PostgreSQL database name
-
-DATABASE_URL
-
-Local PostgreSQL URL
-
-Prisma database connection URL for host commands
+| Variable                 | Default                 | Description                                  |
+| ------------------------ | ----------------------- | -------------------------------------------- |
+| `APP_PORT`               | `3001`                  | Backend port exposed on the host machine     |
+| `CORS_ORIGIN`            | `http://localhost:3000` | Frontend origin allowed to access the API    |
+| `POSTGRES_PORT`          | `5432`                  | PostgreSQL port exposed on the host machine  |
+| `POSTGRES_USER`          | `postgres`              | PostgreSQL username                          |
+| `POSTGRES_PASSWORD`      | `postgres`              | PostgreSQL development password              |
+| `POSTGRES_DB`            | `codexa_db`             | PostgreSQL database name                     |
+| `DATABASE_URL`           | Local PostgreSQL URL    | Prisma connection URL for host commands      |
+| `JWT_SECRET`             | Required                | Secret used to sign and verify access tokens |
+| `JWT_EXPIRES_IN_SECONDS` | `3600`                  | Access-token lifetime in seconds             |
+| `BCRYPT_ROUNDS`          | `12`                    | Password hashing cost                        |
+| `ADMIN_SEED_NAME`        | `Codexa Super Admin`    | Initial super-admin name                     |
+| `ADMIN_SEED_EMAIL`       | `admin@codexa.net`      | Initial super-admin email                    |
+| `ADMIN_SEED_PASSWORD`    | Required                | Initial super-admin password                 |
 
 Multiple frontend origins can be supplied as a comma-separated value:
 
+```env
 CORS_ORIGIN=http://localhost:3000,http://localhost:3002
+```
 
-Never commit the .env file, secrets, or production credentials.
+Security rules:
 
-Docker Services
+- Never commit `.env`.
+- Never commit JWT secrets or passwords.
+- Never use `.env.example` values in production.
+- Use a different JWT secret for each environment.
+- Use a strong production PostgreSQL password.
+- Store production secrets using the hosting provider’s environment settings.
 
-Backend
+## Docker Services
+
+### Backend
 
 The backend service:
 
-Runs NestJS using Node.js 24.
+- Runs NestJS using Node.js 24.
+- Installs exact dependency versions using `npm ci`.
+- Generates Prisma Client automatically before NestJS starts.
+- Runs in watch mode during development.
+- Exposes the API through host port `3001`.
+- Shares source code with the host for live development.
+- Stores `node_modules` in a Docker named volume.
+- Receives PostgreSQL, CORS, JWT, and bcrypt configuration through environment variables.
 
-Installs exact dependency versions using npm ci.
-
-Generates Prisma Client automatically before NestJS starts.
-
-Runs in watch mode during development.
-
-Exposes the API through host port 3001.
-
-Shares the source code with the host for live development.
-
-Stores node_modules in a Docker named volume.
-
-PostgreSQL
+### PostgreSQL
 
 The PostgreSQL service:
 
-Runs PostgreSQL 16.
-
-Uses a health check before the backend starts.
-
-Stores database data in a persistent Docker volume.
-
-Remains available after stopping and restarting the containers.
+- Runs PostgreSQL 16.
+- Uses a health check before the backend starts.
+- Stores database data in a persistent Docker volume.
+- Remains available after stopping and restarting containers.
 
 Inside Docker, the backend connects to PostgreSQL using the service hostname:
 
+```text
 postgres
+```
 
-Do not use localhost for communication between Docker containers. localhost is used only when connecting from the host machine.
+Do not use `localhost` for communication between Docker containers.
 
-Shared Backend Foundation
+`localhost` is only used when connecting from the host machine.
+
+## Shared Backend Foundation
 
 The project includes shared backend infrastructure that must not be recreated inside individual feature modules:
 
-Global ConfigModule for environment variables.
+- Global `ConfigModule`
+- Global `PrismaModule`
+- Shared `PrismaService`
+- Global request validation
+- Swagger / OpenAPI configuration
+- CORS configuration
+- Graceful Prisma shutdown
+- Shared `AuthModule`
+- Shared `JwtAuthGuard`
+- Shared `AdminUsersService`
 
-Global PrismaModule and PrismaService.
+Feature branches must reuse these shared components.
 
-Global request validation through ValidationPipe.
+## Using PrismaService
 
-Swagger / OpenAPI setup.
+Inject the shared `PrismaService` into a NestJS service:
 
-CORS configuration.
-
-Graceful Prisma connection shutdown.
-
-Using PrismaService
-
-Inject the shared PrismaService into a NestJS service:
-
+```ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -206,148 +216,554 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ExampleService {
   constructor(private readonly prisma: PrismaService) {}
 }
+```
 
-PrismaModule is global, so feature modules do not need to import it again.
+`PrismaModule` is global, so feature modules do not need to import it again.
 
-Do not create another PrismaClient, PrismaService, or PrismaModule inside a feature branch.
+Do not create another:
 
-Global Validation
+- `PrismaClient`
+- `PrismaService`
+- `PrismaModule`
 
-Global validation is enabled in src/main.ts with:
+Generated Prisma Client files are written to:
 
-whitelist: true to remove unknown properties.
+```text
+src/generated/prisma
+```
 
-forbidNonWhitelisted: true to reject unexpected properties.
+This directory is ignored by Git.
 
-transform: true to transform request values using DTO types.
+Never edit or commit generated Prisma Client files manually.
 
-Every feature module must still define validation decorators in its own DTO classes.
+## Global Validation
+
+Global validation is enabled in `src/main.ts` with:
+
+```ts
+whitelist: true;
+forbidNonWhitelisted: true;
+transform: true;
+```
+
+This means:
+
+- Unknown properties are removed or rejected.
+- Unexpected request fields return `400 Bad Request`.
+- Query values can be transformed using DTO types.
+- Every module must define validation decorators inside its DTOs.
 
 Example:
 
+```ts
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class ExampleDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsEmail()
-  email: string;
+  email!: string;
 }
+```
 
-Swagger Documentation
+## Swagger Documentation
 
 Swagger UI is available at:
 
+```text
 http://localhost:3001/api/docs
+```
 
-Every feature module must document its own controllers, endpoints, DTOs, parameters, and responses using NestJS Swagger decorators.
+Every feature module must document:
 
-Common Docker Commands
+- Controllers
+- Endpoints
+- DTOs
+- Query parameters
+- Path parameters
+- Successful responses
+- Error responses
+- Authentication requirements
+
+For authenticated routes, Swagger uses:
+
+```ts
+@ApiBearerAuth()
+```
+
+This decorator only documents Bearer authentication.
+
+Actual endpoint protection requires:
+
+```ts
+@UseGuards(JwtAuthGuard)
+```
+
+## Admin Authentication
+
+The backend provides shared JWT authentication for admin-only APIs.
+
+Authentication features include:
+
+- Admin accounts stored in PostgreSQL.
+- Password hashing with bcrypt.
+- JWT access tokens.
+- Access-token expiration.
+- Active-account verification on every protected request.
+- Safe admin responses without password hashes.
+- Swagger Bearer authentication.
+- Unit and end-to-end tests.
+
+### Admin Roles
+
+Available roles:
+
+```text
+SUPER_ADMIN
+ADMIN
+```
+
+The initial seeded account receives:
+
+```text
+SUPER_ADMIN
+```
+
+### Create the Initial Super Admin
+
+Configure the following values inside `.env`:
+
+```env
+ADMIN_SEED_NAME=Codexa Super Admin
+ADMIN_SEED_EMAIL=admin@codexa.net
+ADMIN_SEED_PASSWORD=your_private_strong_password
+```
+
+Run:
+
+```bash
+docker compose exec backend npm run prisma:seed
+```
+
+The seed command:
+
+- Normalizes the email address.
+- Validates the password length.
+- Hashes the password using bcrypt.
+- Creates an active `SUPER_ADMIN`.
+- Does not print the password or password hash.
+- Does not recreate an admin when the email already exists.
+- Does not change the password of an existing admin.
+
+### Admin Login
+
+Endpoint:
+
+```http
+POST /auth/login
+```
+
+Request body:
+
+```json
+{
+  "email": "admin@codexa.net",
+  "password": "your_private_password"
+}
+```
+
+Successful response:
+
+```json
+{
+  "accessToken": "JWT_ACCESS_TOKEN",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "admin": {
+    "id": "admin-uuid",
+    "name": "Codexa Super Admin",
+    "email": "admin@codexa.net",
+    "role": "SUPER_ADMIN"
+  }
+}
+```
+
+The password and `passwordHash` are never included in the response.
+
+Invalid email and invalid password return the same response to prevent account discovery:
+
+```json
+{
+  "message": "Invalid email or password.",
+  "error": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+### Authenticated Admin Profile
+
+Endpoint:
+
+```http
+GET /auth/me
+```
+
+Send the token using the Authorization header:
+
+```http
+Authorization: Bearer ACCESS_TOKEN
+```
+
+Example:
+
+```bash
+curl http://localhost:3001/auth/me \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+```
+
+A missing, invalid, or expired token returns:
+
+```json
+{
+  "message": "Authentication is required.",
+  "error": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+### JwtAuthGuard
+
+Feature modules can protect admin controllers with:
+
+```ts
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+@UseGuards(JwtAuthGuard)
+@Controller('admin/example')
+export class ExampleAdminController {}
+```
+
+The feature module must import `AuthModule`:
+
+```ts
+import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module';
+
+@Module({
+  imports: [AuthModule],
+})
+export class ExampleModule {}
+```
+
+The guard verifies:
+
+1. The Authorization header uses `Bearer`.
+2. The JWT signature is valid.
+3. The token has not expired.
+4. The token contains an admin ID.
+5. The admin still exists.
+6. The admin account is active.
+
+The guard loads the latest admin data from PostgreSQL instead of trusting role or profile data stored only inside the token.
+
+## Contact Module
+
+The Contact Module provides:
+
+- Public contact-form submission.
+- Message validation.
+- Messages CRUD.
+- Search.
+- Read/unread filtering.
+- Pagination.
+- Mark as read.
+- Delete message.
+- Swagger documentation.
+- Unit tests.
+- JWT-protected admin routes.
+
+### Public Contact Form
+
+Endpoint:
+
+```http
+POST /contact
+```
+
+Authentication is not required.
+
+Example request:
+
+```json
+{
+  "name": "Ahmed Mohamed",
+  "email": "ahmed@example.com",
+  "phone": "+201012345678",
+  "subject": "Website development request",
+  "message": "I would like to discuss building a company website."
+}
+```
+
+The public user cannot submit internal properties such as:
+
+```text
+isRead
+readAt
+createdAt
+updatedAt
+```
+
+Unexpected properties are rejected by global validation.
+
+### Protected Contact Message Endpoints
+
+The following routes require a valid admin JWT:
+
+```http
+GET    /admin/messages
+GET    /admin/messages/:id
+PATCH  /admin/messages/:id/read
+DELETE /admin/messages/:id
+```
+
+Available list query parameters:
+
+| Parameter | Default | Description                              |
+| --------- | ------- | ---------------------------------------- |
+| `page`    | `1`     | Requested pagination page                |
+| `limit`   | `10`    | Number of results, maximum `100`         |
+| `search`  | Empty   | Search name, email, subject, and message |
+| `isRead`  | Empty   | Filter by `true` or `false`              |
+
+Example:
+
+```http
+GET /admin/messages?page=1&limit=10&search=website&isRead=false
+```
+
+## Common Docker Commands
 
 Start the project:
 
+```bash
 docker compose up -d
+```
 
-Rebuild and start after dependency, lockfile, or Dockerfile changes:
+Build and start after dependency, lockfile, or Dockerfile changes:
 
+```bash
 docker compose up --build -d
+```
 
-View backend logs:
+Recreate only the backend container:
 
-docker compose logs -f backend
-
-View PostgreSQL logs:
-
-docker compose logs -f postgres
-
-Check service status:
-
-docker compose ps
-
-Open a shell inside the backend container:
-
-docker compose exec backend bash
+```bash
+docker compose up -d --force-recreate backend
+```
 
 Restart only the backend:
 
+```bash
 docker compose restart backend
+```
+
+Check service status:
+
+```bash
+docker compose ps
+```
+
+View backend logs:
+
+```bash
+docker compose logs -f backend
+```
+
+View PostgreSQL logs:
+
+```bash
+docker compose logs -f postgres
+```
+
+Open a shell inside the backend container:
+
+```bash
+docker compose exec backend bash
+```
 
 Stop the project:
 
+```bash
 docker compose down
+```
 
-Database data remains saved after docker compose down.
+Database data remains saved after `docker compose down`.
 
-To delete containers and all project volumes:
+Delete containers and all project volumes:
 
+```bash
 docker compose down -v
+```
 
-Warning: docker compose down -v permanently deletes the local PostgreSQL data and dependency volumes.
+> Warning: `docker compose down -v` permanently deletes local PostgreSQL data and dependency volumes.
 
-Development Commands
+## Development Commands
 
-Format the source code:
+Format source code:
 
+```bash
 docker compose exec backend npm run format
+```
 
 Run ESLint:
 
+```bash
 docker compose exec backend npm run lint
+```
 
 Run a NestJS build check:
 
+```bash
 docker compose exec backend npm run build
+```
 
 Run unit tests:
 
+```bash
 docker compose exec backend npm test -- --runInBand
+```
 
 Run end-to-end tests:
 
+```bash
 docker compose exec backend npm run test:e2e -- --runInBand
+```
 
 Check production dependencies for known vulnerabilities:
 
+```bash
 docker compose exec backend npm audit --omit=dev
+```
 
-Do not run npm audit fix --force without technical review because it may introduce breaking dependency changes.
+Do not run:
 
-Prisma Commands
+```bash
+npm audit fix --force
+```
+
+without technical review because it may introduce breaking dependency changes.
+
+## Prisma Commands
 
 Prisma Client is generated automatically whenever the backend container starts.
 
-Generate it manually after changing prisma/schema.prisma without recreating the container:
+Generate Prisma Client manually:
 
+```bash
 docker compose exec backend npx prisma generate
+```
+
+Format Prisma Schema:
+
+```bash
+docker compose exec backend npx prisma format
+```
+
+Validate Prisma Schema:
+
+```bash
+docker compose exec backend npx prisma validate
+```
 
 Create a development migration:
 
-docker compose exec backend npx prisma migrate dev --name migration_name
+```bash
+docker compose exec backend npx prisma migrate dev \
+  --name migration_name
+```
 
 Apply existing migrations:
 
+```bash
 docker compose exec backend npx prisma migrate deploy
+```
+
+Check migration status:
+
+```bash
+docker compose exec backend npx prisma migrate status
+```
+
+Create the initial super admin:
+
+```bash
+docker compose exec backend npm run prisma:seed
+```
 
 Open Prisma Studio:
 
+```bash
 docker compose exec backend npx prisma studio
+```
 
-Prisma Studio requires an exposed host port before it can be opened from the host machine.
+Prisma Studio requires an exposed host port before it can be accessed from the host machine.
 
-Coordinate all changes to prisma/schema.prisma and migration files with the backend technical lead because they are shared by all backend modules.
+Coordinate all changes to:
 
-Generated Prisma Client files are written to src/generated/prisma and ignored by Git. Never commit or edit generated client files manually.
+```text
+prisma/schema.prisma
+prisma/migrations/
+```
 
-Project Structure
+with the backend technical lead because these files are shared by all backend modules.
 
+Never edit an existing migration after it has been shared or applied by other team members.
+
+## Project Structure
+
+```text
 backend/
 ├── prisma/
-│   └── schema.prisma
+│   ├── migrations/
+│   │   ├── create_contact_messages/
+│   │   └── create_admin_users/
+│   ├── schema.prisma
+│   └── seed.ts
 ├── src/
+│   ├── admin-users/
+│   │   ├── admin-users.module.ts
+│   │   ├── admin-users.service.ts
+│   │   └── admin-users.service.spec.ts
+│   ├── auth/
+│   │   ├── dto/
+│   │   │   └── login.dto.ts
+│   │   ├── guards/
+│   │   │   ├── jwt-auth.guard.ts
+│   │   │   └── jwt-auth.guard.spec.ts
+│   │   ├── interfaces/
+│   │   │   ├── authenticated-admin.interface.ts
+│   │   │   └── jwt-payload.interface.ts
+│   │   ├── auth.controller.ts
+│   │   ├── auth.controller.spec.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   └── auth.service.spec.ts
+│   ├── contact/
+│   │   ├── dto/
+│   │   │   ├── create-contact-message.dto.ts
+│   │   │   └── list-contact-messages-query.dto.ts
+│   │   ├── admin-messages.controller.ts
+│   │   ├── admin-messages.controller.spec.ts
+│   │   ├── contact.controller.ts
+│   │   ├── contact.controller.spec.ts
+│   │   ├── contact.module.ts
+│   │   ├── contact.service.ts
+│   │   └── contact.service.spec.ts
 │   ├── generated/
-│   │   └── prisma/               # Generated locally and ignored by Git
+│   │   └── prisma/                 # Generated locally and ignored by Git
 │   ├── prisma/
 │   │   ├── prisma.module.ts
 │   │   └── prisma.service.ts
@@ -356,169 +772,234 @@ backend/
 │   ├── app.service.ts
 │   └── main.ts
 ├── test/
+│   ├── app.e2e-spec.ts
+│   ├── auth.e2e-spec.ts
+│   └── jest-e2e.json
 ├── .dockerignore
 ├── .env.example
+├── .gitignore
 ├── docker-compose.yml
 ├── Dockerfile
 ├── package.json
 ├── package-lock.json
 └── README.md
+```
 
-The project structure will expand as application modules are implemented.
+Generated files inside `src/generated/prisma` are ignored by Git and must be regenerated locally.
 
-Git Workflow
+## Testing Strategy
 
-The main branch contains the stable release version. The develop branch integrates completed and reviewed team tasks before release.
+The backend uses:
 
-Each team member must create a separate branch for the assigned task.
+- Unit tests for controllers.
+- Unit tests for services.
+- Unit tests for guards.
+- Mocked Prisma dependencies in unit tests.
+- Real bcrypt password comparison tests.
+- End-to-end authentication tests.
+- End-to-end protected-route tests.
 
-Branch names must:
+Before opening a Pull Request, run:
 
-Describe the assigned task clearly.
+```bash
+docker compose exec backend npm run format
+docker compose exec backend npm run lint
+docker compose exec backend npm run build
+docker compose exec backend npm test -- --runInBand
+docker compose exec backend npm run test:e2e -- --runInBand
+docker compose exec backend npx prisma validate
+docker compose exec backend npm audit --omit=dev
+git diff --check
+```
 
-Use lowercase English letters.
+All checks must pass before review.
 
-Use hyphens instead of spaces.
+## Git Workflow
 
-Contain only work related to that task.
+The `main` branch contains the stable production-ready version.
 
-Examples:
+The `develop` branch integrates completed team tasks before release.
 
-contact-module
-portfolio-module
-website-settings
-admin-users
+Every task must use a separate branch created from the latest required base branch.
 
-Start every task branch from the latest develop:
+Start a task:
 
+```bash
 git switch develop
 git pull --ff-only origin develop
 git switch -c task-name
 git push -u origin task-name
+```
 
-Before committing:
+Replace `task-name` with a clear branch name.
 
-git status --short
-git diff --check
+Examples:
 
-Stage only the files related to the assigned task:
+```text
+contact-module
+admin-auth-jwt
+portfolio-module
+website-settings
+```
 
-git add path/to/changed-file path/to/new-file
+After completing a task:
 
-Commit and push:
+```bash
+git add specific-file-or-directory
+git commit -m "type(scope): clear description"
+git push origin task-name
+```
 
-git commit -m "type(scope): concise task description"
-git push
+Then open a Pull Request from the task branch into `develop`.
 
-Open a Pull Request with:
+Every Pull Request must:
 
-base: develop
-compare: task-name
-
-Every Pull Request must be reviewed and tested before merging. After a successful merge, the completed task branch can be deleted.
+- Have a clear title and description.
+- Explain the implemented features.
+- Include database changes.
+- Include environment-variable changes.
+- Include test results.
+- Be reviewed before merge.
+- Target `develop`, not `main`.
 
 Team members must not:
 
-Push task code directly to main or develop.
+- Push feature code directly to `main`.
+- Push feature code directly to `develop`.
+- Mix unrelated tasks in one branch.
+- Commit `.env`.
+- Commit generated Prisma Client.
+- Commit `node_modules`.
+- Merge their own Pull Request without review.
+- Run destructive database commands without coordination.
 
-Merge a task Pull Request directly into main.
+After a successful merge, the task branch can be deleted.
 
-Work on unrelated tasks inside the same branch.
+## Planned Backend Modules
 
-Duplicate shared backend infrastructure.
+- Admin users CRUD
+- Roles and permissions
+- Admin profile
+- Change password
+- Portfolio projects
+- Portfolio categories
+- Technologies
+- Featured projects
+- Website settings
+- About Us
+- Company information
+- Social links
+- SEO settings
+- Contact information
+- Dashboard statistics
+- File uploads
+- Logger
+- Global exception filter
+- Rate limiter
+- Health check
 
-Add another team member's work without coordination.
+## Troubleshooting
 
-Merge their own Pull Request without review.
+### JWT_SECRET Is Required
 
-The team should merge develop into main only when preparing a reviewed release.
+If Docker Compose reports:
 
-Planned Backend Modules
+```text
+JWT_SECRET_is_required
+```
 
-Authentication and authorization
+Create `.env` and configure a secure JWT secret:
 
-Admin users, roles, and permissions
+```bash
+cp .env.example .env
+```
 
-Portfolio projects
+Then replace `JWT_SECRET` before starting Docker.
 
-Categories and technologies
+### Port 3001 Is Already in Use
 
-Contact messages
+Change the backend host port inside `.env`:
 
-Website settings
-
-Social links
-
-SEO settings
-
-Dashboard statistics
-
-File uploads
-
-API documentation
-
-Automated tests
-
-Troubleshooting
-
-Port 3001 is already in use
-
-Create or edit .env:
-
+```env
 APP_PORT=3002
+```
 
-Then recreate the backend:
+Recreate the backend:
 
+```bash
 docker compose up -d --force-recreate backend
+```
 
-Port 5432 is already in use
+### Port 5432 Is Already in Use
 
 Change the PostgreSQL host port:
 
+```env
 POSTGRES_PORT=5433
+```
 
-The internal Docker database port remains 5432.
+The internal Docker PostgreSQL port remains `5432`.
 
-Prisma Client is missing
+### Backend Returns HTTP 000
 
-Generate Prisma Client manually:
+Check container status and logs:
 
+```bash
+docker compose ps
+docker compose logs backend --tail=200
+```
+
+`HTTP 000` usually means the backend is still starting or stopped because of a configuration or dependency-injection error.
+
+### Prisma Client Is Missing
+
+Generate Prisma Client:
+
+```bash
 docker compose exec backend npx prisma generate
+```
 
-If the backend container is not running:
+The Docker backend command normally generates it automatically.
 
-docker compose up -d
+### Database Is Not in Sync
 
-Docker Hub or npm DNS error
+Check migration status:
 
-Errors such as EAI_AGAIN, i/o timeout, or lookup registry-1.docker.io usually indicate a temporary DNS or network issue.
+```bash
+docker compose exec backend npx prisma migrate status
+```
 
-Check DNS resolution and retry:
+Apply existing migrations:
 
-getent hosts registry.npmjs.org
-getent hosts registry-1.docker.io
+```bash
+docker compose exec backend npx prisma migrate deploy
+```
 
-Do not modify dependency versions or Docker configuration solely because of a temporary DNS failure.
+Do not reset a shared database without approval.
 
-Port 3000 already in use inside the backend container
+### Admin Already Exists
 
-If NestJS watch mode reports EADDRINUSE during a file restart, recreate only the backend container:
+The seed command is idempotent.
 
-docker compose up -d --force-recreate backend
+If the configured admin email already exists, it prints:
 
-Then verify:
+```text
+Super admin already exists
+```
 
-curl http://localhost:3001
+and does not change the existing password.
 
-View startup errors
+### View Startup Errors
 
+```bash
 docker compose logs backend --tail=200
 docker compose logs postgres --tail=200
+```
 
-Repository
+## Repository
 
-Codexa Website on GitHub
+[Codexa Website on GitHub](https://github.com/Codexa-net/Codexa-Website)
 
-License
+## License
 
-This repository is private and intended for authorized Codexa team members.
+This repository is private and intended only for authorized Codexa team members.
