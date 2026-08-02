@@ -4,6 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    command: >
+      sh -c "npx prisma generate && npm run start:dev"
+
     restart: unless-stopped
 
     depends_on:
@@ -13,7 +16,11 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
+      CORS_ORIGIN: "${CORS_ORIGIN:-http://localhost:3000}"
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-codexa_db}?schema=public
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET_is_required}"
+      JWT_EXPIRES_IN_SECONDS: "${JWT_EXPIRES_IN_SECONDS:-3600}"
+      BCRYPT_ROUNDS: "${BCRYPT_ROUNDS:-12}"
 
     ports:
       - "${APP_PORT:-3001}:3000"
