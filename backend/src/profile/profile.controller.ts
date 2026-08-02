@@ -1,4 +1,11 @@
-import { Controller, Get, Patch, Body, Headers, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -10,10 +17,14 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  private extractUserId(headers: Record<string, string | string[] | undefined>): string {
+  private extractUserId(
+    headers: Record<string, string | string[] | undefined>,
+  ): string {
     const userId = headers['x-user-id'] as string;
     if (!userId) {
-      throw new UnauthorizedException('User ID required in headers (x-user-id)');
+      throw new UnauthorizedException(
+        'User ID required in headers (x-user-id)',
+      );
     }
     return userId;
   }
@@ -22,7 +33,9 @@ export class ProfileController {
    * Get logged-in admin's profile information.
    */
   @Get('me')
-  getProfile(@Headers() headers: Record<string, string | string[] | undefined>) {
+  getProfile(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+  ) {
     const userId = this.extractUserId(headers);
     return this.profileService.getProfile(userId);
   }

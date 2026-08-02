@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 /**
@@ -17,7 +21,7 @@ export class UsersService {
    */
   async findAll(search?: string, role?: Role, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     if (role) {
       where.role = role;
@@ -142,7 +146,7 @@ export class UsersService {
       }
     }
 
-    const data: any = { ...updateUserDto };
+    const data: Prisma.UserUpdateInput = { ...updateUserDto };
 
     if (updateUserDto.password) {
       data.password = await bcrypt.hash(updateUserDto.password, 10);

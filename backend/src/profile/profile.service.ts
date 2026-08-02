@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -69,7 +74,10 @@ export class ProfileService {
       throw new NotFoundException('User not found');
     }
 
-    const isMatch = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
+    const isMatch = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
     if (!isMatch) {
       throw new BadRequestException('Current password is incorrect');
     }

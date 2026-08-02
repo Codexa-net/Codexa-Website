@@ -10,7 +10,8 @@ import { UsersModule } from '../users/users.module';
     UsersModule,
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'codexa-secret-key-change-in-production',
+      secret:
+        process.env.JWT_SECRET || 'codexa-secret-key-change-in-production',
       signOptions: { expiresIn: '7d' },
     }),
   ],

@@ -8,7 +8,13 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, ProfileModule, DashboardModule, AuthModule],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    ProfileModule,
+    DashboardModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

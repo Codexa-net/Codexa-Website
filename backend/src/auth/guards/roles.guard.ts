@@ -1,8 +1,20 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+
+interface RequestWithUser {
+  user?: {
+    role?: Role;
+    permissions?: string[];
+  };
+}
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -14,18 +26,19 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requiredRoles && !requiredPermissions) {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const user = request.user;
 
-    if (!user) {
+    if (!user || !user.role) {
       throw new ForbiddenException('User context not found');
     }
 
@@ -35,14 +48,20 @@ export class RolesGuard implements CanActivate {
     }
 
     if (requiredRoles && !requiredRoles.includes(user.role)) {
-      throw new ForbiddenException('Access denied: insufficient role privileges');
+      throw new ForbiddenException(
+        'Access denied: insufficient role privileges',
+      );
     }
 
     if (requiredPermissions && requiredPermissions.length > 0) {
       const userPermissions = user.permissions || [];
-      const hasPermission = requiredPermissions.every((perm) => userPermissions.includes(perm));
+      const hasPermission = requiredPermissions.every((perm) =>
+        userPermissions.includes(perm),
+      );
       if (!hasPermission) {
-        throw new ForbiddenException('Access denied: missing required permissions');
+        throw new ForbiddenException(
+          'Access denied: missing required permissions',
+        );
       }
     }
 
