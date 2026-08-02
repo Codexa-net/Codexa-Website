@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,9 +20,11 @@ import {
 } from '@nestjs/swagger';
 import { ContactService } from './contact.service';
 import { ListContactMessagesQueryDto } from './dto/list-contact-messages-query.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Admin - Contact Messages')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('admin/messages')
 export class AdminMessagesController {
   constructor(private readonly contactService: ContactService) {}

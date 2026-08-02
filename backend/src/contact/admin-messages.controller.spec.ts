@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminMessagesController } from './admin-messages.controller';
 import { ContactService } from './contact.service';
 import { ListContactMessagesQueryDto } from './dto/list-contact-messages-query.dto';
@@ -13,8 +14,13 @@ describe('AdminMessagesController', () => {
     remove: jest.fn(),
   };
 
+  const jwtAuthGuardMock = {
+    canActivate: jest.fn(() => true),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    jwtAuthGuardMock.canActivate.mockReturnValue(true);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminMessagesController],
@@ -24,7 +30,10 @@ describe('AdminMessagesController', () => {
           useValue: contactServiceMock,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue(jwtAuthGuardMock)
+      .compile();
 
     controller = module.get<AdminMessagesController>(AdminMessagesController);
   });
@@ -62,11 +71,13 @@ describe('AdminMessagesController', () => {
     contactServiceMock.findAll.mockResolvedValue(result);
 
     await expect(controller.findAll(query)).resolves.toEqual(result);
+
     expect(contactServiceMock.findAll).toHaveBeenCalledWith(query);
   });
 
   it('should return one contact message', async () => {
     const id = 'a15a899f-db30-47d4-a7ab-23de4b437b88';
+
     const result = {
       id,
       name: 'Seifullah Elsayed',
@@ -76,11 +87,13 @@ describe('AdminMessagesController', () => {
     contactServiceMock.findOne.mockResolvedValue(result);
 
     await expect(controller.findOne(id)).resolves.toEqual(result);
+
     expect(contactServiceMock.findOne).toHaveBeenCalledWith(id);
   });
 
   it('should mark a contact message as read', async () => {
     const id = 'a15a899f-db30-47d4-a7ab-23de4b437b88';
+
     const result = {
       id,
       isRead: true,
@@ -90,11 +103,13 @@ describe('AdminMessagesController', () => {
     contactServiceMock.markAsRead.mockResolvedValue(result);
 
     await expect(controller.markAsRead(id)).resolves.toEqual(result);
+
     expect(contactServiceMock.markAsRead).toHaveBeenCalledWith(id);
   });
 
   it('should delete a contact message', async () => {
     const id = 'a15a899f-db30-47d4-a7ab-23de4b437b88';
+
     const result = {
       message: 'Contact message deleted successfully.',
       data: {
@@ -105,6 +120,7 @@ describe('AdminMessagesController', () => {
     contactServiceMock.remove.mockResolvedValue(result);
 
     await expect(controller.remove(id)).resolves.toEqual(result);
+
     expect(contactServiceMock.remove).toHaveBeenCalledWith(id);
   });
 });
