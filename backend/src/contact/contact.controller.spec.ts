@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ContactController } from './contact.controller';
 import { ContactService } from './contact.service';
 import { CreateContactMessageDto } from './dto/create-contact-message.dto';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 describe('ContactController', () => {
   let controller: ContactController;
@@ -21,7 +22,12 @@ describe('ContactController', () => {
           useValue: contactServiceMock,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(ThrottlerGuard)
+      .useValue({
+        canActivate: () => true,
+      })
+      .compile();
 
     controller = module.get<ContactController>(ContactController);
   });
