@@ -13,6 +13,7 @@ Backend API for the official Codexa website, built with NestJS, TypeScript, Pris
 - JWT Authentication
 - bcrypt Password Hashing
 - NestJS Config
+- NestJS Throttler
 - Class Validator
 - Class Transformer
 - Swagger / OpenAPI
@@ -122,21 +123,23 @@ cp .env.example .env
 
 Available variables:
 
-| Variable                 | Default                 | Description                                  |
-| ------------------------ | ----------------------- | -------------------------------------------- |
-| `APP_PORT`               | `3001`                  | Backend port exposed on the host machine     |
-| `CORS_ORIGIN`            | `http://localhost:3000` | Frontend origin allowed to access the API    |
-| `POSTGRES_PORT`          | `5432`                  | PostgreSQL port exposed on the host machine  |
-| `POSTGRES_USER`          | `postgres`              | PostgreSQL username                          |
-| `POSTGRES_PASSWORD`      | `postgres`              | PostgreSQL development password              |
-| `POSTGRES_DB`            | `codexa_db`             | PostgreSQL database name                     |
-| `DATABASE_URL`           | Local PostgreSQL URL    | Prisma connection URL for host commands      |
-| `JWT_SECRET`             | Required                | Secret used to sign and verify access tokens |
-| `JWT_EXPIRES_IN_SECONDS` | `3600`                  | Access-token lifetime in seconds             |
-| `BCRYPT_ROUNDS`          | `12`                    | Password hashing cost                        |
-| `ADMIN_SEED_NAME`        | `Codexa Super Admin`    | Initial super-admin name                     |
-| `ADMIN_SEED_EMAIL`       | `admin@codexa.net`      | Initial super-admin email                    |
-| `ADMIN_SEED_PASSWORD`    | Required                | Initial super-admin password                 |
+| Variable                    | Default                 | Description                                  |
+| --------------------------- | ----------------------- | -------------------------------------------- |
+| `APP_PORT`                  | `3001`                  | Backend port exposed on the host machine     |
+| `CORS_ORIGIN`               | `http://localhost:3000` | Frontend origin allowed to access the API    |
+| `POSTGRES_PORT`             | `5432`                  | PostgreSQL port exposed on the host machine  |
+| `POSTGRES_USER`             | `postgres`              | PostgreSQL username                          |
+| `POSTGRES_PASSWORD`         | `postgres`              | PostgreSQL development password              |
+| `POSTGRES_DB`               | `codexa_db`             | PostgreSQL database name                     |
+| `DATABASE_URL`              | Local PostgreSQL URL    | Prisma connection URL for host commands      |
+| `JWT_SECRET`                | Required                | Secret used to sign and verify access tokens |
+| `JWT_EXPIRES_IN_SECONDS`    | `3600`                  | Access-token lifetime in seconds             |
+| `BCRYPT_ROUNDS`             | `12`                    | Password hashing cost                        |
+| `CONTACT_RATE_LIMIT_TTL_MS` | `60000`                 | Contact rate-limit window in milliseconds    |
+| `CONTACT_RATE_LIMIT_MAX`    | `5`                     | Maximum submissions per IP per window        |
+| `ADMIN_SEED_NAME`           | `Codexa Super Admin`    | Initial super-admin name                     |
+| `ADMIN_SEED_EMAIL`          | `admin@codexa.net`      | Initial super-admin email                    |
+| `ADMIN_SEED_PASSWORD`       | Required                | Initial super-admin password                 |
 
 Multiple frontend origins can be supplied as a comma-separated value:
 
@@ -166,7 +169,7 @@ The backend service:
 - Exposes the API through host port `3001`.
 - Shares source code with the host for live development.
 - Stores `node_modules` in a Docker named volume.
-- Receives PostgreSQL, CORS, JWT, and bcrypt configuration through environment variables.
+- Receives PostgreSQL, CORS, JWT, bcrypt, and rate-limit configuration through environment variables.
 
 ### PostgreSQL
 
@@ -474,6 +477,7 @@ The guard loads the latest admin data from PostgreSQL instead of trusting role o
 The Contact Module provides:
 
 - Public contact-form submission.
+- Per-IP rate limiting for public submissions.
 - Message validation.
 - Messages CRUD.
 - Search.
@@ -517,6 +521,25 @@ updatedAt
 ```
 
 Unexpected properties are rejected by global validation.
+
+### Contact Form Rate Limiting
+
+The public contact endpoint is rate-limited by client IP.
+
+By default, each IP address can submit a maximum of five contact messages during a 60-second window. Additional requests receive:
+
+```http
+429 Too Many Requests
+```
+
+The limits can be configured through:
+
+```env
+CONTACT_RATE_LIMIT_TTL_MS=60000
+CONTACT_RATE_LIMIT_MAX=5
+```
+
+The rate limiter currently uses in-memory storage, which is suitable for a single backend instance. A shared store such as Redis should be used if the backend is deployed across multiple instances.
 
 ### Protected Contact Message Endpoints
 
@@ -774,6 +797,7 @@ backend/
 ├── test/
 │   ├── app.e2e-spec.ts
 │   ├── auth.e2e-spec.ts
+│   ├── contact-rate-limit.e2e-spec.ts
 │   └── jest-e2e.json
 ├── .dockerignore
 ├── .env.example
@@ -798,6 +822,7 @@ The backend uses:
 - Real bcrypt password comparison tests.
 - End-to-end authentication tests.
 - End-to-end protected-route tests.
+- End-to-end contact rate-limit tests.
 
 Before opening a Pull Request, run:
 
@@ -895,7 +920,6 @@ After a successful merge, the task branch can be deleted.
 - File uploads
 - Logger
 - Global exception filter
-- Rate limiter
 - Health check
 
 ## Troubleshooting
