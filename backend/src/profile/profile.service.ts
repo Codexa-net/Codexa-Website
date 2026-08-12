@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -11,7 +12,10 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -82,7 +86,11 @@ export class ProfileService {
       throw new BadRequestException('Current password is incorrect');
     }
 
-    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    const rounds = Number(this.configService.get<number>('BCRYPT_ROUNDS', 12));
+    const hashedPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      rounds,
+    );
 
     await this.prisma.user.update({
       where: { id: userId },
