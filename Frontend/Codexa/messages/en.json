@@ -1,0 +1,238 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "ourWork": "Our Work",
+    "projects": "Projects",
+    "clients": "Clients",
+    "services": "Services",
+    "contactUs": "Contact Us",
+    "startProject": "Start Your Project",
+    "menu": "Menu"
+  },
+  "home": {
+    "hero": {
+      "title": "We Build Brands People Remember",
+      "description": "We design and develop digital experiences that blend beauty and function — from visual identity to full digital products",
+      "cta": "Start Your Journey"
+    },
+    "services": {
+      "eyebrow": "How We Work",
+      "title": "Not Just a List of Services — A Journey We Build With You",
+      "description": "From the first design idea to deploying the system that runs your business, each service completes the one before it.",
+      "learnMore": "Learn more about this service",
+      "items": [
+        {
+          "title": "Web Development",
+          "summary": "Fast, responsive websites with modern design",
+          "description": "We build fast, responsive websites and web apps with modern design tailored to your brand and business goals.",
+          "tags": []
+        },
+        {
+          "title": "Mobile Apps",
+          "summary": "iOS and Android with smooth UX",
+          "description": "We develop iOS and Android apps with smooth user experience and high performance that keeps customers loyal.",
+          "tags": []
+        },
+        {
+          "title": "Visual Identity",
+          "summary": "Logos and complete brand systems",
+          "description": "We design logos and complete visual identity systems that reflect your brand personality and build market presence.",
+          "tags": []
+        },
+        {
+          "title": "Digital Marketing",
+          "summary": "Strategies and campaigns with clear metrics",
+          "description": "We build digital marketing strategies and ad campaigns with clear metrics and real return on investment.",
+          "tags": []
+        },
+        {
+          "title": "Video Editing",
+          "summary": "Visual content that tells your story",
+          "description": "We produce professional visual content that tells your brand story and engages your audience effectively.",
+          "tags": []
+        },
+        {
+          "title": "Photography",
+          "summary": "Product, food, and lifestyle photography",
+          "description": "We provide professional photography for products, food, and lifestyle with precise retouching that highlights your brand quality.",
+          "tags": ["Product photography", "Food photography", "Retouching"]
+        }
+      ]
+    },
+    "projects": {
+      "viewProject": "View Project"
+    },
+    "whyChooseUs": {
+      "title": "Why Codexa",
+      "intro": {
+        "line1": "We don't just design websites...",
+        "line2": "We build the way you earn your customer's trust."
+      },
+      "items": [
+        {
+          "eyebrow": "Step One",
+          "shortLabel": "Understanding",
+          "title": "Before the Form, Comes Understanding.",
+          "description": "We start with a deep understanding of your business, audience, and goals before drawing a single design line."
+        },
+        {
+          "eyebrow": "Step Two",
+          "shortLabel": "Logic",
+          "title": "Every Design Decision Has a Reason.",
+          "description": "Every color, element, and interaction is carefully considered to serve a clear goal and deliver results."
+        },
+        {
+          "eyebrow": "Step Three",
+          "shortLabel": "The Idea",
+          "title": "Here the Idea Takes Shape.",
+          "description": "We turn vision into interactive designs ready for testing and iteration before development."
+        },
+        {
+          "eyebrow": "Step Four",
+          "shortLabel": "Execution",
+          "title": "From Screen to Something That Actually Works.",
+          "description": "We build a polished digital product with clean code and high performance, ready for launch."
+        },
+        {
+          "eyebrow": "Step Five",
+          "shortLabel": "Launch",
+          "title": "Launch Is the Beginning, Not the End.",
+          "description": "We support you after launch to ensure your product achieves its goals and keeps growing."
+        }
+      ]
+    },
+    "contactCta": {
+      "eyebrow": "Let's Work Together",
+      "title": "Got a Project Idea? Make It an Exceptional Digital Experience.",
+      "cta": "Start Your Project Now",
+      "whatsapp": "WhatsApp"
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "Get to Know Us",
+      "title": "We Build Brands People Remember",
+      "description": "Codexa is a creative technology agency that combines technical expertise with creative vision to build exceptional digital products that inspire, impact, and deliver real results."
+    },
+    "stats": [
+      { "value": "50+",  "label": "Projects Delivered" },
+      { "value": "30+",  "label": "Happy Clients" },
+      { "value": "3+",   "label": "Years of Experience" },
+      { "value": "100%", "label": "Quality Commitment" }
+    ],
+    "mission": {
+      "eyebrow": "Why We Exist",
+      "title": "Our Mission",
+      "description": "We strive to transform ambitious ideas into digital experiences that inspire and impact — with clean code, purposeful design, and genuine partnership with every client."
+    },
+    "values": {
+      "eyebrow": "What Unites Us",
+      "title": "Our Values",
+      "items": [
+        {
+          "icon": "sparkles",
+          "title": "Quality Above All",
+          "description": "We don't ship anything until we're completely proud of it."
+        },
+        {
+          "icon": "handshake",
+          "title": "Genuine Partnership",
+          "description": "We treat every project as if it were our own."
+        },
+        {
+          "icon": "lightbulb",
+          "title": "Continuous Innovation",
+          "description": "We learn, experiment, and innovate to always stay ahead."
+        },
+        {
+          "icon": "clock",
+          "title": "Deadline Commitment",
+          "description": "Your time is valuable — we respect it and honor every deadline we set."
+        }
+      ]
+    },
+    "team": {
+      "eyebrow": "The People Behind the Screen",
+      "title": "Our Team",
+      "description": "A group of passionate designers, developers, and creatives dedicated to building exceptional digital experiences."
+    },
+    "cta": {
+      "title": "Let's Build Something Great Together.",
+      "cta": "Start Your Project Now"
+    }
+  },
+  "ourWork": {
+    "title": "Our Work",
+    "description": "A curated collection of our projects reflecting our passion for design and technology",
+    "eyebrow": "Portfolio",
+    "categories": {
+      "all": "All",
+      "web": "Web Development",
+      "mobile": "Mobile Development",
+      "branding": "Branding",
+      "ui": "UI/UX Design"
+    },
+    "viewProject": "View Project"
+  },
+  "clients": {
+    "title": "Our Clients",
+    "description": "We are proud to partner with leading companies and institutions across various sectors"
+  },
+  "footer": {
+    "description": "A creative technology agency building exceptional digital experiences",
+    "links": {
+      "title": "Quick Links"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "email": "hello@codexa.sa",
+      "phone": "+966 50 000 0000",
+      "location": "Riyadh, Saudi Arabia",
+      "whatsapp": "https://wa.me/966500000000"
+    },
+    "social": {
+      "title": "Follow Us"
+    },
+    "copyright": "© 2026 Codexa. All rights reserved.",
+    "madeWith": "Made with",
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions",
+      "madeIn": "Made with passion in Egypt"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "learnMore": "Learn More",
+    "viewAll": "View All",
+    "back": "Back",
+    "close": "Close"
+  },
+  "seo": {
+    "siteName": "Codexa",
+    "defaultTitle": "Codexa — Creative Technology Agency",
+    "defaultDescription": "Codexa is a creative technology agency specializing in designing and developing digital products",
+    "home": {
+      "title": "Home — Codexa",
+      "description": "Codexa is a creative technology agency building exceptional digital experiences"
+    },
+    "about": {
+      "title": "About Us — Codexa",
+      "description": "Learn about Codexa — our team, mission, and values in building digital products"
+    },
+    "ourWork": {
+      "title": "Our Work — Codexa",
+      "description": "Browse a curated selection of Codexa's projects in web development, mobile apps, and branding"
+    },
+    "clients": {
+      "title": "Our Clients — Codexa",
+      "description": "Partners in success — the clients we are proud to serve at Codexa"
+    },
+    "contact": {
+      "title": "Contact Us — Codexa",
+      "description": "Get in touch with Codexa team to discuss your project and start your digital transformation"
+    }
+  }
+}
