@@ -1,12 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&family=Cairo:wght@200;300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Tailwind Theme ──────────────────────────────── */
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
+    /* ── Typography ── */
+    --font-sans: "Inter", system-ui, sans-serif;
+    --font-arabic: "Cairo", "Noto Sans Arabic", "Inter", system-ui, sans-serif;
+    --font-cairo: "Cairo", "Noto Sans Arabic", system-ui, sans-serif;
+    --font-display: "Alexandria", "Cairo", "Noto Sans Arabic", system-ui, sans-serif;
+    --font-heading: var(--font-display);
+    --font-mono: "Geist Mono", "Consolas", monospace;
+
+    /* ── Shadcn/UI color mappings ── */
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -38,6 +47,46 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+
+    /* ── Brand colors ── */
+    --color-brand-50: var(--brand-50);
+    --color-brand-100: var(--brand-100);
+    --color-brand-200: var(--brand-200);
+    --color-brand-300: var(--brand-300);
+    --color-brand-400: var(--brand-400);
+    --color-brand-500: var(--brand-500);
+    --color-brand-600: var(--brand-600);
+    --color-brand-700: var(--brand-700);
+    --color-brand-800: var(--brand-800);
+    --color-brand-900: var(--brand-900);
+    --color-brand: var(--brand-500);
+    --color-brand-foreground: var(--brand-foreground);
+
+    /* ── Figma surface mapping ── */
+    --color-surface: var(--surface);
+    --color-surface-foreground: var(--surface-foreground);
+
+    /* ── Figma design tokens (usable as utilities) ── */
+    --color-figma-primary: var(--figma-primary);
+    --color-figma-primary-2: var(--figma-primary-2);
+    --color-figma-accent-blue: var(--figma-accent-blue);
+    --color-figma-accent-purple: var(--figma-accent-purple);
+    --color-figma-accent-magenta: var(--figma-accent-magenta);
+    --color-figma-accent-green: var(--figma-accent-green);
+    --color-figma-accent-sky: var(--figma-accent-sky);
+    --color-figma-accent-teal: var(--figma-accent-teal);
+    --color-figma-accent-gold: var(--figma-accent-gold);
+    --color-figma-accent-lavender: var(--figma-accent-lavender);
+    --color-figma-black: var(--figma-black);
+    --color-figma-white: var(--figma-white);
+    --color-figma-navy: var(--figma-navy);
+    --color-figma-ink: var(--figma-ink);
+    --color-figma-card-dark: var(--figma-card-dark);
+    --color-figma-surface-lavender: var(--figma-surface-lavender);
+    --color-figma-border: var(--figma-border);
+    --color-figma-muted: var(--figma-muted-1);
+
+    /* ── Radius scale ── */
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -45,85 +94,384 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* ── Container widths ── */
+    --container-xs: 20rem;
+    --container-sm: 40rem;
+    --container-md: 48rem;
+    --container-lg: 64rem;
+    --container-xl: 80rem;
+    --container-2xl: 90rem;
+
+    /* ── Transition durations ── */
+    --duration-fast: 150ms;
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ─── Light Mode ──────────────────────────────────── */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    /* ── Figma design tokens (extracted) ── */
+    /* Brand primary */
+    --figma-primary: #4b3fdf;
+    --figma-primary-2: #4c3fe0;
+
+    /* Story / accent colors */
+    --figma-accent-blue: #3d5fe0;
+    --figma-accent-purple: #7a3feb;
+    --figma-accent-magenta: #c13fe0;
+    --figma-accent-green: #2fcf8e;
+    --figma-accent-royal: #0037ff;
+    --figma-accent-sky: #5f7df8;
+    --figma-accent-teal: #6fdce9;
+    --figma-accent-gold: #fec15a;
+    --figma-accent-lavender: #9f98ff;
+
+    /* Neutrals */
+    --figma-black: #000000;
+    --figma-white: #ffffff;
+    --figma-navy: #14121f;
+    --figma-ink: #090725;
+    --figma-card-dark: #201b51;
+    --figma-card-dark-2: #373290;
+    --figma-section-dark-1: #15104a;
+    --figma-section-dark-2: #140f49;
+    --figma-title-dark: #151240;
+
+    /* Muted text */
+    --figma-muted-1: #6b6879;
+    --figma-muted-2: #697077;
+    --figma-muted-3: #6b7280;
+    --figma-muted-4: #4b515d;
+
+    /* Surfaces */
+    --figma-surface: #f2f4f8;
+    --figma-surface-lavender: #f5f4fc;
+    --figma-surface-bright: #fdfefe;
+    --figma-surface-card: #fafaff;
+    --figma-surface-gradient: #f6f6fd;
+
+    /* Borders */
+    --figma-border: #e7e4f7;
+    --figma-border-quote: #908ad8;
+
+    /* Grid / page backgrounds */
+    --figma-page-home: #000000;
+    --figma-page-work: #ffffff;
+    --figma-page-about: #f2f4f8;
+    --figma-grid-line: #b8bdcc;
+
+    /* Radii from Figma */
+    --figma-radius-sm: 12px;
+    --figma-radius-md: 16px;
+    --figma-radius-lg: 20px;
+    --figma-radius-xl: 23px;
+    --figma-radius-2xl: 28px;
+    --figma-radius-3xl: 38px;
+    --figma-radius-full: 100px;
+
+    /* Shadows from Figma */
+    --figma-shadow-soft: 0px 2px 10px -6px rgba(20, 18, 31, 0.06);
+    --figma-shadow-card: 0px 26px 50px -20px rgba(75, 63, 223, 0.15);
+    --figma-shadow-card-2: 0px 6px 18px -10px rgba(75, 63, 223, 0.12), 0px 34px 64px -28px rgba(75, 63, 223, 0.2);
+    --figma-shadow-deep: 0px 26px 50px -20px rgba(9, 7, 37, 0.32), 0px 6px 18px -8px rgba(75, 63, 223, 0.18);
+    --figma-shadow-photo: 0px 18px 40px -18px rgba(17, 24, 39, 0.18), 0px 4px 10px -4px rgba(17, 24, 39, 0.06);
+    --figma-shadow-glow: 0px 10px 52px 12px #f4f3ff;
+
+    /* ── Typography scale from Figma ── */
+    --figma-font-display: 92px;
+    --figma-font-display-2: 74px;
+    --figma-font-h1: 64px;
+    --figma-font-h2: 46px;
+    --figma-font-h3: 40px;
+    --figma-font-h4: 28px;
+    --figma-font-h5: 24px;
+    --figma-font-body-lg: 22px;
+    --figma-font-body: 20px;
+    --figma-font-body-sm: 17px;
+    --figma-font-body-xs: 16px;
+    --figma-font-label: 14px;
+    --figma-font-caption: 13px;
+    --figma-font-micro: 12px;
+
+    --figma-leading-display: 1.2;
+    --figma-leading-h1: 1.15;
+    --figma-leading-h2: 1.15;
+    --figma-leading-body: 1.6;
+    --figma-leading-label: 1.7;
+
+    --figma-tracking-tight: -0.01em;
+    --figma-tracking-label: 0.04em;
+    --figma-tracking-eyebrow: 0.22em;
+
+    /* Shadcn tokens */
+    --background: var(--figma-white);
+    --foreground: var(--figma-ink);
+    --card: var(--figma-white);
+    --card-foreground: var(--figma-ink);
+    --popover: var(--figma-white);
+    --popover-foreground: var(--figma-ink);
+    --primary: var(--figma-primary);
+    --primary-foreground: var(--figma-white);
+    --secondary: var(--figma-surface-lavender);
+    --secondary-foreground: var(--figma-ink);
+    --muted: var(--figma-surface);
+    --muted-foreground: var(--figma-muted-1);
+    --accent: var(--figma-surface-lavender);
+    --accent-foreground: var(--figma-primary);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: var(--figma-border);
+    --input: var(--figma-border);
+    --ring: var(--figma-primary);
+    --radius: 0.75rem;
+
+    /* ── Figma surfaces ── */
+    --surface: var(--figma-surface);
+    --surface-foreground: oklch(0.12 0.01 250);
+
+    /* ── Codexa Brand Colors ──
+       Primary brand: deep rich indigo-blue
+    */
+    --brand-50: oklch(0.97 0.025 265);
+    --brand-100: oklch(0.93 0.05 265);
+    --brand-200: oklch(0.86 0.09 265);
+    --brand-300: oklch(0.76 0.13 265);
+    --brand-400: oklch(0.64 0.17 265);
+    --brand-500: var(--figma-primary);
+    --brand-600: oklch(0.44 0.21 265);
+    --brand-700: oklch(0.36 0.19 265);
+    --brand-800: oklch(0.28 0.15 265);
+    --brand-900: oklch(0.20 0.10 265);
+    --brand-foreground: oklch(0.98 0 0);
+
+    /* Chart colors */
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+
+    /* Sidebar tokens */
+    --sidebar: oklch(0.97 0.003 250);
+    --sidebar-foreground: oklch(0.12 0.01 250);
+    --sidebar-primary: oklch(0.22 0.005 250);
+    --sidebar-primary-foreground: oklch(0.98 0 0);
+    --sidebar-accent: oklch(0.94 0.005 250);
+    --sidebar-accent-foreground: oklch(0.22 0.005 250);
+    --sidebar-border: oklch(0.88 0.005 250);
+    --sidebar-ring: oklch(0.65 0.005 250);
 }
 
+/* ─── Dark Mode ───────────────────────────────────── */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
+    --background: var(--figma-black);
+    --foreground: oklch(0.96 0.005 250);
+    --card: oklch(0.14 0.008 250);
+    --card-foreground: oklch(0.96 0.005 250);
+    --popover: oklch(0.14 0.008 250);
+    --popover-foreground: oklch(0.96 0.005 250);
+    --primary: oklch(0.92 0.005 250);
+    --primary-foreground: oklch(0.14 0.008 250);
+    --secondary: oklch(0.20 0.008 250);
+    --secondary-foreground: oklch(0.96 0.005 250);
+    --muted: oklch(0.20 0.008 250);
+    --muted-foreground: oklch(0.65 0.01 250);
+    --accent: oklch(0.20 0.008 250);
+    --accent-foreground: oklch(0.96 0.005 250);
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --ring: oklch(0.52 0.21 265);
+    --surface: oklch(0.13 0.005 265);
+    --surface-foreground: oklch(0.96 0.005 250);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar: oklch(0.14 0.008 250);
+    --sidebar-foreground: oklch(0.96 0.005 250);
+    --sidebar-primary: oklch(0.52 0.21 265);
+    --sidebar-primary-foreground: oklch(0.98 0 0);
+    --sidebar-accent: oklch(0.20 0.008 250);
+    --sidebar-accent-foreground: oklch(0.96 0.005 250);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --sidebar-ring: oklch(0.52 0.21 265);
+
+    /* Brand dark adjustments */
+    --brand-50: oklch(0.18 0.04 265);
+    --brand-100: oklch(0.22 0.07 265);
+    --brand-200: oklch(0.28 0.11 265);
+    --brand-300: oklch(0.36 0.15 265);
+    --brand-400: oklch(0.48 0.19 265);
+    --brand-500: var(--figma-primary-2);
+    --brand-600: oklch(0.72 0.20 265);
+    --brand-700: oklch(0.82 0.15 265);
+    --brand-800: oklch(0.90 0.08 265);
+    --brand-900: oklch(0.96 0.03 265);
+    --brand-foreground: oklch(0.10 0 0);
 }
 
+/* ─── Base Styles ─────────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+
+    html {
+        font-family: var(--font-sans);
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
     }
-  html {
-    @apply font-sans;
+
+    /* Arabic locale: use Arabic-optimized font */
+    html[lang="ar"] {
+        font-family: var(--font-arabic);
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: "rlig" 1, "calt" 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Logical properties for RTL safety */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
+        line-height: 1.2;
+        font-weight: 700;
+    }
+
+    html[lang="ar"] h1,
+    html[lang="ar"] h2,
+    html[lang="ar"] h3,
+    html[lang="ar"] h4,
+    html[lang="ar"] h5,
+    html[lang="ar"] h6 {
+        font-family: var(--font-arabic);
+        font-weight: 700;
+    }
+
+    /* Focus ring for accessibility */
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+    /* Remove default focus for mouse users */
+    :focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    /* Respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
     }
 }
+
+/* ─── Utility Classes ─────────────────────────────── */
+@layer utilities {
+    /* Container utility for consistent max-width + padding */
+    .site-container {
+        width: 100%;
+        max-width: var(--container-xl);
+        margin-inline: auto;
+        padding-inline: 1.25rem;
+    }
+
+    @media (min-width: 640px) {
+        .site-container {
+            padding-inline: 2rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .site-container {
+            padding-inline: 3rem;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .site-container {
+            padding-inline: 4rem;
+        }
+    }
+
+    /* Section spacing */
+    .section-spacing {
+        padding-block: 4rem;
+    }
+
+    @media (min-width: 768px) {
+        .section-spacing {
+            padding-block: 6rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .section-spacing {
+            padding-block: 8rem;
+        }
+    }
+
+    /* Brand gradient */
+    .brand-gradient {
+        background: linear-gradient(
+            135deg,
+            var(--brand-500) 0%,
+            var(--brand-700) 100%
+        );
+    }
+
+    /* Text gradient */
+    .text-gradient {
+        background: linear-gradient(
+            135deg,
+            var(--brand-400) 0%,
+            var(--brand-600) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Glassmorphism card */
+    .glass-card {
+        background: oklch(from var(--card) l c h / 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+    }
+
+    /* RTL-safe flex row */
+    .flex-row-logical {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+/* ─── Marquee / ticker animation ─── */
+/*
+ * The track contains [COPY_A][COPY_A].
+ * translateX(-50%) moves the track exactly one copy to the left.
+ * At that point the second copy fills the viewport — identical to the start.
+ * The browser loops back to 0 invisibly, creating a seamless infinite scroll.
+ */
+@keyframes marquee-ltr {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-ltr {
+    animation: marquee-ltr 22s linear infinite;
+    will-change: transform;
+}
+
