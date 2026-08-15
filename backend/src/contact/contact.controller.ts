@@ -1,10 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiOperation,
   ApiTags,
+  ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ContactService } from './contact.service';
 import { CreateContactMessageDto } from './dto/create-contact-message.dto';
 
@@ -14,6 +23,7 @@ export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   @Post()
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Submit a contact message',
@@ -23,6 +33,10 @@ export class ContactController {
   })
   @ApiBadRequestResponse({
     description: 'The submitted contact data is invalid.',
+  })
+  @ApiTooManyRequestsResponse({
+    description:
+      'Too many contact messages were submitted. Please try again later.',
   })
   async createMessage(
     @Body() createContactMessageDto: CreateContactMessageDto,
