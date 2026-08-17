@@ -24,7 +24,7 @@
 
 | Layer | Technology | Key Details |
 |---|---|---|
-| **Framework** | Next.js 15+ (App Router) | Turbopack, Server Components (RSC) first, static pre-rendering |
+| **Framework** | Next.js 16+ (App Router) | Turbopack, Server Components (RSC) first, static pre-rendering |
 | **Language** | TypeScript 5 | Strict mode, zero `any` policy, type inference |
 | **Styling** | Tailwind CSS v4 + Tailwind Animate | Logical properties (`ms`, `me`, `start`, `end`), CSS custom properties |
 | **UI Components** | Shadcn UI + Radix UI + Lucide Icons | Accessible headless primitives |
