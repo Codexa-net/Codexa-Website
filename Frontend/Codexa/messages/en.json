@@ -217,8 +217,11 @@
 },
   "ourWork": {
     "title": "Our Work",
+    "heroTitle": "Discover What We Built",
+    "heroSubtitle": "We deliver innovative digital solutions that help your business grow, stand out, and scale with a 100% integrated platform.",
     "description": "A curated collection of our projects reflecting our passion for design and technology",
     "eyebrow": "Portfolio",
+    "gridTitle": "All Projects",
     "categories": {
       "all": "All",
       "web": "Web Development",

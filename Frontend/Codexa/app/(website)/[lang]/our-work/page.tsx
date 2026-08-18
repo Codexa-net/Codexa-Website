@@ -6,8 +6,9 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { getMockProjects } from '@/data/projects'
 import { Container } from '@/components/shared/container'
 import { Section } from '@/components/shared/section'
-import { Reveal } from '@/components/shared/motion/reveal'
-import { WorksShowcase } from '@/components/website/projects/works-showcase'
+import { OurWorkHero } from '@/components/website/projects/our-work-hero'
+import { ProjectsFilter } from '@/components/website/projects/projects-filter'
+import { ProjectShowcase } from '@/components/website/projects/project-showcase'
 
 export async function generateMetadata(
   props: PageProps<'/[lang]/our-work'>,
@@ -35,35 +36,27 @@ export default async function OurWorkPage(props: PageProps<'/[lang]/our-work'>) 
 
   return (
     <>
-      <Section
-        noContainer
-        className="border-b border-border bg-[var(--figma-surface-lavender)] py-20 md:py-28"
-      >
+      {/* ─── 1. Hero: Title "اكتشف ما أنجزناه" + fanned floating cards ─── */}
+      <OurWorkHero
+        title={dict.ourWork.heroTitle ?? 'اكتشف ما أنجزناه'}
+        subtitle={dict.ourWork.heroSubtitle}
+        projects={projects}
+      />
+
+      {/* ─── 2. Individual project showcases (full-width WorkSlide cards: Draya, Tyres Pro, ta7wila, Burnout) ─── */}
+      <Section noContainer className="bg-white py-16 md:py-24">
         <Container>
-          <Reveal>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-500">
-              {dict.ourWork.eyebrow}
-            </p>
-            <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-tight text-[var(--figma-title-dark)] sm:text-5xl lg:text-6xl">
-              {dict.ourWork.title}
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              {dict.ourWork.description}
-            </p>
-          </Reveal>
+          <ProjectShowcase projects={projects} locale={locale} />
         </Container>
       </Section>
 
-      <Section noContainer className="bg-white py-16 md:py-24">
+      {/* ─── 3. Filter section: "كل المشاريع" + category pills + 3x3 grid ─── */}
+      <Section noContainer className="bg-[var(--figma-surface-lavender)] py-16 md:py-24">
         <Container>
-          <WorksShowcase
+          <ProjectsFilter
             projects={projects}
             locale={locale}
-            variant="grid"
-            columns={3}
-            labels={{
-              viewProject: dict.ourWork.viewProject,
-            }}
+            dict={dict.ourWork}
           />
         </Container>
       </Section>
