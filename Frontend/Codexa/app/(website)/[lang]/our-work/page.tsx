@@ -7,7 +7,7 @@ import { getMockProjects } from '@/data/projects'
 import { Container } from '@/components/shared/container'
 import { Section } from '@/components/shared/section'
 import { Reveal } from '@/components/shared/motion/reveal'
-import { WorksShowcase } from '@/components/website/projects/works-showcase'
+import { ProjectsFilter } from '@/components/website/projects/projects-filter'
 
 export async function generateMetadata(
   props: PageProps<'/[lang]/our-work'>,
@@ -56,17 +56,14 @@ export default async function OurWorkPage(props: PageProps<'/[lang]/our-work'>) 
 
       <Section noContainer className="bg-white py-16 md:py-24">
         <Container>
-          <WorksShowcase
+          <ProjectsFilter
             projects={projects}
             locale={locale}
-            variant="grid"
-            columns={3}
-            labels={{
-              viewProject: dict.ourWork.viewProject,
-            }}
+            dict={dict.ourWork}
           />
         </Container>
       </Section>
     </>
   )
 }
+
