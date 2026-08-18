@@ -34,7 +34,17 @@ export function ProjectsFilter({ projects, locale, dict }: ProjectsFilterProps) 
   })
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
+      {/* Section header */}
+      <div className="text-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-500">
+          {dict.eyebrow}
+        </p>
+        <h2 className="mt-3 text-3xl font-bold leading-tight text-[var(--figma-title-dark)] sm:text-4xl">
+          {dict.description}
+        </h2>
+      </div>
+
       {/* Category Filter Tabs */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
         {categories.map((category) => {
@@ -48,13 +58,13 @@ export function ProjectsFilter({ projects, locale, dict }: ProjectsFilterProps) 
                 'relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isActive
                   ? 'text-white'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  : 'border border-[var(--figma-border)] bg-white text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="active-category-pill"
-                  className="absolute inset-0 rounded-full bg-brand-500"
+                  className="absolute inset-0 rounded-full bg-brand-500 shadow-md"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
@@ -88,6 +98,15 @@ export function ProjectsFilter({ projects, locale, dict }: ProjectsFilterProps) 
           ))}
         </AnimatePresence>
       </motion.div>
+
+      {/* Empty state */}
+      {filteredProjects.length === 0 && (
+        <div className="py-16 text-center">
+          <p className="text-lg text-muted-foreground">
+            {locale === 'ar' ? 'لا توجد مشاريع في هذه الفئة حالياً' : 'No projects in this category yet'}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
