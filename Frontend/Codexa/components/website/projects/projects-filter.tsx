@@ -40,8 +40,8 @@ export function ProjectsFilter({ projects, locale, dict }: ProjectsFilterProps) 
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-500">
           {dict.eyebrow}
         </p>
-        <h2 className="mt-3 text-3xl font-bold leading-tight text-[var(--figma-title-dark)] sm:text-4xl">
-          {dict.description}
+        <h2 className="mt-2 text-3xl font-extrabold leading-tight text-[#0f172a] sm:text-4xl">
+          {dict.gridTitle ?? (locale === 'ar' ? 'كل المشاريع' : 'All Projects')}
         </h2>
       </div>
 

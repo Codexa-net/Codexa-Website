@@ -36,10 +36,21 @@ export default async function OurWorkPage(props: PageProps<'/[lang]/our-work'>) 
 
   return (
     <>
-      {/* ─── 1. Hero: Title + fanned floating cards ─── */}
-      <OurWorkHero title={dict.ourWork.title} projects={projects} />
+      {/* ─── 1. Hero: Title "اكتشف ما أنجزناه" + fanned floating cards ─── */}
+      <OurWorkHero
+        title={dict.ourWork.heroTitle ?? 'اكتشف ما أنجزناه'}
+        subtitle={dict.ourWork.heroSubtitle}
+        projects={projects}
+      />
 
-      {/* ─── 2. Filter section: eyebrow + category pills + grid ─── */}
+      {/* ─── 2. Individual project showcases (full-width WorkSlide cards: Draya, Tyres Pro, ta7wila, Burnout) ─── */}
+      <Section noContainer className="bg-white py-16 md:py-24">
+        <Container>
+          <ProjectShowcase projects={projects} locale={locale} />
+        </Container>
+      </Section>
+
+      {/* ─── 3. Filter section: "كل المشاريع" + category pills + 3x3 grid ─── */}
       <Section noContainer className="bg-[var(--figma-surface-lavender)] py-16 md:py-24">
         <Container>
           <ProjectsFilter
@@ -47,13 +58,6 @@ export default async function OurWorkPage(props: PageProps<'/[lang]/our-work'>) 
             locale={locale}
             dict={dict.ourWork}
           />
-        </Container>
-      </Section>
-
-      {/* ─── 3. Individual project showcases (full-width WorkSlide cards) ─── */}
-      <Section noContainer className="bg-white py-16 md:py-24">
-        <Container>
-          <ProjectShowcase projects={projects} locale={locale} />
         </Container>
       </Section>
     </>

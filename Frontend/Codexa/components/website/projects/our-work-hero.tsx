@@ -8,14 +8,15 @@ import { Container } from '@/components/shared/container'
 
 interface OurWorkHeroProps {
   title: string
+  subtitle?: string
   projects: Project[]
 }
 
 /**
  * OurWorkHero — matching the Figma "Our Work" hero:
- * Clean white bg with centered title and fanned-out floating project cards.
+ * Clean white bg with centered title ("اكتشف ما أنجزناه") and fanned-out floating project cards.
  */
-export function OurWorkHero({ title, projects }: OurWorkHeroProps) {
+export function OurWorkHero({ title, subtitle, projects }: OurWorkHeroProps) {
   const displayProjects = projects.slice(0, 5)
 
   // Fan spread layout for the cards
@@ -27,6 +28,8 @@ export function OurWorkHero({ title, projects }: OurWorkHeroProps) {
     { rotate: 12, translateX: 120, translateY: 20, scale: 0.85, zIndex: 1 },
   ]
 
+  const isAnjaznah = title.includes('أنجزناه')
+
   return (
     <section className="relative overflow-hidden bg-white pb-8 pt-12 md:pb-12 md:pt-20">
       <Container className="flex flex-col items-center text-center">
@@ -35,10 +38,30 @@ export function OurWorkHero({ title, projects }: OurWorkHeroProps) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="text-4xl font-extrabold tracking-tight text-[var(--figma-title-dark)] sm:text-5xl md:text-6xl"
+          className="text-4xl font-extrabold tracking-tight text-[#0f172a] sm:text-5xl md:text-6xl"
         >
-          {title}
+          {isAnjaznah ? (
+            <>
+              اكتشف ما{' '}
+              <span className="bg-gradient-to-r from-[#6366f1] via-[#8b5cf6] to-[#a855f7] bg-clip-text text-transparent">
+                أنجزناه
+              </span>
+            </>
+          ) : (
+            title
+          )}
         </motion.h1>
+
+        {subtitle && (
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base"
+          >
+            {subtitle}
+          </motion.p>
+        )}
 
         {/* Fanned floating project cards */}
         <motion.div
