@@ -109,59 +109,112 @@
       "whatsapp": "WhatsApp"
     }
   },
-  "about": {
-    "hero": {
-      "eyebrow": "Get to Know Us",
-      "title": "We Build Brands People Remember",
-      "description": "Codexa is a creative technology agency that combines technical expertise with creative vision to build exceptional digital products that inspire, impact, and deliver real results."
-    },
-    "stats": [
-      { "value": "50+",  "label": "Projects Delivered" },
-      { "value": "30+",  "label": "Happy Clients" },
-      { "value": "3+",   "label": "Years of Experience" },
-      { "value": "100%", "label": "Quality Commitment" }
-    ],
-    "mission": {
-      "eyebrow": "Why We Exist",
-      "title": "Our Mission",
-      "description": "We strive to transform ambitious ideas into digital experiences that inspire and impact — with clean code, purposeful design, and genuine partnership with every client."
-    },
-    "values": {
-      "eyebrow": "What Unites Us",
-      "title": "Our Values",
-      "items": [
-        {
-          "icon": "sparkles",
-          "title": "Quality Above All",
-          "description": "We don't ship anything until we're completely proud of it."
-        },
-        {
-          "icon": "handshake",
-          "title": "Genuine Partnership",
-          "description": "We treat every project as if it were our own."
-        },
-        {
-          "icon": "lightbulb",
-          "title": "Continuous Innovation",
-          "description": "We learn, experiment, and innovate to always stay ahead."
-        },
-        {
-          "icon": "clock",
-          "title": "Deadline Commitment",
-          "description": "Your time is valuable — we respect it and honor every deadline we set."
-        }
-      ]
-    },
-    "team": {
-      "eyebrow": "The People Behind the Screen",
-      "title": "Our Team",
-      "description": "A group of passionate designers, developers, and creatives dedicated to building exceptional digital experiences."
-    },
-    "cta": {
-      "title": "Let's Build Something Great Together.",
-      "cta": "Start Your Project Now"
-    }
+"about": {
+  "hero": {
+    "eyebrow": "DIGITAL SOLUTIONS",
+    "titleFirst": "Start",
+    "titleAccent": "your digital",
+    "titleLast": "journey with us",
+    "description": "A specialized company in developing innovative software solutions and applications. We combine technical creativity with exceptional design to deliver world-class digital products.",
+    "button": "Contact us"
   },
+  "goal": {
+    "title": "Our goal is simple and clear",
+    "description": "Our goal isn't just to finish a project. We build something with you that can grow and succeed for the long term.",
+    "missionTitle": "Our Mission",
+    "mission": "Deliver innovative and reliable software solutions that help businesses grow and evolve in the digital age. We are committed to quality and exceptional service in every project.",
+    "visionTitle": "Our Vision",
+    "vision": "To become the preferred software and digital solutions company in the Middle East, known for innovation, creativity and exceptional results."
+  },
+  "services": {
+    "titleFirst": "Our",
+    "titleAccent": "Services",
+    "description": "We provide a comprehensive range of specialized services covering all modern digital project needs. From development to continuous support, we are here to bring your vision to life.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Web Development",
+        "description": "Professional, fast and secure websites using the latest technologies and global standards, designed for high conversion and performance.",
+        "icon": "globe"
+      },
+      {
+        "number": "02",
+        "title": "App Development",
+        "description": "Professional Android and iOS applications built with high performance standards and an exceptional user experience.",
+        "icon": "smartphone"
+      },
+      {
+        "number": "03",
+        "title": "UX/UI Design",
+        "description": "Beautiful and practical designs combining aesthetics and functionality with a strong focus on user experience.",
+        "icon": "palette"
+      },
+      {
+        "number": "04",
+        "title": "SaaS Solutions",
+        "description": "Scalable and secure platforms serving thousands of users with continuous technical support and regular updates.",
+        "icon": "boxes"
+      },
+      {
+        "number": "05",
+        "title": "AI Integration",
+        "description": "Advanced AI solutions that improve application performance and deliver real value to users.",
+        "icon": "brain"
+      }
+    ]
+  },
+  "values": {
+    "title": "Where ideas turn into value",
+    "items": [
+      {
+        "number": "01",
+        "title": "One team from idea to launch",
+        "description": "Strategy, design, engineering and testing under one roof. No middlemen and no lost handoffs.",
+        "small": "Integrated team",
+        "icon": "users"
+      },
+      {
+        "number": "02",
+        "title": "Engineering built to last",
+        "description": "We use modern technologies and engineering practices to build stable, scalable products.",
+        "small": "Technical quality",
+        "icon": "code"
+      },
+      {
+        "number": "03",
+        "title": "Design that carries your identity",
+        "description": "Digital experiences that reflect your brand identity while balancing beauty and performance.",
+        "small": "Visual identity",
+        "icon": "palette"
+      },
+      {
+        "number": "04",
+        "title": "AI without the noise",
+        "description": "We integrate AI where it creates genuine value without unnecessary complexity.",
+        "small": "AI integration",
+        "icon": "brain"
+      },
+      {
+        "number": "05",
+        "title": "After launch matters most",
+        "description": "We stay with you after launch through support, maintenance and continuous development.",
+        "small": "Continuous support",
+        "icon": "shield"
+      }
+    ]
+  },
+  "testimonial": {
+    "text": "We started WEB Studio because we worked in many places where the design was good and the strategy was good, but they never truly came together. Here, everyone works under the same roof. That's the whole idea.",
+    "name": "Ahmed Mostafa",
+    "role": "Founder & Creative Director"
+  },
+  "cta": {
+    "eyebrow": "Let's work together",
+    "title": "Have a project idea? Turn it into an exceptional digital experience.",
+    "button": "Start your project",
+    "whatsapp": "WhatsApp"
+  }
+},
   "ourWork": {
     "title": "Our Work",
     "description": "A curated collection of our projects reflecting our passion for design and technology",
