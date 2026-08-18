@@ -82,7 +82,7 @@ function PortraitProjectCard({
 export function WorkSlide({
   project,
   locale,
-  viewLabel,
+  viewLabel: _viewLabel,
   currentIndex = 0,
   totalCount = 1,
   className,
