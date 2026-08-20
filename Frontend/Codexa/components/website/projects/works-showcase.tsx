@@ -56,12 +56,12 @@ export function WorksShowcase({
   return (
     <section
       id="works"
-      className={cn('bg-[var(--figma-surface-bright)]', className)}
+      className={cn('bg-background', className)}
       aria-label="Works"
     >
       <StickyScroll
         itemCount={projects.length}
-        panelClassName="bg-[var(--figma-surface-bright)]"
+        panelClassName="bg-background"
       >
         {(activeIndex) => {
           const project = projects[activeIndex]

@@ -218,22 +218,46 @@
   "ourWork": {
     "title": "Our Work",
     "heroTitle": "Discover What We Built",
-    "heroSubtitle": "We deliver innovative digital solutions that help your business grow, stand out, and scale with a 100% integrated platform.",
+    "heroSubtitle": "Pick a category — branding, websites, marketing, video or photography — and dive into the details. Drag the cards below and interact with them.",
+    "heroScrollHint": "Scroll to explore projects",
     "description": "A curated collection of our projects reflecting our passion for design and technology",
     "eyebrow": "Portfolio",
+    "filterEyebrow": "Browse by type",
+    "filterSubtitle": "Pick the category that matters to you, or browse all.",
+    "filterHint": "Each card opens the project details and the steps we took to build it.",
     "gridTitle": "All Projects",
     "categories": {
       "all": "All",
-      "web": "Web Development",
-      "mobile": "Mobile Development",
+      "web": "Websites",
+      "mobile": "Apps",
       "branding": "Branding",
-      "ui": "UI/UX Design"
+      "ui": "Design"
     },
     "viewProject": "View Project"
   },
   "clients": {
     "title": "Our Clients",
     "description": "We are proud to partner with leading companies and institutions across various sectors"
+  },
+  "contact": {
+    "eyebrow": "Tell us about your idea",
+    "sentenceName": "My name is",
+    "sentenceProject": "and I have an idea for a",
+    "sentenceProjectType": "website",
+    "sentenceEmail": "reach me at",
+    "sentenceEnd": "and let’s turn it into something real.",
+    "placeholderName": "Your name",
+    "placeholderProject": "Project name",
+    "placeholderProjectType": "Project type",
+    "placeholderEmail": "Your email",
+    "submit": "Start your project now",
+    "whatsapp": "WhatsApp",
+    "successTitle": "Sent!",
+    "successMessage": "Thanks, we’ll be in touch soon.",
+    "projectTypes": ["Website", "Mobile App", "Visual Identity", "Digital Marketing", "Video"],
+    "infoTitle": "Direct contact",
+    "infoSubtitle": "Or reach us via",
+    "note": "Reply within 24 hours. No commitment."
   },
   "footer": {
     "description": "A creative technology agency building exceptional digital experiences",

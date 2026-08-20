@@ -1,11 +1,5 @@
 import Link from 'next/link'
-import {
-  ArrowUpRight,
-  Briefcase,
-  Camera,
-  MessageCircle,
-  Share2,
-} from 'lucide-react'
+import { ArrowUpRight, MessageCircle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { type Locale } from '@/lib/i18n/config'
@@ -17,11 +11,46 @@ interface FooterProps {
   dict: Dictionary
 }
 
+/* ── Static data ─────────────────────────────────────────────── */
+
 const socialLinks = [
-  { icon: Camera, label: 'Instagram', href: 'https://instagram.com/codexa' },
-  { icon: Share2, label: 'TikTok', href: 'https://tiktok.com/@codexa' },
-  { icon: Briefcase, label: 'LinkedIn', href: 'https://linkedin.com/company/codexa' },
-  { icon: MessageCircle, label: 'WhatsApp', href: 'https://wa.me/966000000000' },
+  {
+    label: 'WhatsApp',
+    href: 'https://wa.me/966000000000',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.852L0 24l6.305-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.373l-.36-.214-3.733.979.996-3.638-.234-.374A9.818 9.818 0 1112 21.818z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Instagram',
+    href: 'https://instagram.com/codexa',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'TikTok',
+    href: 'https://tiktok.com/@codexa',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
+        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.73a4.85 4.85 0 01-1.01-.04z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'LinkedIn',
+    href: 'https://linkedin.com/company/codexa',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
+        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+      </svg>
+    ),
+  },
 ]
 
 function buildNavLinks(locale: Locale, dict: Dictionary) {
@@ -35,62 +64,86 @@ function buildNavLinks(locale: Locale, dict: Dictionary) {
   ]
 }
 
+/* ── Component ───────────────────────────────────────────────── */
+
 export function Footer({ locale, dict }: FooterProps) {
   const { footer, home } = dict
   const { contactCta } = home
   const navLinks = buildNavLinks(locale, dict)
+  const isArabic = locale === 'ar'
 
   return (
-    <footer role="contentinfo" className="bg-[#05060f] text-white">
-      {/* CTA block */}
-      <div id="contact" className="border-b border-white/10 py-20 md:py-24">
+    <footer
+      role="contentinfo"
+      dir={isArabic ? 'rtl' : 'ltr'}
+      className="bg-[#05060f] text-white"
+    >
+
+      {/* ── CTA block ── */}
+      <div id="contact" className="border-b border-white/[0.08] py-20 md:py-28">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-medium text-white/50">{contactCta.eyebrow}</p>
-            <h2 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+
+            {/* Eyebrow */}
+            <p className="text-sm font-medium text-white/40">{contactCta.eyebrow}</p>
+
+            {/* Headline */}
+            <h2 className={cn(
+              'mt-5 font-black leading-[1.15] tracking-tight text-white',
+              'text-[clamp(2rem,5vw,3.5rem)]',
+            )}>
               {contactCta.title}
             </h2>
 
+            {/* Buttons */}
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <a
-                href={`mailto:${footer.contact.email}`}
+              {/* Primary CTA */}
+              <Link
+                href={`/${locale}#contact`}
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-full bg-brand-500 px-7 py-3.5',
-                  'text-sm font-semibold text-white transition-opacity hover:opacity-90',
+                  'inline-flex items-center gap-2.5 rounded-full bg-[#4b3fdf] px-7 py-3.5',
+                  'text-sm font-bold text-white shadow-[0_12px_32px_-8px_rgba(75,63,223,0.6)]',
+                  'transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_rgba(75,63,223,0.7)]',
                   'outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                 )}
               >
+                <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
                 {contactCta.cta}
-                <ArrowUpRight className="size-4" aria-hidden="true" />
-              </a>
+              </Link>
+
+              {/* WhatsApp CTA */}
               <a
                 href={footer.contact.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-full border border-white/20 px-7 py-3.5',
-                  'text-sm font-semibold text-white transition-colors hover:bg-white/5',
+                  'inline-flex items-center gap-2.5 rounded-full border border-white/20 px-7 py-3.5',
+                  'text-sm font-bold text-white/80',
+                  'transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:text-white',
                   'outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                 )}
               >
+                <MessageCircle className="size-4 shrink-0 text-green-400" aria-hidden="true" />
                 {contactCta.whatsapp}
-                <MessageCircle className="size-4" aria-hidden="true" />
               </a>
             </div>
+
           </div>
         </Container>
       </div>
 
-      {/* Nav + contact row */}
-      <Container className="py-10">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+      {/* ── Middle row: contact info + socials ←→ nav ── */}
+      <Container className="py-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+
+                          {/* Nav links */}
           <nav aria-label="Footer navigation">
-            <ul role="list" className="flex flex-wrap gap-x-6 gap-y-3">
+            <ul role="list" className="flex flex-wrap gap-x-6 gap-y-2.5">
               {navLinks.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-white/40 transition-colors hover:text-white"
                   >
                     {label}
                   </Link>
@@ -99,72 +152,86 @@ export function Footer({ locale, dict }: FooterProps) {
             </ul>
           </nav>
 
-          <div className="flex flex-col gap-4 sm:items-end">
+          {/* Contact info + social icons */}
+          <div className="flex flex-col items-end gap-4">
             <address className="not-italic">
-              <ul role="list" className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/50 sm:justify-end">
+              <ul role="list" className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-white/40">
                 <li>
-                  <a href={`mailto:${footer.contact.email}`} className="hover:text-white">
+                  <a href={`mailto:${footer.contact.email}`} className="transition-colors hover:text-white/70">
                     {footer.contact.email}
                   </a>
                 </li>
+                <li className="text-white/20" aria-hidden="true">|</li>
                 <li>
-                  <a href={`tel:${footer.contact.phone.replace(/\s/g, '')}`} className="hover:text-white">
+                  <a href={`tel:${footer.contact.phone.replace(/\s/g, '')}`} className="transition-colors hover:text-white/70">
                     {footer.contact.phone}
                   </a>
                 </li>
-                <li>{footer.contact.location}</li>
+                <li className="text-white/20" aria-hidden="true">|</li>
+                <li className="text-white/40">{footer.contact.location}</li>
               </ul>
             </address>
 
-            <ul role="list" className="flex gap-3">
-              {socialLinks.map(({ icon: Icon, label, href }) => (
+            {/* Social icons */}
+            <ul role="list" className="flex gap-2.5">
+              {socialLinks.map(({ label, href, icon }) => (
                 <li key={label}>
                   <a
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className="flex size-9 items-center justify-center rounded-full border border-white/15 text-white/50 transition-colors hover:border-white/30 hover:text-white"
+                    className={cn(
+                      'flex size-9 items-center justify-center rounded-lg',
+                      'border bg-black/10 border-white/12 text-white/40',
+                      'transition-colors duration-200 hover:border-white/30 hover:text-white',
+                    )}
                   >
-                    <Icon className="size-4" aria-hidden="true" />
+                    {icon}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
+
+
+
         </div>
       </Container>
 
-      {/* Large wordmark */}
-      <div className="overflow-hidden px-5 pb-6 pt-4 sm:px-8">
-        <p
-          aria-hidden="true"
-          className={cn(
-            'select-none text-center text-[clamp(4rem,18vw,11rem)] font-bold leading-none tracking-tight',
-            'bg-gradient-to-b from-white/20 to-white/[0.04] bg-clip-text text-transparent',
-          )}
-        >
+      {/* ── Large wordmark ── */}
+      <div className="overflow-hidden select-none" aria-hidden="true">
+        <p className={cn(
+          'text-center font-black leading-none tracking-tight h-83',
+          'text-[clamp(20rem,5vw,15rem)]',
+          'bg-gradient-to-b from-white/[0.92] to-white/[0.33] bg-clip-text text-transparent',
+        )}>
           Codexa
         </p>
       </div>
 
-      {/* Bottom bar */}
+      {/* ── Bottom bar ── */}
       <Container>
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-6 sm:flex-row">
-          <p className="text-xs text-white/40">{footer.copyright}</p>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-white/40">
-            <Link href={`/${locale}/privacy`} className="hover:text-white/70">
+        <div className={cn(
+          'flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] py-5',
+          'sm:flex-row',
+        )}>
+          <p className="text-xs text-white/30">{footer.copyright}</p>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs text-white/30">
+            <Link href={`/${locale}/privacy`} className="transition-colors hover:text-white/60">
               {footer.legal.privacy}
             </Link>
-            <span aria-hidden="true">|</span>
-            <Link href={`/${locale}/terms`} className="hover:text-white/70">
+            <span aria-hidden="true" className="text-white/15">|</span>
+            <Link href={`/${locale}/terms`} className="transition-colors hover:text-white/60">
               {footer.legal.terms}
             </Link>
-            <span aria-hidden="true">|</span>
+            <span aria-hidden="true" className="text-white/15">|</span>
             <span>{footer.legal.madeIn}</span>
           </div>
         </div>
       </Container>
+
     </footer>
   )
 }

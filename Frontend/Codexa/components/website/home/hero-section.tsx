@@ -19,7 +19,7 @@ function DeviceMockup({ className }: { className?: string }) {
       aria-hidden="true"
       className={cn(
         'relative overflow-hidden rounded-[var(--figma-radius-xl)]',
-        'border border-[var(--figma-border)] bg-white',
+        'border border-[var(--figma-border)] bg-white dark:bg-card dark:border-white/10',
         'shadow-[var(--figma-shadow-photo)]',
         className,
       )}
@@ -46,7 +46,7 @@ export function HeroSection({ locale, dict }: HeroSectionProps) {
       noContainer
       className={cn(
         'relative overflow-hidden py-0',
-        'bg-[var(--figma-surface-bright)] text-[var(--figma-title-dark)]',
+        'bg-background text-[var(--figma-title-dark)] dark:text-white',
         'min-h-[calc(100svh-4.5rem)]',
       )}
     >
@@ -55,7 +55,7 @@ export function HeroSection({ locale, dict }: HeroSectionProps) {
         <div className="absolute -end-24 bottom-10 size-[380px] rounded-full bg-[var(--figma-accent-purple)]/12 blur-[90px]" />
       </div>
 
-      <Container className="relative flex min-h-[calc(100svh-4rem)] items-center py-20 md:py-28">
+      <Container className="relative flex min-h-[calc(100svh-4rem)] items-center py-20">
         <div className="grid w-full items-center gap-10 lg:grid-cols-[1fr_1.4fr_1fr] lg:gap-6">
           <FadeIn direction="right" className="hidden lg:block">
             <DeviceMockup className="ms-auto h-[280px] w-[200px] -rotate-6" />
