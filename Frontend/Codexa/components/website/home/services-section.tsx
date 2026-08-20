@@ -33,12 +33,12 @@ export function ServicesSection({ dict }: ServicesSectionProps) {
   }
 
   return (
-    <Section id="services" noContainer className="bg-white py-20 md:py-28">
+    <Section id="services" noContainer className="bg-white py-20 md:py-28 dark:bg-[#0d0b1f]">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold text-brand-500">{services.eyebrow}</p>
-            <h2 className="mt-3 text-3xl font-bold leading-tight text-[var(--figma-title-dark)] sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="mt-3 text-3xl font-bold leading-tight text-[var(--figma-title-dark)] dark:text-white sm:text-4xl lg:text-[2.75rem]">
               {services.title}
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -58,7 +58,7 @@ export function ServicesSection({ dict }: ServicesSectionProps) {
                 <article
                   className={cn(
                     'overflow-hidden rounded-[var(--figma-radius-xl)] border border-[var(--figma-border)]',
-                    'bg-white shadow-[var(--figma-shadow-soft)] transition-shadow',
+                    'bg-white dark:bg-card dark:border-white/10 shadow-[var(--figma-shadow-soft)] transition-shadow',
                     isOpen && 'shadow-[var(--figma-shadow-card)]',
                   )}
                 >
@@ -74,7 +74,7 @@ export function ServicesSection({ dict }: ServicesSectionProps) {
                         'flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors',
                         isOpen
                           ? 'bg-brand-500 text-white'
-                          : 'bg-[var(--figma-surface-lavender)] text-brand-500',
+                          : 'bg-[var(--figma-surface-lavender)] text-brand-500 dark:bg-brand-500/10',
                       )}
                     >
                       <Icon className="size-5" />
@@ -86,7 +86,7 @@ export function ServicesSection({ dict }: ServicesSectionProps) {
                           {number}
                         </span>
                         <div>
-                          <h3 className="text-base font-bold text-[var(--figma-title-dark)] sm:text-lg">
+                          <h3 className="text-base font-bold text-[var(--figma-title-dark)] dark:text-white sm:text-lg">
                             {item.title}
                           </h3>
                           {!isOpen && (
@@ -103,7 +103,7 @@ export function ServicesSection({ dict }: ServicesSectionProps) {
                       className={cn(
                         'flex size-8 shrink-0 items-center justify-center rounded-full transition-all',
                         isOpen
-                          ? 'bg-[var(--figma-title-dark)] text-white'
+                          ? 'bg-[var(--figma-title-dark)] text-white dark:bg-white dark:text-[#0d0b1f]'
                           : 'text-muted-foreground',
                       )}
                     >
@@ -117,7 +117,7 @@ export function ServicesSection({ dict }: ServicesSectionProps) {
                   </button>
 
                   {isOpen && (
-                    <div className="border-t border-[var(--figma-border)] px-5 pb-6 pt-2 sm:px-6">
+                    <div className="border-t border-[var(--figma-border)] dark:border-white/10 px-5 pb-6 pt-2 sm:px-6">
                       <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                         {item.description}
                       </p>

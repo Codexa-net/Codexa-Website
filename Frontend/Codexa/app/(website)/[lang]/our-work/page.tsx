@@ -40,18 +40,12 @@ export default async function OurWorkPage(props: PageProps<'/[lang]/our-work'>) 
       <OurWorkHero
         title={dict.ourWork.heroTitle ?? 'اكتشف ما أنجزناه'}
         subtitle={dict.ourWork.heroSubtitle}
+        scrollHint={dict.ourWork.heroScrollHint}
         projects={projects}
       />
 
-      {/* ─── 2. Individual project showcases (full-width WorkSlide cards: Draya, Tyres Pro, ta7wila, Burnout) ─── */}
-      <Section noContainer className="bg-white py-16 md:py-24">
-        <Container>
-          <ProjectShowcase projects={projects} locale={locale} />
-        </Container>
-      </Section>
-
       {/* ─── 3. Filter section: "كل المشاريع" + category pills + 3x3 grid ─── */}
-      <Section noContainer className="bg-[var(--figma-surface-lavender)] py-16 md:py-24">
+      <Section noContainer className="bg-[var(--figma-surface-lavender)] py-16 md:py-24 dark:bg-[#0d0b1f]">
         <Container>
           <ProjectsFilter
             projects={projects}

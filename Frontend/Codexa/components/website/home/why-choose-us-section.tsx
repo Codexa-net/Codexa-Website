@@ -33,19 +33,19 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
   return (
     <div id="why-choose-us">
       {/* Intro quote box — scroll reveal */}
-      <Section noContainer className="bg-[var(--figma-surface)] py-16 md:py-20">
+      <Section noContainer className="bg-[var(--figma-surface)] py-16 md:py-20 dark:bg-[#0d0b1f]">
         <Container narrow>
           <Reveal>
             <div
               className={cn(
                 'mx-auto max-w-2xl rounded-[var(--figma-radius-xl)] border-2 border-dashed',
-                'border-brand-500/40 bg-white px-8 py-10 text-center sm:px-12 sm:py-12',
+                'border-brand-500/40 bg-white dark:bg-card px-8 py-10 text-center sm:px-12 sm:py-12',
               )}
             >
-              <p className="text-lg font-bold leading-relaxed text-[var(--figma-title-dark)] sm:text-xl">
+              <p className="text-lg font-bold leading-relaxed text-[var(--figma-title-dark)] dark:text-white sm:text-xl">
                 {whyChooseUs.intro.line1}
               </p>
-              <p className="mt-3 text-lg font-bold leading-relaxed text-[var(--figma-title-dark)] sm:text-xl">
+              <p className="mt-3 text-lg font-bold leading-relaxed text-[var(--figma-title-dark)] dark:text-white sm:text-xl">
                 {whyChooseUs.intro.line2}
               </p>
             </div>
@@ -79,10 +79,10 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 }}
               />
 
-              {/* Outline step number watermark */}
+              {/* Outline step number watermark — always on the end side (left in RTL, right in LTR) */}
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute bottom-6 start-6 z-0 select-none sm:bottom-10 sm:start-10"
+                className="pointer-events-none absolute bottom-6 end-6 z-0 select-none sm:bottom-10 sm:end-10"
                 style={{
                   fontSize: 'clamp(6rem, 22vw, 14rem)',
                   fontWeight: 700,
@@ -94,16 +94,16 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 {stepNumber}
               </span>
 
-              {/* Side step nav */}
+              {/* Side step nav — always on the start side (right in RTL, left in LTR) */}
               <nav
                 aria-label="Process steps"
-                className="absolute end-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-3 sm:end-10 lg:flex"
+                className="absolute start-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-3 sm:start-10 lg:flex"
               >
                 {items.map((step, index) => (
                   <span
                     key={step.title}
                     className={cn(
-                      'max-w-[120px] truncate text-end text-xs transition-colors duration-400',
+                      'max-w-[120px] truncate text-start text-xs transition-colors duration-400',
                       index === activeIndex ? 'text-white' : 'text-white/35',
                     )}
                   >

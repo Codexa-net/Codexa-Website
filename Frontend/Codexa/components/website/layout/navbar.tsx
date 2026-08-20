@@ -66,7 +66,7 @@ export function Navbar({ locale, dict }: NavbarProps) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--figma-border)] bg-white/95 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--figma-border)] bg-white/95 backdrop-blur-md dark:border-white/10 dark:bg-[#05060f]/95">
         <nav
           aria-label="Main navigation"
           className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-12 xl:px-16"
@@ -92,7 +92,7 @@ export function Navbar({ locale, dict }: NavbarProps) {
                     'outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm',
                     isActive(item.href)
                       ? 'text-brand-500'
-                      : 'text-[#4b515d] hover:text-foreground',
+                      : 'text-[#4b515d] hover:text-foreground dark:text-gray-400 dark:hover:text-white',
                   )}
                 >
                   {dict.nav[item.labelKey]}
@@ -169,7 +169,7 @@ export function Navbar({ locale, dict }: NavbarProps) {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="fixed inset-x-0 top-[72px] z-50 border-b border-border bg-white shadow-lg lg:hidden"
+              className="fixed inset-x-0 top-[72px] z-50 border-b border-border bg-white shadow-lg lg:hidden dark:bg-[#0d0b1f] dark:border-white/10"
             >
               <nav className="px-5 py-6">
                 <ul role="list" className="flex flex-col gap-1">
@@ -180,8 +180,8 @@ export function Navbar({ locale, dict }: NavbarProps) {
                         className={cn(
                           'flex w-full rounded-md px-4 py-3 text-base font-medium',
                           isActive(item.href)
-                            ? 'bg-[var(--figma-surface-lavender)] text-brand-500'
-                            : 'text-muted-foreground hover:bg-muted',
+                            ? 'bg-[var(--figma-surface-lavender)] text-brand-500 dark:bg-[#1a1740] dark:text-brand-400'
+                            : 'text-muted-foreground hover:bg-muted dark:text-gray-400 dark:hover:bg-white/5',
                         )}
                       >
                         {dict.nav[item.labelKey]}

@@ -9,6 +9,7 @@ import { Container } from '@/components/shared/container'
 interface OurWorkHeroProps {
   title: string
   subtitle?: string
+  scrollHint?: string
   projects: Project[]
 }
 
@@ -16,7 +17,7 @@ interface OurWorkHeroProps {
  * OurWorkHero — matching the Figma "Our Work" hero:
  * Clean white bg with centered title ("اكتشف ما أنجزناه") and fanned-out floating project cards.
  */
-export function OurWorkHero({ title, subtitle, projects }: OurWorkHeroProps) {
+export function OurWorkHero({ title, subtitle, scrollHint, projects }: OurWorkHeroProps) {
   const displayProjects = projects.slice(0, 5)
 
   // Fan spread layout for the cards
@@ -31,14 +32,14 @@ export function OurWorkHero({ title, subtitle, projects }: OurWorkHeroProps) {
   const isAnjaznah = title.includes('أنجزناه')
 
   return (
-    <section className="relative overflow-hidden bg-white pb-8 pt-12 md:pb-12 md:pt-20">
+    <section className="relative overflow-hidden bg-white pb-8 pt-12 md:pb-12 md:pt-20 dark:bg-[#0d0b1f]">
       <Container className="flex flex-col items-center text-center">
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="text-4xl font-extrabold tracking-tight text-[#0f172a] sm:text-5xl md:text-6xl"
+          className="text-4xl font-extrabold tracking-tight text-[#0f172a] dark:text-white sm:text-5xl md:text-6xl"
         >
           {isAnjaznah ? (
             <>
@@ -127,6 +128,36 @@ export function OurWorkHero({ title, subtitle, projects }: OurWorkHeroProps) {
             )
           })}
         </motion.div>
+        {/* Scroll hint */}
+        {scrollHint && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-10 flex flex-col items-center gap-2 text-muted-foreground dark:text-gray-500"
+          >
+            <p className="text-xs font-medium tracking-wide">{scrollHint}</p>
+            <motion.div
+              animate={{ y: [0, 5, 0] }}
+              transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </motion.div>
+          </motion.div>
+        )}
       </Container>
     </section>
   )

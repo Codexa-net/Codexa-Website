@@ -46,7 +46,7 @@ export function Section({
     <Tag
       id={id}
       className={cn(
-        'py-16 md:py-24 lg:py-32',
+        'py-8 md:py-10 lg:py-14',
         className,
       )}
     >
