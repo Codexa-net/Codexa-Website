@@ -17,7 +17,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Codexa Website API')
-    .setDescription('Backend REST API documentation for Codexa Website including Website Settings, Admin Panel, Users, and Dashboard.')
+    .setDescription(
+      'Backend REST API documentation for Codexa Website including Website Settings, Admin Panel, Users, and Dashboard.',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -28,10 +30,11 @@ async function bootstrap() {
   const port = process.env.APP_PORT || process.env.PORT || 3001;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger Documentation is available at: http://localhost:${port}/api/docs`);
+  console.log(
+    `Swagger Documentation is available at: http://localhost:${port}/api/docs`,
+  );
 }
 
 bootstrap().catch((err) => {
   console.error('Error during application bootstrap:', err);
 });
-

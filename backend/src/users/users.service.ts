@@ -134,17 +134,13 @@ export class UsersService {
     // Regular users (non-ADMIN, non-SUPER_ADMIN) cannot assign roles, permissions, or isActive status
     if (!isSuperAdmin && !isAdmin) {
       if (createUserDto.role !== undefined) {
-        throw new ForbiddenException(
-          'Regular users cannot assign user roles',
-        );
+        throw new ForbiddenException('Regular users cannot assign user roles');
       }
       if (
         createUserDto.permissions !== undefined &&
         createUserDto.permissions.length > 0
       ) {
-        throw new ForbiddenException(
-          'Regular users cannot assign permissions',
-        );
+        throw new ForbiddenException('Regular users cannot assign permissions');
       }
       if (createUserDto.isActive !== undefined) {
         throw new ForbiddenException(
@@ -228,9 +224,7 @@ export class UsersService {
     // Privilege escalation prevention for roles
     if (updateUserDto.role !== undefined) {
       if (!isSuperAdmin && !isAdmin) {
-        throw new ForbiddenException(
-          'Regular users cannot modify user roles',
-        );
+        throw new ForbiddenException('Regular users cannot modify user roles');
       }
       if (isAdmin && updateUserDto.role === Role.SUPER_ADMIN) {
         throw new ForbiddenException(
@@ -325,5 +319,4 @@ export class UsersService {
     await this.prisma.user.delete({ where: { id } });
     return { message: 'User deleted successfully' };
   }
-
 }

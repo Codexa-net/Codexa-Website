@@ -23,4 +23,3 @@ import { SettingsModule } from './settings/settings.module';
   providers: [AppService],
 })
 export class AppModule {}
-

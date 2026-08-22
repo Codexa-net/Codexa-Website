@@ -32,4 +32,3 @@ export class PrismaService
     await this.pool.end();
   }
 }
-

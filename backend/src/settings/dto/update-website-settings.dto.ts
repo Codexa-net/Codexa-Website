@@ -3,38 +3,58 @@ import { IsOptional, IsString, IsArray, IsEmail } from 'class-validator';
 
 export class UpdateWebsiteSettingsDto {
   // Company Information
-  @ApiPropertyOptional({ description: 'Official company name', example: 'Codexa Net' })
+  @ApiPropertyOptional({
+    description: 'Official company name',
+    example: 'Codexa Net',
+  })
   @IsOptional()
   @IsString()
   companyName?: string;
 
-  @ApiPropertyOptional({ description: 'Company slogan or tagline', example: 'Building the future of software' })
+  @ApiPropertyOptional({
+    description: 'Company slogan or tagline',
+    example: 'Building the future of software',
+  })
   @IsOptional()
   @IsString()
   slogan?: string;
 
-  @ApiPropertyOptional({ description: 'Short company description', example: 'Innovative software solutions.' })
+  @ApiPropertyOptional({
+    description: 'Short company description',
+    example: 'Innovative software solutions.',
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Company logo image URL', example: 'https://example.com/logo.png' })
+  @ApiPropertyOptional({
+    description: 'Company logo image URL',
+    example: 'https://example.com/logo.png',
+  })
   @IsOptional()
   @IsString()
   logoUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Company favicon URL', example: 'https://example.com/favicon.ico' })
+  @ApiPropertyOptional({
+    description: 'Company favicon URL',
+    example: 'https://example.com/favicon.ico',
+  })
   @IsOptional()
   @IsString()
   faviconUrl?: string;
 
   // About Us
-  @ApiPropertyOptional({ description: 'Title for the About Us section', example: 'About Codexa' })
+  @ApiPropertyOptional({
+    description: 'Title for the About Us section',
+    example: 'About Codexa',
+  })
   @IsOptional()
   @IsString()
   aboutTitle?: string;
 
-  @ApiPropertyOptional({ description: 'Detailed description about the company' })
+  @ApiPropertyOptional({
+    description: 'Detailed description about the company',
+  })
   @IsOptional()
   @IsString()
   aboutDescription?: string;

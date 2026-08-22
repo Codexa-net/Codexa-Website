@@ -25,7 +25,8 @@ export class SettingsService {
         id: SETTINGS_SINGLETON_ID,
         companyName: 'Codexa',
         slogan: 'Building Digital Products That Scale',
-        description: 'Codexa is a premier software development and digital engineering agency.',
+        description:
+          'Codexa is a premier software development and digital engineering agency.',
         contactEmail: 'contact@codexa.net',
       },
     });

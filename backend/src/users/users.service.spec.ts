@@ -9,9 +9,20 @@ jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('$2b$12$hashed'),
 }));
 
+interface MockPrisma {
+  user: {
+    findMany: jest.Mock;
+    findUnique: jest.Mock;
+    count: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+    delete: jest.Mock;
+  };
+}
+
 describe('UsersService Privilege Escalation & CRUD Tests', () => {
   let service: UsersService;
-  let prisma: any;
+  let prisma: MockPrisma;
 
   const mockUser = {
     id: 'user-1',
@@ -35,7 +46,7 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
   };
 
   beforeEach(async () => {
-    const mockPrismaService = {
+    const mockPrismaService: MockPrisma = {
       user: {
         findMany: jest.fn(),
         findUnique: jest.fn(),
@@ -47,7 +58,7 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
     };
 
     const mockConfigService = {
-      get: jest.fn((key: string, defaultValue?: any) => defaultValue ?? 10),
+      get: jest.fn((key: string, defaultValue?: number) => defaultValue ?? 10),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -59,7 +70,7 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    prisma = module.get<PrismaService>(PrismaService);
+    prisma = module.get<PrismaService>(PrismaService) as unknown as MockPrisma;
   });
 
   describe('create', () => {
@@ -73,7 +84,12 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
       };
 
       const res = await service.create(
-        { email: 'newsa@example.com', name: 'SA', password: 'password', role: Role.SUPER_ADMIN },
+        {
+          email: 'newsa@example.com',
+          name: 'SA',
+          password: 'password',
+          role: Role.SUPER_ADMIN,
+        },
         superAdminCtx,
       );
 
@@ -87,7 +103,12 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
 
       await expect(
         service.create(
-          { email: 'newsa@example.com', name: 'SA', password: 'password', role: Role.SUPER_ADMIN },
+          {
+            email: 'newsa@example.com',
+            name: 'SA',
+            password: 'password',
+            role: Role.SUPER_ADMIN,
+          },
           adminCtx,
         ),
       ).rejects.toThrow(ForbiddenException);
@@ -96,11 +117,19 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
     it('should throw ForbiddenException if regular user tries to set role', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
-      const editorCtx: CurrentUserContext = { sub: 'editor-1', role: Role.EDITOR };
+      const editorCtx: CurrentUserContext = {
+        sub: 'editor-1',
+        role: Role.EDITOR,
+      };
 
       await expect(
         service.create(
-          { email: 'new@example.com', name: 'User', password: 'password', role: Role.ADMIN },
+          {
+            email: 'new@example.com',
+            name: 'User',
+            password: 'password',
+            role: Role.ADMIN,
+          },
           editorCtx,
         ),
       ).rejects.toThrow(ForbiddenException);
@@ -109,11 +138,19 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
     it('should throw ForbiddenException if regular user tries to set isActive', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
-      const editorCtx: CurrentUserContext = { sub: 'editor-1', role: Role.EDITOR };
+      const editorCtx: CurrentUserContext = {
+        sub: 'editor-1',
+        role: Role.EDITOR,
+      };
 
       await expect(
         service.create(
-          { email: 'new@example.com', name: 'User', password: 'password', isActive: false },
+          {
+            email: 'new@example.com',
+            name: 'User',
+            password: 'password',
+            isActive: false,
+          },
           editorCtx,
         ),
       ).rejects.toThrow(ForbiddenException);
@@ -144,7 +181,10 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
     it('should throw ForbiddenException if regular user tries to update user roles', async () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
 
-      const editorCtx: CurrentUserContext = { sub: 'editor-1', role: Role.EDITOR };
+      const editorCtx: CurrentUserContext = {
+        sub: 'editor-1',
+        role: Role.EDITOR,
+      };
 
       await expect(
         service.update('user-1', { role: Role.ADMIN }, editorCtx),
@@ -154,7 +194,10 @@ describe('UsersService Privilege Escalation & CRUD Tests', () => {
     it('should throw ForbiddenException if regular user tries to update isActive status', async () => {
       prisma.user.findUnique.mockResolvedValue(mockUser);
 
-      const editorCtx: CurrentUserContext = { sub: 'editor-1', role: Role.EDITOR };
+      const editorCtx: CurrentUserContext = {
+        sub: 'editor-1',
+        role: Role.EDITOR,
+      };
 
       await expect(
         service.update('user-1', { isActive: false }, editorCtx),

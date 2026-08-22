@@ -37,7 +37,10 @@ export class SettingsController {
 
   @Get()
   @ApiOperation({ summary: 'Get full aggregated website settings' })
-  @ApiResponse({ status: 200, description: 'Website settings retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Website settings retrieved successfully',
+  })
   getWebsiteSettings() {
     return this.settingsService.getWebsiteSettings();
   }
@@ -46,10 +49,18 @@ export class SettingsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update full aggregated website settings (Admin/SuperAdmin)' })
-  @ApiResponse({ status: 200, description: 'Website settings updated successfully' })
+  @ApiOperation({
+    summary: 'Update full aggregated website settings (Admin/SuperAdmin)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Website settings updated successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient privileges' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient privileges',
+  })
   updateWebsiteSettings(@Body() dto: UpdateWebsiteSettingsDto) {
     return this.settingsService.updateWebsiteSettings(dto);
   }
@@ -58,7 +69,10 @@ export class SettingsController {
 
   @Get('about')
   @ApiOperation({ summary: 'Get About Us information' })
-  @ApiResponse({ status: 200, description: 'About Us details retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'About Us details retrieved successfully',
+  })
   getAboutUs() {
     return this.settingsService.getAboutUs();
   }
@@ -68,7 +82,10 @@ export class SettingsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update About Us information (Admin/SuperAdmin)' })
-  @ApiResponse({ status: 200, description: 'About Us details updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'About Us details updated successfully',
+  })
   updateAboutUs(@Body() dto: UpdateAboutUsDto) {
     return this.settingsService.updateAboutUs(dto);
   }
@@ -77,7 +94,10 @@ export class SettingsController {
 
   @Get('company')
   @ApiOperation({ summary: 'Get Company Information' })
-  @ApiResponse({ status: 200, description: 'Company details retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Company details retrieved successfully',
+  })
   getCompanyInfo() {
     return this.settingsService.getCompanyInfo();
   }
@@ -87,7 +107,10 @@ export class SettingsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update Company Information (Admin/SuperAdmin)' })
-  @ApiResponse({ status: 200, description: 'Company details updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Company details updated successfully',
+  })
   updateCompanyInfo(@Body() dto: UpdateCompanyInfoDto) {
     return this.settingsService.updateCompanyInfo(dto);
   }
@@ -96,7 +119,10 @@ export class SettingsController {
 
   @Get('contact')
   @ApiOperation({ summary: 'Get Contact Information' })
-  @ApiResponse({ status: 200, description: 'Contact details retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contact details retrieved successfully',
+  })
   getContactInfo() {
     return this.settingsService.getContactInfo();
   }
@@ -106,7 +132,10 @@ export class SettingsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update Contact Information (Admin/SuperAdmin)' })
-  @ApiResponse({ status: 200, description: 'Contact details updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contact details updated successfully',
+  })
   updateContactInfo(@Body() dto: UpdateContactInfoDto) {
     return this.settingsService.updateContactInfo(dto);
   }
@@ -115,7 +144,10 @@ export class SettingsController {
 
   @Get('seo')
   @ApiOperation({ summary: 'Get SEO Settings' })
-  @ApiResponse({ status: 200, description: 'SEO settings retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'SEO settings retrieved successfully',
+  })
   getSeoSettings() {
     return this.settingsService.getSeoSettings();
   }
@@ -125,7 +157,10 @@ export class SettingsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update SEO Settings (Admin/SuperAdmin)' })
-  @ApiResponse({ status: 200, description: 'SEO settings updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'SEO settings updated successfully',
+  })
   updateSeoSettings(@Body() dto: UpdateSeoSettingsDto) {
     return this.settingsService.updateSeoSettings(dto);
   }
@@ -134,7 +169,10 @@ export class SettingsController {
 
   @Get('social-links')
   @ApiOperation({ summary: 'Get all social links' })
-  @ApiResponse({ status: 200, description: 'Social links list retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Social links list retrieved successfully',
+  })
   findAllSocialLinks() {
     return this.settingsService.findAllSocialLinks();
   }
@@ -163,7 +201,9 @@ export class SettingsController {
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Social link ID' })
-  @ApiOperation({ summary: 'Update an existing social link (Admin/SuperAdmin)' })
+  @ApiOperation({
+    summary: 'Update an existing social link (Admin/SuperAdmin)',
+  })
   @ApiResponse({ status: 200, description: 'Social link updated successfully' })
   @ApiResponse({ status: 404, description: 'Social link not found' })
   updateSocialLink(@Param('id') id: string, @Body() dto: UpdateSocialLinkDto) {

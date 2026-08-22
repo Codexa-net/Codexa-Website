@@ -3,9 +3,23 @@ import { SettingsService } from './settings.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
 
+interface MockPrisma {
+  websiteSettings: {
+    upsert: jest.Mock;
+    update: jest.Mock;
+  };
+  socialLink: {
+    findMany: jest.Mock;
+    findUnique: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+    delete: jest.Mock;
+  };
+}
+
 describe('SettingsService', () => {
   let service: SettingsService;
-  let prisma: any;
+  let prisma: MockPrisma;
 
   const mockSettings = {
     id: 'default',
@@ -46,7 +60,7 @@ describe('SettingsService', () => {
   };
 
   beforeEach(async () => {
-    const mockPrismaService = {
+    const mockPrismaService: MockPrisma = {
       websiteSettings: {
         upsert: jest.fn().mockResolvedValue(mockSettings),
         update: jest.fn().mockResolvedValue(mockSettings),
@@ -68,7 +82,7 @@ describe('SettingsService', () => {
     }).compile();
 
     service = module.get<SettingsService>(SettingsService);
-    prisma = module.get<PrismaService>(PrismaService);
+    prisma = module.get<PrismaService>(PrismaService) as unknown as MockPrisma;
   });
 
   it('should be defined', () => {

@@ -12,7 +12,12 @@ describe('DashboardController', () => {
   beforeEach(async () => {
     const mockDashboardService = {
       getStatistics: jest.fn().mockResolvedValue({
-        users: { total: 10, active: 8, inactive: 2, roles: { superAdmin: 1, admin: 2, editor: 7 } },
+        users: {
+          total: 10,
+          active: 8,
+          inactive: 2,
+          roles: { superAdmin: 1, admin: 2, editor: 7 },
+        },
         projects: { total: 5, featured: 2 },
         messages: { total: 3, unread: 1 },
       }),
@@ -41,6 +46,7 @@ describe('DashboardController', () => {
 
   it('should return statistics from dashboardService', async () => {
     const stats = await controller.getStatistics();
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(service.getStatistics).toHaveBeenCalled();
     expect(stats).toHaveProperty('users');
     expect(stats).toHaveProperty('projects');

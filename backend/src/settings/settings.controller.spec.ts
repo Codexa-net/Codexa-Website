@@ -30,10 +30,16 @@ describe('SettingsController', () => {
       updateAboutUs: jest.fn().mockResolvedValue({ aboutTitle: 'About Us' }),
       getCompanyInfo: jest.fn().mockResolvedValue({ companyName: 'Codexa' }),
       updateCompanyInfo: jest.fn().mockResolvedValue({ companyName: 'Codexa' }),
-      getContactInfo: jest.fn().mockResolvedValue({ contactEmail: 'contact@codexa.net' }),
-      updateContactInfo: jest.fn().mockResolvedValue({ contactEmail: 'contact@codexa.net' }),
+      getContactInfo: jest
+        .fn()
+        .mockResolvedValue({ contactEmail: 'contact@codexa.net' }),
+      updateContactInfo: jest
+        .fn()
+        .mockResolvedValue({ contactEmail: 'contact@codexa.net' }),
       getSeoSettings: jest.fn().mockResolvedValue({ metaTitle: 'SEO Title' }),
-      updateSeoSettings: jest.fn().mockResolvedValue({ metaTitle: 'SEO Title' }),
+      updateSeoSettings: jest
+        .fn()
+        .mockResolvedValue({ metaTitle: 'SEO Title' }),
       findAllSocialLinks: jest.fn().mockResolvedValue([mockSocialLink]),
       findSocialLinkById: jest.fn().mockResolvedValue(mockSocialLink),
       createSocialLink: jest.fn().mockResolvedValue(mockSocialLink),
@@ -60,6 +66,7 @@ describe('SettingsController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   it('should get website settings', async () => {
