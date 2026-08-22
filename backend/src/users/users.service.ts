@@ -127,16 +127,41 @@ export class UsersService {
       throw new ConflictException('User with this email already exists');
     }
 
-    if (
-      createUserDto.role === Role.SUPER_ADMIN &&
-      currentUser?.role !== Role.SUPER_ADMIN
-    ) {
+    const userRole = currentUser?.role;
+    const isSuperAdmin = userRole === Role.SUPER_ADMIN;
+    const isAdmin = userRole === Role.ADMIN;
+
+    // Regular users (non-ADMIN, non-SUPER_ADMIN) cannot assign roles, permissions, or isActive status
+    if (!isSuperAdmin && !isAdmin) {
+      if (createUserDto.role !== undefined) {
+        throw new ForbiddenException(
+          'Regular users cannot assign user roles',
+        );
+      }
+      if (
+        createUserDto.permissions !== undefined &&
+        createUserDto.permissions.length > 0
+      ) {
+        throw new ForbiddenException(
+          'Regular users cannot assign permissions',
+        );
+      }
+      if (createUserDto.isActive !== undefined) {
+        throw new ForbiddenException(
+          'Regular users cannot set account active status',
+        );
+      }
+    }
+
+    // ADMIN users cannot create a SUPER_ADMIN user
+    if (isAdmin && createUserDto.role === Role.SUPER_ADMIN) {
       throw new ForbiddenException(
         'Only SUPER_ADMIN can create a SUPER_ADMIN user',
       );
     }
 
-    if (createUserDto.permissions && currentUser?.role !== Role.SUPER_ADMIN) {
+    // ADMIN users cannot assign permissions they do not possess
+    if (isAdmin && createUserDto.permissions) {
       const userPerms = currentUser?.permissions || [];
       const hasExcessPermissions = createUserDto.permissions.some(
         (perm) => !userPerms.includes(perm),
@@ -184,32 +209,61 @@ export class UsersService {
   ) {
     const targetUser = await this.findOne(id);
 
-    if (
-      updateUserDto.role === Role.SUPER_ADMIN &&
-      currentUser?.role !== Role.SUPER_ADMIN
-    ) {
-      throw new ForbiddenException(
-        'Only SUPER_ADMIN can promote a user to SUPER_ADMIN',
-      );
-    }
+    const userRole = currentUser?.role;
+    const isSuperAdmin = userRole === Role.SUPER_ADMIN;
+    const isAdmin = userRole === Role.ADMIN;
 
-    if (
-      targetUser.role === Role.SUPER_ADMIN &&
-      currentUser?.role !== Role.SUPER_ADMIN
-    ) {
+    // Prevent modifying higher-privilege accounts
+    if (targetUser.role === Role.SUPER_ADMIN && !isSuperAdmin) {
       throw new ForbiddenException(
         'Only SUPER_ADMIN can modify a SUPER_ADMIN user account',
       );
     }
-
-    if (updateUserDto.permissions && currentUser?.role !== Role.SUPER_ADMIN) {
-      const userPerms = currentUser?.permissions || [];
-      const hasExcessPermissions = updateUserDto.permissions.some(
-        (perm) => !userPerms.includes(perm),
+    if (targetUser.role === Role.ADMIN && !isSuperAdmin && !isAdmin) {
+      throw new ForbiddenException(
+        'Cannot modify a user account with higher privileges',
       );
-      if (hasExcessPermissions) {
+    }
+
+    // Privilege escalation prevention for roles
+    if (updateUserDto.role !== undefined) {
+      if (!isSuperAdmin && !isAdmin) {
         throw new ForbiddenException(
-          'Cannot assign permissions higher than your own permissions',
+          'Regular users cannot modify user roles',
+        );
+      }
+      if (isAdmin && updateUserDto.role === Role.SUPER_ADMIN) {
+        throw new ForbiddenException(
+          'Only SUPER_ADMIN can promote a user to SUPER_ADMIN',
+        );
+      }
+    }
+
+    // Privilege escalation prevention for permissions
+    if (updateUserDto.permissions !== undefined) {
+      if (!isSuperAdmin && !isAdmin) {
+        throw new ForbiddenException(
+          'Regular users cannot modify user permissions',
+        );
+      }
+      if (isAdmin) {
+        const userPerms = currentUser?.permissions || [];
+        const hasExcessPermissions = updateUserDto.permissions.some(
+          (perm) => !userPerms.includes(perm),
+        );
+        if (hasExcessPermissions) {
+          throw new ForbiddenException(
+            'Cannot assign permissions higher than your own permissions',
+          );
+        }
+      }
+    }
+
+    // Privilege escalation prevention for active status
+    if (updateUserDto.isActive !== undefined) {
+      if (!isSuperAdmin && !isAdmin) {
+        throw new ForbiddenException(
+          'Regular users cannot modify account active status',
         );
       }
     }
@@ -252,14 +306,24 @@ export class UsersService {
    */
   async remove(id: string, currentUser?: CurrentUserContext) {
     const targetUser = await this.findOne(id);
-    if (
-      targetUser.role === Role.SUPER_ADMIN &&
-      currentUser?.role !== Role.SUPER_ADMIN
-    ) {
-      throw new ForbiddenException('Only SUPER_ADMIN can delete a SUPER_ADMIN');
+    const userRole = currentUser?.role;
+    const isSuperAdmin = userRole === Role.SUPER_ADMIN;
+    const isAdmin = userRole === Role.ADMIN;
+
+    if (targetUser.role === Role.SUPER_ADMIN && !isSuperAdmin) {
+      throw new ForbiddenException(
+        'Only SUPER_ADMIN can delete a SUPER_ADMIN user',
+      );
+    }
+
+    if (targetUser.role === Role.ADMIN && !isSuperAdmin && !isAdmin) {
+      throw new ForbiddenException(
+        'Cannot delete a user account with higher privileges',
+      );
     }
 
     await this.prisma.user.delete({ where: { id } });
     return { message: 'User deleted successfully' };
   }
+
 }
