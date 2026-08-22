@@ -54,3 +54,53 @@ model ContactMessage {
 
   @@map("contact_messages")
 }
+
+model WebsiteSettings {
+  id               String   @id @default("default")
+  // Company Information
+  companyName      String   @default("Codexa")
+  slogan           String?
+  description      String?
+  logoUrl          String?
+  faviconUrl       String?
+
+  // About Us
+  aboutTitle       String?
+  aboutDescription String?
+  mission          String?
+  vision           String?
+  values           String[] @default([])
+
+  // Contact Information
+  contactEmail     String?
+  contactPhone     String?
+  contactAddress   String?
+  workingHours     String?
+  mapLocationUrl   String?
+
+  // SEO Settings
+  metaTitle        String?
+  metaDescription  String?
+  metaKeywords     String[] @default([])
+  ogImageUrl       String?
+  twitterHandle    String?
+  canonicalUrl     String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("website_settings")
+}
+
+model SocialLink {
+  id           String   @id @default(uuid())
+  platform     String
+  url          String
+  icon         String?
+  isEnabled    Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("social_links")
+}
