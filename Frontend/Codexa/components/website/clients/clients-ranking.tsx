@@ -10,7 +10,6 @@ import { type Dictionary } from '@/lib/i18n/dictionaries'
 import { type Client, type ClientCategory } from '@/types/client'
 import { Container } from '@/components/shared/container'
 import { Section } from '@/components/shared/section'
-import { FadeIn } from '@/components/shared/motion/fade-in'
 
 interface ClientsRankingProps {
   clients: Client[]
@@ -43,10 +42,8 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
       className="relative overflow-hidden bg-[#07070a] py-16 text-white sm:py-20 md:py-28 lg:py-32"
     >
       <Container wide className="relative">
-        {/* Top Header Area */}
-        <div dir={isArabic ? 'rtl' : 'ltr'} className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
-          {/* Client Count (Left in RTL, Start in LTR) */}
-          <div className="order-2 lg:order-2">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="order-2">
             <div className="flex flex-col items-start">
               <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
                 {ranking.clientCountLabel}
@@ -57,15 +54,13 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
             </div>
           </div>
 
-          {/* Section Title & Filter Pills (Right in RTL, End in LTR) */}
-          <div className="order-1 lg:order-1">
-            <div className="flex flex-col ">
+          <div>
+            <div className="flex flex-col">
               <h2 className="font-arabic text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl leading-tight">
                 <span className="block">{ranking.titleLine1}</span>
                 <span className="block text-white">{ranking.titleLine2}</span>
               </h2>
 
-              {/* Filter Pills */}
               <div className="mt-8 flex flex-wrap items-center gap-2">
                 {categories.map((cat) => {
                   const isActive = selectedCategory === cat.key
@@ -89,7 +84,6 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
           </div>
         </div>
 
-        {/* Clients Ranking List */}
         <div className="mt-14 sm:mt-16 lg:mt-20">
           <div className="divide-y divide-white/[0.06] border-t border-b border-white/[0.08]">
             <AnimatePresence mode="popLayout">
@@ -113,7 +107,6 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                       'hover:bg-white/[0.03]',
                     )}
                   >
-                    {/* Start Column (RTL Right): Number + Client Name */}
                     <div className="flex items-center gap-4 sm:gap-8 lg:min-w-[280px]">
                       <span className="font-mono text-xs font-semibold text-neutral-400 sm:text-sm">
                         {formattedNumber}
@@ -123,17 +116,14 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                       </span>
                     </div>
 
-                    {/* Middle Column: Sector (Industry) */}
                     <div className="flex items-center text-xs font-medium text-neutral-400 sm:text-sm lg:min-w-[160px] lg:justify-center">
                       {client.sector?.[locale]}
                     </div>
 
-                    {/* Middle-End Column: Year */}
                     <div className="font-mono text-xs font-medium text-neutral-400 sm:text-sm lg:min-w-[80px] lg:text-center">
                       {client.year}
                     </div>
 
-                    {/* End Column (RTL Left): Status Badge + Action Button */}
                     <div className="flex items-center justify-between gap-4 lg:min-w-[200px] lg:justify-end">
                       <span
                         className={cn(
@@ -150,14 +140,12 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                         <a
                           href={client.website}
                           target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${ranking.viewClient}: ${client.name}`}
                           className={cn(
                             'flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-400 transition-all duration-300 sm:size-9',
                             'group-hover:border-[#4b3fdf] group-hover:bg-[#4b3fdf] group-hover:text-white group-hover:scale-105',
                           )}
                         >
-                          <ArrowUpRight className={cn('size-3.5 sm:size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5', !isArabic && 'rotate-0')} />
+                          <ArrowUpRight className={cn('size-3.5 sm:size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5')} />
                         </a>
                       ) : (
                         <div
