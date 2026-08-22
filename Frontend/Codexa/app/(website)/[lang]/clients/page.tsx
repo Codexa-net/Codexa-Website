@@ -3,6 +3,9 @@ import type { Metadata } from 'next'
 
 import { isValidLocale, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { getMockClients } from '@/data/clients'
+import { ClientsHero } from '@/components/website/clients/clients-hero'
+import { ClientsRanking } from '@/components/website/clients/clients-ranking'
 
 export async function generateMetadata(
   props: PageProps<'/[lang]/clients'>,
@@ -19,13 +22,6 @@ export async function generateMetadata(
   }
 }
 
-/**
- * Clients page placeholder.
- * Developer 4 will implement this page using:
- * - getMockClients() from data/clients.ts
- * - ClientsGrid component
- * - Section + Container from shared components
- */
 export default async function ClientsPage(props: PageProps<'/[lang]/clients'>) {
   const { lang } = await props.params
 
@@ -33,18 +29,13 @@ export default async function ClientsPage(props: PageProps<'/[lang]/clients'>) {
 
   const locale = lang as Locale
   const dict = await getDictionary(locale)
+  const clients = getMockClients()
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-      <h1 className="text-4xl font-bold text-foreground">
-        {dict.clients.title}
-      </h1>
-      <p className="mt-4 max-w-lg text-muted-foreground">
-        {dict.clients.description}
-      </p>
-      <p className="mt-8 rounded-md bg-muted px-4 py-2 text-sm text-muted-foreground">
-        🚧 Developer 4 — Clients page
-      </p>
-    </div>
+    <>
+      <ClientsHero locale={locale} dict={dict} />
+      <ClientsRanking clients={clients} locale={locale} dict={dict} />
+    </>
   )
 }
+
