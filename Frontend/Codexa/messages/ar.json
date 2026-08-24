@@ -237,7 +237,74 @@
   },
   "clients": {
     "title": "عملاؤنا",
-    "description": "نفخر بشراكتنا مع شركات ومؤسسات رائدة في مختلف القطاعات"
+    "description": "نفخر بشراكتنا مع شركات ومؤسسات رائدة في مختلف القطاعات",
+    "hero": {
+      "titleLine1": "كل اسم هنا مشروع",
+      "titleLine2": "اشتغلنا فيه بالتفصيل،",
+      "titleHighlight1": "مش لوجو ح ضيفه",
+      "titleHighlight2": "للسلايدر.",
+      "description": "مؤسسون أصحاب علامات ورواد أعمال خلف كل اسم في هذه الصفحة مشروع حقيقي بنيناه سويًا وخلف كل مشروع علاقة استمرت لأكثر من مشروع واحد",
+      "cta": "شوف الفهرس كامل",
+      "returningRateLabel": "نسبة العملاء العائدين",
+      "returningRateValue": "٦٥٪",
+      "liveLogTitle": "LIVE LOG",
+      "liveLogActive": "شغال دلوقتي",
+      "liveLogRows": [
+  {
+    "name": "Tyres Pro",
+    "sector": "قطع غيار وإطارات",
+    "status": "completed"
+  },
+  {
+    "name": "Burnout Gym",
+    "sector": "لياقة بدنية",
+    "status": "active"
+  },
+  {
+    "name": "Meat Craft",
+    "sector": "مطاعم",
+    "status": "completed"
+  },
+  {
+    "name": "Meat Craft",
+    "sector": "مطاعم",
+    "status": "completed"
+  },
+  {
+    "name": "Meat Craft",
+    "sector": "مطاعم",
+    "status": "completed"
+  },
+  {
+    "name": "Leya Jewellery",
+    "sector": "مجوهرات",
+    "status": "completed"
+  },
+  {
+    "name": "Leya Jewellery",
+    "sector": "مجوهرات",
+    "status": "completed"
+  }
+],
+      "scrollPrompt": "اسحب للأسفل لاستكشاف المشاريع"
+    },
+    "ranking": {
+      "titleLine1": "الفهرس الكامل،",
+      "titleLine2": "مرتب حسب المجال",
+      "clientCountLabel": "عدد العملاء",
+      "categories": {
+        "all": "الكل",
+        "tech": "تقنية ورقمنة",
+        "fitness": "لياقة وصحة",
+        "retail": "تجارة وتجزئة",
+        "branding": "علامات وهوية"
+      },
+      "statuses": {
+        "active": "شريك نشط",
+        "completed": "مكتمل"
+      },
+      "viewClient": "عرض العميل"
+    }
   },
   "contact": {
     "eyebrow": "احكيلنا عن فكرتك بطريقتك",

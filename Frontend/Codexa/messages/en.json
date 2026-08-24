@@ -237,7 +237,74 @@
   },
   "clients": {
     "title": "Our Clients",
-    "description": "We are proud to partner with leading companies and institutions across various sectors"
+    "description": "We are proud to partner with leading companies and institutions across various sectors",
+    "hero": {
+      "titleLine1": "Every name here is a project",
+      "titleLine2": "we crafted in detail,",
+      "titleHighlight1": "not just a logo added",
+      "titleHighlight2": "to a slider.",
+      "description": "Founders, brand owners, and entrepreneurs — behind every name on this page is a real project we built together, and behind every project is a relationship that grew beyond a single engagement.",
+      "cta": "View Full Index",
+      "returningRateLabel": "Returning Clients Rate",
+      "returningRateValue": "65%",
+      "liveLogTitle": "LIVE LOG",
+"liveLogActive": "LIVE NOW",
+"liveLogRows": [
+  {
+    "name": "Tyres Pro",
+    "sector": "Auto Parts & Tyres",
+    "status": "completed"
+  },
+  {
+    "name": "Burnout Gym",
+    "sector": "Fitness & Gym",
+    "status": "active"
+  },
+  {
+    "name": "Meat Craft",
+    "sector": "Restaurants",
+    "status": "completed"
+  },
+  {
+    "name": "Meat Craft",
+    "sector": "Restaurants",
+    "status": "completed"
+  },
+  {
+    "name": "Meat Craft",
+    "sector": "Restaurants",
+    "status": "completed"
+  },
+  {
+    "name": "Leya Jewellery",
+    "sector": "Jewellery",
+    "status": "completed"
+  },
+  {
+    "name": "Leya Jewellery",
+    "sector": "Jewellery",
+    "status": "completed"
+  }
+],
+      "scrollPrompt": "Scroll down to explore projects"
+    },
+    "ranking": {
+      "titleLine1": "The Full Index,",
+      "titleLine2": "Organized by Sector",
+      "clientCountLabel": "Total Clients",
+      "categories": {
+        "all": "All",
+        "tech": "Tech & Digital",
+        "fitness": "Health & Fitness",
+        "retail": "Retail & Commerce",
+        "branding": "Branding & Identity"
+      },
+      "statuses": {
+        "active": "Active Partner",
+        "completed": "Completed"
+      },
+      "viewClient": "View Client"
+    }
   },
   "contact": {
     "eyebrow": "Tell us about your idea",

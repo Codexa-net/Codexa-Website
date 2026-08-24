@@ -3,51 +3,164 @@ import type { Client } from '@/types/client'
 const mockClients: Client[] = [
   {
     id: '1',
-    name: 'Demo Client 01',
+    name: 'ta7wila',
     logo: '',
-    description: {
-      ar: 'بيانات عرض توضيحية فقط ولا تمثل عميلا حقيقيا لكودكسا.',
-      en: 'Demo placeholder data only. This does not represent a real Codexa client.',
-    },
     sector: {
-      ar: 'قطاع تجريبي',
-      en: 'Demo Sector',
+      ar: 'فينتك',
+      en: 'Fintech',
     },
+    year: '2025',
+    status: 'active',
+    category: 'tech',
     order: 1,
   },
   {
     id: '2',
-    name: 'Demo Client 02',
+    name: 'Draya',
     logo: '',
-    description: {
-      ar: 'بيانات عرض توضيحية فقط ولا تشير إلى علاقة عمل فعلية.',
-      en: 'Demo placeholder data only. It does not imply an actual working relationship.',
-    },
     sector: {
-      ar: 'قطاع تجريبي',
-      en: 'Demo Sector',
+      ar: 'تعليم',
+      en: 'Education',
     },
+    year: '2025',
+    status: 'active',
+    category: 'tech',
     order: 2,
   },
   {
     id: '3',
-    name: 'Demo Client 03',
+    name: 'Tyres Pro',
     logo: '',
-    description: {
-      ar: 'عنصر تجريبي لاستخدامه أثناء بناء الواجهة.',
-      en: 'A demo item used while the interface is being built.',
-    },
     sector: {
-      ar: 'قطاع تجريبي',
-      en: 'Demo Sector',
+      ar: 'قطع غيار وإطارات',
+      en: 'Auto Parts & Tyres',
     },
+    year: '2024',
+    status: 'completed',
+    category: 'retail',
     order: 3,
+  },
+  {
+    id: '4',
+    name: 'Burnout Gym',
+    logo: '',
+    sector: {
+      ar: 'لياقة بدنية',
+      en: 'Fitness',
+    },
+    year: '2024',
+    status: 'active',
+    category: 'fitness',
+    order: 4,
+  },
+  {
+    id: '5',
+    name: 'Meat Craft',
+    logo: '',
+    sector: {
+      ar: 'مطاعم',
+      en: 'Restaurants',
+    },
+    year: '2024',
+    status: 'completed',
+    category: 'retail',
+    order: 5,
+  },
+  {
+    id: '6',
+    name: 'Leya Jewellery',
+    logo: '',
+    sector: {
+      ar: 'مجوهرات',
+      en: 'Jewellery',
+    },
+    year: '2023',
+    status: 'completed',
+    category: 'branding',
+    order: 6,
+  },
+  {
+    id: '7',
+    name: 'Voodoo',
+    logo: '',
+    sector: {
+      ar: 'علامة تجارية',
+      en: 'Brand Identity',
+    },
+    year: '2023',
+    status: 'completed',
+    category: 'branding',
+    order: 7,
+  },
+  {
+    id: '8',
+    name: 'Wave',
+    logo: '',
+    sector: {
+      ar: 'خدمات رقمية',
+      en: 'Digital Services',
+    },
+    year: '2023',
+    status: 'active',
+    category: 'tech',
+    order: 8,
+  },
+  {
+    id: '9',
+    name: 'CarPark',
+    logo: '',
+    sector: {
+      ar: 'مواقف ومواصلات',
+      en: 'Parking & Mobility',
+    },
+    year: '2022',
+    status: 'completed',
+    category: 'tech',
+    order: 9,
+  },
+  {
+    id: '10',
+    name: 'NOOR',
+    logo: '',
+    sector: {
+      ar: 'عناية بالبشرة',
+      en: 'Skincare',
+    },
+    year: '2026',
+    status: 'active',
+    category: 'fitness',
+    order: 10,
+  },
+  {
+    id: '11',
+    name: 'ZERO',
+    logo: '',
+    sector: {
+      ar: 'تطبيقات موبايل',
+      en: 'Mobile Applications',
+    },
+    year: '2025',
+    status: 'completed',
+    category: 'tech',
+    order: 11,
+  },
+  {
+    id: '12',
+    name: 'STRATUM',
+    logo: '',
+    sector: {
+      ar: 'تجارة إلكترونية',
+      en: 'E-Commerce',
+    },
+    year: '2025',
+    status: 'completed',
+    category: 'retail',
+    order: 12,
   },
 ]
 
 /**
  * Returns demo clients sorted by order.
- * Replace with a verified client data source only when real approvals exist.
  */
 export function getMockClients(): Client[] {
   return [...mockClients].sort((a, b) => a.order - b.order)
@@ -59,3 +172,4 @@ export function getMockClients(): Client[] {
 export function getClientById(id: string): Client | undefined {
   return mockClients.find((c) => c.id === id)
 }
+
