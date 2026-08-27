@@ -61,3 +61,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /src/generated/
 # generated API spec - regenerate, do not commit
 openapi.json
+
+# uploaded images - not source (anchored, so src/uploads/ is still tracked)
+/uploads/

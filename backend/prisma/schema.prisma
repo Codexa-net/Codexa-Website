@@ -140,3 +140,43 @@ model SocialLink {
   @@index([isEnabled, displayOrder])
   @@map("social_links")
 }
+
+
+model ServiceCategory {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @unique @db.VarChar(120)
+  slug         String    @unique @db.VarChar(140)
+  description  String?   @db.Text
+  iconUrl      String?   @db.VarChar(500)
+  displayOrder Int       @default(0)
+  services     Service[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("service_categories")
+}
+
+model Service {
+  id               String          @id @default(uuid()) @db.Uuid
+  title            String          @db.VarChar(200)
+  slug             String          @unique @db.VarChar(220)
+  shortDescription String          @db.VarChar(300)
+  description      String          @db.Text
+  iconUrl          String?         @db.VarChar(500)
+  imageUrl         String?         @db.VarChar(500)
+  features         String[]        @default([])
+  price            String?         @db.VarChar(100)
+  isFeatured       Boolean         @default(false)
+  isActive         Boolean         @default(true)
+  displayOrder     Int             @default(0)
+  categoryId       String          @db.Uuid
+  category         ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([isActive])
+  @@index([displayOrder])
+  @@map("services")
+}

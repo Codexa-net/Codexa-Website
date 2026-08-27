@@ -8,6 +8,8 @@ import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AuthModule } from './auth/auth.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { SettingsModule } from './settings/settings.module';
+import { ServicesModule } from './services/services.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { SettingsModule } from './settings/settings.module';
     AuthModule,
     PortfolioModule,
     SettingsModule,
+    ServicesModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
