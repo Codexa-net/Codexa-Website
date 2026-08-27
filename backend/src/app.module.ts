@@ -6,6 +6,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ContactModule } from './contact/contact.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AuthModule } from './auth/auth.module';
+import { PortfolioModule } from './portfolio/portfolio.module';
+import { SettingsModule } from './settings/settings.module';
+import { ServicesModule } from './services/services.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -17,6 +21,10 @@ import { AuthModule } from './auth/auth.module';
     ContactModule,
     AdminUsersModule,
     AuthModule,
+    PortfolioModule,
+    SettingsModule,
+    ServicesModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
