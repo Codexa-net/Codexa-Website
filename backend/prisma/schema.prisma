@@ -88,3 +88,55 @@ model Project {
   @@index([createdAt])
   @@map("portfolio_projects")
 }
+
+model WebsiteSettings {
+  id String @id @default("default") @db.VarChar(50)
+
+  // Company information
+  companyName String  @default("Codexa") @db.VarChar(200)
+  slogan      String? @db.VarChar(300)
+  description String? @db.Text
+  logoUrl     String? @db.VarChar(500)
+  faviconUrl  String? @db.VarChar(500)
+
+  // About us
+  aboutTitle       String?  @db.VarChar(200)
+  aboutDescription String?  @db.Text
+  mission          String?  @db.Text
+  vision           String?  @db.Text
+  values           String[] @default([])
+
+  // Contact information
+  contactEmail   String? @db.VarChar(255)
+  contactPhone   String? @db.VarChar(30)
+  contactAddress String? @db.VarChar(500)
+  workingHours   String? @db.VarChar(200)
+  mapLocationUrl String? @db.VarChar(500)
+
+  // SEO settings
+  metaTitle       String?  @db.VarChar(200)
+  metaDescription String?  @db.VarChar(500)
+  metaKeywords    String[] @default([])
+  ogImageUrl      String?  @db.VarChar(500)
+  twitterHandle   String?  @db.VarChar(50)
+  canonicalUrl    String?  @db.VarChar(500)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("website_settings")
+}
+
+model SocialLink {
+  id           String   @id @default(uuid()) @db.Uuid
+  platform     String   @db.VarChar(50)
+  url          String   @db.VarChar(500)
+  icon         String?  @db.VarChar(100)
+  isEnabled    Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isEnabled, displayOrder])
+  @@map("social_links")
+}

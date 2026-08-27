@@ -7,6 +7,7 @@ import { ContactModule } from './contact/contact.module';
 import { AdminUsersModule } from './admin-users/admin-users.module';
 import { AuthModule } from './auth/auth.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PortfolioModule } from './portfolio/portfolio.module';
     AdminUsersModule,
     AuthModule,
     PortfolioModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
