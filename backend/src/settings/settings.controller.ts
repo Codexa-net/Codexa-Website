@@ -46,7 +46,7 @@ export class SettingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Update full aggregated website settings (Admin/SuperAdmin)',
+    summary: 'Update full aggregated website settings',
   })
   @ApiResponse({
     status: 200,
@@ -76,7 +76,7 @@ export class SettingsController {
   @Patch('about')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update About Us information (Admin/SuperAdmin)' })
+  @ApiOperation({ summary: 'Update About Us information' })
   @ApiResponse({
     status: 200,
     description: 'About Us details updated successfully',
@@ -100,7 +100,7 @@ export class SettingsController {
   @Patch('company')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update Company Information (Admin/SuperAdmin)' })
+  @ApiOperation({ summary: 'Update Company Information' })
   @ApiResponse({
     status: 200,
     description: 'Company details updated successfully',
@@ -124,7 +124,7 @@ export class SettingsController {
   @Patch('contact')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update Contact Information (Admin/SuperAdmin)' })
+  @ApiOperation({ summary: 'Update Contact Information' })
   @ApiResponse({
     status: 200,
     description: 'Contact details updated successfully',
@@ -148,7 +148,7 @@ export class SettingsController {
   @Patch('seo')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update SEO Settings (Admin/SuperAdmin)' })
+  @ApiOperation({ summary: 'Update SEO Settings' })
   @ApiResponse({
     status: 200,
     description: 'SEO settings updated successfully',
@@ -181,7 +181,7 @@ export class SettingsController {
   @Post('social-links')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new social link (Admin/SuperAdmin)' })
+  @ApiOperation({ summary: 'Create a new social link' })
   @ApiResponse({ status: 201, description: 'Social link created successfully' })
   createSocialLink(@Body() dto: CreateSocialLinkDto) {
     return this.settingsService.createSocialLink(dto);
@@ -192,7 +192,7 @@ export class SettingsController {
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Social link ID' })
   @ApiOperation({
-    summary: 'Update an existing social link (Admin/SuperAdmin)',
+    summary: 'Update an existing social link',
   })
   @ApiResponse({ status: 200, description: 'Social link updated successfully' })
   @ApiResponse({ status: 404, description: 'Social link not found' })
@@ -204,7 +204,7 @@ export class SettingsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Social link ID' })
-  @ApiOperation({ summary: 'Delete a social link (Admin/SuperAdmin)' })
+  @ApiOperation({ summary: 'Delete a social link' })
   @ApiResponse({ status: 200, description: 'Social link deleted successfully' })
   @ApiResponse({ status: 404, description: 'Social link not found' })
   deleteSocialLink(@Param('id') id: string) {
