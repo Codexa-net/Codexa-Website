@@ -79,11 +79,14 @@ model Project {
   isFeatured   Boolean      @default(false)
   categoryId   String       @db.Uuid
   category     Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  clientId     String?      @db.Uuid
+  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
   technologies Technology[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
   @@index([categoryId])
+  @@index([clientId])
   @@index([isFeatured])
   @@index([createdAt])
   @@map("portfolio_projects")
@@ -179,4 +182,55 @@ model Service {
   @@index([isActive])
   @@index([displayOrder])
   @@map("services")
+}
+
+
+enum ClientStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum ClientCategory {
+  TECH
+  FITNESS
+  RETAIL
+  BRANDING
+}
+
+model Client {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(150)
+  slug String @unique @db.VarChar(170)
+
+  logoUrl    String? @db.VarChar(500)
+  coverUrl   String? @db.VarChar(500)
+  websiteUrl String? @db.VarChar(500)
+
+  // Bilingual copy. Stored as two columns each and serialised back into the
+  // { ar, en } shape the frontend's LocalizedText type already expects.
+  sectorEn      String? @db.VarChar(150)
+  sectorAr      String? @db.VarChar(150)
+  descriptionEn String? @db.Text
+  descriptionAr String? @db.Text
+
+  // Client details page: the quote block.
+  testimonialEn     String? @db.Text
+  testimonialAr     String? @db.Text
+  testimonialAuthor String? @db.VarChar(150)
+  testimonialRole   String? @db.VarChar(150)
+
+  year         String?        @db.VarChar(10)
+  status       ClientStatus   @default(ACTIVE)
+  category     ClientCategory @default(TECH)
+  displayOrder Int            @default(0)
+  isPublished  Boolean        @default(true)
+
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([isPublished, displayOrder])
+  @@index([category])
+  @@index([status])
+  @@map("clients")
 }

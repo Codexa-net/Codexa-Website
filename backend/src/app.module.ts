@@ -10,6 +10,7 @@ import { PortfolioModule } from './portfolio/portfolio.module';
 import { SettingsModule } from './settings/settings.module';
 import { ServicesModule } from './services/services.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UploadsModule } from './uploads/uploads.module';
     SettingsModule,
     ServicesModule,
     UploadsModule,
+    ClientsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
