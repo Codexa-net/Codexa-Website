@@ -1,7 +1,9 @@
 import type { Client } from '@/types/client'
+import { getClientDetail } from './client-details'
 
 const mockClients: Client[] = [
   {
+    slug: 'ta7wila',
     id: '1',
     name: 'ta7wila',
     logo: '',
@@ -15,6 +17,7 @@ const mockClients: Client[] = [
     order: 1,
   },
   {
+    slug: 'draya',
     id: '2',
     name: 'Draya',
     logo: '',
@@ -28,6 +31,7 @@ const mockClients: Client[] = [
     order: 2,
   },
   {
+    slug: 'tyres-pro',
     id: '3',
     name: 'Tyres Pro',
     logo: '',
@@ -41,6 +45,7 @@ const mockClients: Client[] = [
     order: 3,
   },
   {
+    slug: 'burnout-gym',
     id: '4',
     name: 'Burnout Gym',
     logo: '',
@@ -54,6 +59,7 @@ const mockClients: Client[] = [
     order: 4,
   },
   {
+    slug: 'meat-craft',
     id: '5',
     name: 'Meat Craft',
     logo: '',
@@ -67,6 +73,7 @@ const mockClients: Client[] = [
     order: 5,
   },
   {
+    slug: 'leya-jewellery',
     id: '6',
     name: 'Leya Jewellery',
     logo: '',
@@ -80,6 +87,7 @@ const mockClients: Client[] = [
     order: 6,
   },
   {
+    slug: 'voodoo',
     id: '7',
     name: 'Voodoo',
     logo: '',
@@ -93,6 +101,7 @@ const mockClients: Client[] = [
     order: 7,
   },
   {
+    slug: 'wave',
     id: '8',
     name: 'Wave',
     logo: '',
@@ -106,6 +115,7 @@ const mockClients: Client[] = [
     order: 8,
   },
   {
+    slug: 'carpark',
     id: '9',
     name: 'CarPark',
     logo: '',
@@ -119,6 +129,7 @@ const mockClients: Client[] = [
     order: 9,
   },
   {
+    slug: 'noor',
     id: '10',
     name: 'NOOR',
     logo: '',
@@ -132,6 +143,7 @@ const mockClients: Client[] = [
     order: 10,
   },
   {
+    slug: 'zero',
     id: '11',
     name: 'ZERO',
     logo: '',
@@ -145,6 +157,7 @@ const mockClients: Client[] = [
     order: 11,
   },
   {
+    slug: 'stratum',
     id: '12',
     name: 'STRATUM',
     logo: '',
@@ -171,5 +184,24 @@ export function getMockClients(): Client[] {
  */
 export function getClientById(id: string): Client | undefined {
   return mockClients.find((c) => c.id === id)
+}
+
+/**
+ * Returns a demo client by slug, merged with the extra copy the details page
+ * needs. Mirrors GET /clients/:idOrSlug on the API.
+ */
+export function getClientBySlug(slug: string): Client | undefined {
+  const client = mockClients.find((c) => c.slug === slug)
+
+  if (!client) return undefined
+
+  return { ...client, ...getClientDetail(slug) }
+}
+
+/**
+ * Every slug in the index, for generateStaticParams.
+ */
+export function getClientSlugs(): string[] {
+  return mockClients.map((c) => c.slug)
 }
 

@@ -5,6 +5,8 @@ export type ClientCategory = 'all' | 'tech' | 'fitness' | 'retail' | 'branding'
 
 export interface Client {
   id: string
+  /** URL segment for the client details page, e.g. 'ta7wila' */
+  slug: string
   name: string
   /** Path to the client logo image */
   logo: string
@@ -22,5 +24,13 @@ export interface Client {
   status?: ClientStatus
   /** Filter category */
   category?: ClientCategory
+  /** Wide image for the top of the details page */
+  coverUrl?: string
+  /** Quote shown on the details page */
+  testimonial?: LocalizedText
+  /** Who said the testimonial */
+  testimonialAuthor?: string
+  /** Their role at the client */
+  testimonialRole?: string
 }
 

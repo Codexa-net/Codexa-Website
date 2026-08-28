@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -107,7 +108,15 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                       'hover:bg-white/[0.03]',
                     )}
                   >
-                    <div className="flex items-center gap-4 sm:gap-8 lg:min-w-[280px]">
+                    {/* Covers the row so the whole thing opens the client, while
+                        the website button above it keeps its own link. */}
+                    <Link
+                      href={`/${locale}/clients/${client.slug}`}
+                      aria-label={`${ranking.viewClient} ${client.name}`}
+                      className="absolute inset-0 z-0 rounded-sm focus-visible:ring-2 focus-visible:ring-[#4b3fdf] focus-visible:outline-none"
+                    />
+
+                    <div className="relative z-10 flex items-center gap-4 sm:gap-8 lg:min-w-[280px] pointer-events-none">
                       <span className="font-mono text-xs font-semibold text-neutral-400 sm:text-sm">
                         {formattedNumber}
                       </span>
@@ -124,7 +133,7 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                       {client.year}
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 lg:min-w-[200px] lg:justify-end">
+                    <div className="relative z-10 flex items-center justify-between gap-4 lg:min-w-[200px] lg:justify-end pointer-events-none">
                       <span
                         className={cn(
                           'rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
@@ -140,7 +149,9 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                         <a
                           href={client.website}
                           target="_blank"
+                          rel="noreferrer noopener"
                           className={cn(
+                            'pointer-events-auto',
                             'flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-400 transition-all duration-300 sm:size-9',
                             'group-hover:border-[#4b3fdf] group-hover:bg-[#4b3fdf] group-hover:text-white group-hover:scale-105',
                           )}
