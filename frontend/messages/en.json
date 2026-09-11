@@ -1,0 +1,331 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "ourWork": "Our Work",
+    "projects": "Projects",
+    "clients": "Clients",
+    "services": "Services",
+    "contactUs": "Contact Us",
+    "startProject": "Start Your Project",
+    "menu": "Menu"
+  },
+  "home": {
+    "hero": {
+      "title": "We Build Brands People Remember",
+      "description": "We design and develop digital experiences that blend beauty and function — from visual identity to full digital products",
+      "cta": "Start Your Journey"
+    },
+    "services": {
+      "eyebrow": "How We Work",
+      "title": "Not Just a List of Services — A Journey We Build With You",
+      "description": "From the first design idea to deploying the system that runs your business, each service completes the one before it.",
+      "learnMore": "Learn more about this service",
+      "items": [
+        {
+          "title": "Web Development",
+          "summary": "Fast, responsive websites with modern design",
+          "description": "We build fast, responsive websites and web apps with modern design tailored to your brand and business goals.",
+          "tags": []
+        },
+        {
+          "title": "Mobile Apps",
+          "summary": "iOS and Android with smooth UX",
+          "description": "We develop iOS and Android apps with smooth user experience and high performance that keeps customers loyal.",
+          "tags": []
+        },
+        {
+          "title": "Visual Identity",
+          "summary": "Logos and complete brand systems",
+          "description": "We design logos and complete visual identity systems that reflect your brand personality and build market presence.",
+          "tags": []
+        }
+      ]
+    },
+    "projects": {
+      "viewProject": "View Project"
+    },
+    "whyChooseUs": {
+      "title": "Why Codexa",
+      "intro": {
+        "line1": "We don't just design websites...",
+        "line2": "We build the way you earn your customer's trust."
+      },
+      "items": [
+        {
+          "eyebrow": "Step One",
+          "shortLabel": "Understanding",
+          "title": "Before the Form, Comes Understanding.",
+          "description": "We start with a deep understanding of your business, audience, and goals before drawing a single design line."
+        },
+        {
+          "eyebrow": "Step Two",
+          "shortLabel": "Logic",
+          "title": "Every Design Decision Has a Reason.",
+          "description": "Every color, element, and interaction is carefully considered to serve a clear goal and deliver results."
+        },
+        {
+          "eyebrow": "Step Three",
+          "shortLabel": "The Idea",
+          "title": "Here the Idea Takes Shape.",
+          "description": "We turn vision into interactive designs ready for testing and iteration before development."
+        },
+        {
+          "eyebrow": "Step Four",
+          "shortLabel": "Execution",
+          "title": "From Screen to Something That Actually Works.",
+          "description": "We build a polished digital product with clean code and high performance, ready for launch."
+        },
+        {
+          "eyebrow": "Step Five",
+          "shortLabel": "Launch",
+          "title": "Launch Is the Beginning, Not the End.",
+          "description": "We support you after launch to ensure your product achieves its goals and keeps growing."
+        }
+      ]
+    },
+    "contactCta": {
+      "eyebrow": "Let's Work Together",
+      "title": "Got a Project Idea? Make It an Exceptional Digital Experience.",
+      "cta": "Start Your Project Now",
+      "whatsapp": "WhatsApp"
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "DIGITAL SOLUTIONS",
+      "titleFirst": "Start",
+      "titleAccent": "your digital",
+      "titleLast": "journey with us",
+      "description": "A specialized company in developing innovative software solutions and applications. We combine technical creativity with exceptional design to deliver world-class digital products.",
+      "button": "Contact us"
+    },
+    "goal": {
+      "title": "Our goal is simple and clear",
+      "description": "Our goal isn't just to finish a project. We build something with you that can grow and succeed for the long term.",
+      "missionTitle": "Our Mission",
+      "mission": "Deliver innovative and reliable software solutions that help businesses grow and evolve in the digital age. We are committed to quality and exceptional service in every project.",
+      "visionTitle": "Our Vision",
+      "vision": "To become the preferred software and digital solutions company in the Middle East, known for innovation, creativity and exceptional results."
+    },
+    "services": {
+      "titleFirst": "Our",
+      "titleAccent": "Services",
+      "description": "We provide a comprehensive range of specialized services covering all modern digital project needs. From development to continuous support, we are here to bring your vision to life.",
+      "items": [
+        {
+          "number": "01",
+          "title": "Web Development",
+          "description": "Professional, fast and secure websites using the latest technologies and global standards, designed for high conversion and performance.",
+          "icon": "globe"
+        },
+        {
+          "number": "02",
+          "title": "App Development",
+          "description": "Professional Android and iOS applications built with high performance standards and an exceptional user experience.",
+          "icon": "smartphone"
+        },
+        {
+          "number": "03",
+          "title": "UX/UI Design",
+          "description": "Beautiful and practical designs combining aesthetics and functionality with a strong focus on user experience.",
+          "icon": "palette"
+        },
+        {
+          "number": "04",
+          "title": "SaaS Solutions",
+          "description": "Scalable and secure platforms serving thousands of users with continuous technical support and regular updates.",
+          "icon": "boxes"
+        },
+        {
+          "number": "05",
+          "title": "AI Integration",
+          "description": "Advanced AI solutions that improve application performance and deliver real value to users.",
+          "icon": "brain"
+        }
+      ]
+    },
+    "values": {
+      "title": "Where ideas turn into value",
+      "items": [
+        {
+          "number": "01",
+          "title": "One team from idea to launch",
+          "description": "Strategy, design, engineering and testing under one roof. No middlemen and no lost handoffs.",
+          "small": "Integrated team",
+          "icon": "users"
+        },
+        {
+          "number": "02",
+          "title": "Engineering built to last",
+          "description": "We use modern technologies and engineering practices to build stable, scalable products.",
+          "small": "Technical quality",
+          "icon": "code"
+        },
+        {
+          "number": "03",
+          "title": "Design that carries your identity",
+          "description": "Digital experiences that reflect your brand identity while balancing beauty and performance.",
+          "small": "Visual identity",
+          "icon": "palette"
+        },
+        {
+          "number": "04",
+          "title": "AI without the noise",
+          "description": "We integrate AI where it creates genuine value without unnecessary complexity.",
+          "small": "AI integration",
+          "icon": "brain"
+        },
+        {
+          "number": "05",
+          "title": "After launch matters most",
+          "description": "We stay with you after launch through support, maintenance and continuous development.",
+          "small": "Continuous support",
+          "icon": "shield"
+        }
+      ]
+    },
+    "testimonial": {
+      "text": "We started WEB Studio because we worked in many places where the design was good and the strategy was good, but they never truly came together. Here, everyone works under the same roof. That's the whole idea.",
+      "name": "Ahmed Mostafa",
+      "role": "Founder & Creative Director"
+    },
+    "cta": {
+      "eyebrow": "Let's work together",
+      "title": "Have a project idea? Turn it into an exceptional digital experience.",
+      "button": "Start your project",
+      "whatsapp": "WhatsApp"
+    }
+  },
+  "ourWork": {
+    "title": "Our Work",
+    "heroTitle": "Discover What We Built",
+    "heroSubtitle": "Pick a category — branding, websites, marketing, video or photography — and dive into the details. Drag the cards below and interact with them.",
+    "heroScrollHint": "Scroll to explore projects",
+    "description": "A curated collection of our projects reflecting our passion for design and technology",
+    "eyebrow": "Portfolio",
+    "filterEyebrow": "Browse by type",
+    "filterSubtitle": "Pick the category that matters to you, or browse all.",
+    "filterHint": "Each card opens the project details and the steps we took to build it.",
+    "gridTitle": "All Projects",
+    "categories": {
+      "all": "All",
+      "web": "Websites",
+      "mobile": "Apps",
+      "ui": "Design"
+    },
+    "viewProject": "View Project"
+  },
+  "clients": {
+    "title": "Our Clients",
+    "description": "We are proud to partner with leading companies and institutions across various sectors",
+    "hero": {
+      "titleLine1": "Behind every brand",
+      "titleLine2": "are innovative technical solutions.",
+      "titleHighlight1": "We build products that live",
+      "titleHighlight2": "and grow over time.",
+      "description": "Founders, brand owners, and entrepreneurs — behind every name on this page is a real project we built together, and behind every project is a relationship that grew beyond a single engagement.",
+      "cta": "View Full Index",
+      "returningRateLabel": "Returning Clients Rate",
+      "returningRateValue": "65%",
+      "liveLogTitle": "LIVE LOG",
+      "liveLogActive": "LIVE NOW",
+      "scrollPrompt": "Scroll down to explore projects"
+    },
+    "ranking": {
+      "titleLine1": "The Full Index,",
+      "titleLine2": "Organized by Sector",
+      "clientCountLabel": "Total Clients",
+      "categories": {
+        "all": "All",
+        "tech": "Tech & Digital",
+        "fitness": "Health & Fitness",
+        "retail": "Retail & Commerce"      },
+      "statuses": {
+        "active": "Active Partner",
+        "completed": "Completed"
+      },
+      "viewClient": "View Client"
+    }
+  },
+  "contact": {
+    "eyebrow": "Tell us about your idea",
+    "sentenceName": "My name is",
+    "sentenceProject": "and I have an idea for a",
+    "sentenceProjectType": "website",
+    "sentenceEmail": "reach me at",
+    "sentenceEnd": "and let’s turn it into something real.",
+    "placeholderName": "Your name",
+    "placeholderProject": "Project name",
+    "placeholderProjectType": "Project type",
+    "placeholderEmail": "Your email",
+    "submit": "Start your project now",
+    "whatsapp": "WhatsApp",
+    "successTitle": "Sent!",
+    "successMessage": "Thanks, we’ll be in touch soon.",
+    "projectTypes": [
+      "Website",
+      "Mobile App",
+      "Visual Identity"
+    ],
+    "infoTitle": "Direct contact",
+    "infoSubtitle": "Or reach us via",
+    "note": "Reply within 24 hours. No commitment."
+  },
+  "footer": {
+    "description": "A creative technology agency building exceptional digital experiences",
+    "links": {
+      "title": "Quick Links"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "email": "codexa.egy@gmail.com",
+      "phone": "+201277158762",
+      "location": "Cairo, Egypt",
+      "whatsapp": "https://wa.me/201277158762"
+    },
+    "social": {
+      "title": "Follow Us"
+    },
+    "copyright": "© 2026 Codexa. All rights reserved.",
+    "madeWith": "Made with",
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions",
+      "madeIn": "Made with passion in Egypt"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "learnMore": "Learn More",
+    "viewAll": "View All",
+    "back": "Back",
+    "close": "Close"
+  },
+  "seo": {
+    "siteName": "Codexa",
+    "defaultTitle": "Codexa — Creative Technology Agency",
+    "defaultDescription": "Codexa is a creative technology agency specializing in designing and developing digital products",
+    "home": {
+      "title": "Home — Codexa",
+      "description": "Codexa is a creative technology agency building exceptional digital experiences"
+    },
+    "about": {
+      "title": "About Us — Codexa",
+      "description": "Learn about Codexa — our team, mission, and values in building digital products"
+    },
+    "ourWork": {
+      "title": "Our Work — Codexa",
+      "description": "Browse a curated selection of Codexa's projects in web development, mobile apps, and branding"
+    },
+    "clients": {
+      "title": "Our Clients — Codexa",
+      "description": "Partners in success — the clients we are proud to serve at Codexa"
+    },
+    "contact": {
+      "title": "Contact Us — Codexa",
+      "description": "Get in touch with Codexa team to discuss your project and start your digital transformation"
+    }
+  }
+}

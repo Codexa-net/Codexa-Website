@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --brand-50: #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-500: #4f46e5;
+  --brand-600: #4338ca;
+  --surface: #f7f8fb;
+  --surface-card: #ffffff;
+  --border-subtle: #eceef2;
+  --text-primary: #14161f;
+  --text-muted: #8b8f9c;
+}
+
+/* إجبار المتغيرات تقلب غامق لما الزرار يشتغل */
+.dark {
+  --surface: #030712; 
+  --surface-card: #111827;
+  --border-subtle: #1f2937;
+  --text-primary: #f9fafb;
+  --text-muted: #9ca3af;
+}
+
+@theme inline {
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-surface: var(--surface);
+  --color-border-subtle: var(--border-subtle);
+  --font-sans: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+html,
+body {
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  border-color: var(--border-subtle);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d9dce3;
+  border-radius: 999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+input,
+textarea,
+select {
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9aa0ad;
+}
