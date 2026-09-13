@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model ContactMessage {
@@ -22,9 +23,14 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
+// ضفنا هنا كل الصلاحيات الجديدة اللي اتفقنا عليها
 enum AdminRole {
   SUPER_ADMIN
   SALES
+  BACKEND_LEAD
+  FRONTEND_LEAD
+  UI_UX_LEAD
+  MOBILE_APP_LEAD
 }
 
 model AdminUser {
@@ -85,34 +91,35 @@ model Client {
 }
 
 model Project {
-  id               String       @id @default(uuid()) @db.Uuid
-  name             String       @db.VarChar(200)
-  slug             String?      @unique @db.VarChar(220)
-  description      String?      @db.Text
-  shortDescription String?      @db.Text
-  category         String?      @db.VarChar(100)
-  cover            String?      @db.VarChar(500)
-  liveUrl          String?      @db.VarChar(500)
-  caseStudyUrl     String?      @db.VarChar(500)
-  featured         Boolean      @default(false)
-  displayOrder     Int          @default(0)
-  watermark        String?      @db.VarChar(100)
-  themeClass       String?      @db.VarChar(200)
-  glowColor        String?      @db.VarChar(30)
-  year             String?      @db.VarChar(4)
-  services         String?      @db.Text
-  managerName      String?      @db.VarChar(150)
-  designerName     String?      @db.VarChar(150)
-  status           String       @default("قيد التنفيذ") @db.VarChar(50)
-  priority         String       @default("متوسطة") @db.VarChar(50)
-  progress         Int          @default(0)
-  deadline         String?      @db.VarChar(10)
-  clientId         String?      @db.Uuid
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id               String         @id @default(uuid()) @db.Uuid
+  name             String         @db.VarChar(200)
+  slug             String?        @unique @db.VarChar(220)
+  description      String?        @db.Text
+  shortDescription String?        @db.Text
+  category         String?        @db.VarChar(100)
+  cover            String?        @db.VarChar(500)
+  liveUrl          String?        @db.VarChar(500)
+  caseStudyUrl     String?        @db.VarChar(500)
+  featured         Boolean        @default(false)
+  displayOrder     Int            @default(0)
+  watermark        String?        @db.VarChar(100)
+  themeClass       String?        @db.VarChar(200)
+  glowColor        String?        @db.VarChar(30)
+  year             String?        @db.VarChar(4)
+  services         String?        @db.Text
+  managerName      String?        @db.VarChar(150)
+  designerName     String?        @db.VarChar(150)
+  status           String         @default("قيد التنفيذ") @db.VarChar(50)
+  priority         String         @default("متوسطة") @db.VarChar(50)
+  progress         Int            @default(0)
+  deadline         String?        @db.VarChar(10)
+  clientId         String?        @db.Uuid
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
-  client       Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  client       Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   technologies Technology[]
+  stages       ProjectStage[] 
 
   @@index([clientId])
   @@index([featured, displayOrder])
@@ -121,12 +128,12 @@ model Project {
 }
 
 model Technology {
-  id           String    @id @default(uuid()) @db.Uuid
-  name         String    @unique @db.VarChar(100)
-  category     String?   @db.VarChar(100)
-  displayOrder Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @unique @db.VarChar(100)
+  category     String?  @db.VarChar(100)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   projects Project[]
 
@@ -148,4 +155,38 @@ model Settings {
   updatedAt       DateTime @updatedAt
 
   @@map("settings")
+}
+
+// ==========================================
+// الجداول الجديدة (مراحل المشروع وفريق العمل)
+// ==========================================
+
+model ProjectStage {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @db.Uuid
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String   @db.VarChar(150)
+  order       Int      
+  assignedTo  String?  @db.VarChar(150)
+  progress    Int      @default(0)
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_stages")
+}
+
+// الموديل اتحدث بالبيانات والتكنولوجيا زي ما طلبت
+model TeamMember {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(150) // الاسم
+  track        String   @db.VarChar(100) // التخصص (مثلاً ليدر باك، موبايل)
+  technologies String[] // التكنولوجيا اللي شغال بيها
+  phone        String?  @db.VarChar(30)  // رقم الهاتف
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("team_members")
 }
