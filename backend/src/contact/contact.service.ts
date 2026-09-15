@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Prisma } from '../generated/prisma/client';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContactMessageDto } from './dto/create-contact-message.dto';
 import { ListContactMessagesQueryDto } from './dto/list-contact-messages-query.dto';

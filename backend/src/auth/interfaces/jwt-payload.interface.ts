@@ -1,4 +1,4 @@
-import type { AdminRole } from '../../generated/prisma/client';
+import type { AdminRole } from '@prisma/client';
 
 export interface JwtPayload {
   sub: string;
