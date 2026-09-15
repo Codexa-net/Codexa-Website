@@ -2,11 +2,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { json, urlencoded } from 'express'; // تمت إضافة هذا الاستيراد لزيادة حجم البيانات المسموح به
+import { json, urlencoded, static as expressStatic } from 'express'; // تمت إضافة هذا الاستيراد لزيادة حجم البيانات المسموح به
 import { AppModule } from './app.module';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use('/uploads', expressStatic(join(process.cwd(), 'uploads')));
   const configService = app.get(ConfigService);
 
   // زيادة الحد الأقصى لحجم البيانات والـ JSON المسموح به (لتفادي مشكلة حجم الصور الكبيرة)
