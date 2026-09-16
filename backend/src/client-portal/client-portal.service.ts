@@ -150,16 +150,10 @@ export class ClientPortalService {
       ? project.stages.filter((stage: any) => stage.isCompleted).length
       : 0;
 
-    const computedProgress =
-      totalStages > 0
-        ? Math.round((completedStages / totalStages) * 100)
-        : project.progress;
-
     return {
       ...project,
       totalStages,
       completedStages,
-      computedProgress,
     };
   }
 }
