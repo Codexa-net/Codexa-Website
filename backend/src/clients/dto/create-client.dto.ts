@@ -17,6 +17,18 @@ export class CreateClientDto {
   @MaxLength(150)
   name!: string;
 
+  @ApiPropertyOptional({ example: 'client@company.com', maxLength: 255 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  email?: string;
+
+  @ApiPropertyOptional({ example: 'SecretPassword123!', maxLength: 255 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  password?: string;
+
   @ApiPropertyOptional({ example: 'سارة أحمد', maxLength: 150 })
   @IsOptional()
   @IsString()

@@ -88,7 +88,13 @@ describe('AdminUsersService', () => {
         name: true,
         email: true,
         role: true,
+        phone: true,
+        avatar: true,
         isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+        passwordHash: false,
       },
     });
   });

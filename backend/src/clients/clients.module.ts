@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { ClientsController } from './clients.controller';
 import { ClientsService } from './clients.service';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, NotificationsModule],
   controllers: [ClientsController],
   providers: [ClientsService, RolesGuard],
   exports: [ClientsService],
