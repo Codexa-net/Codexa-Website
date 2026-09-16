@@ -67,6 +67,9 @@ model Service {
 model Client {
   id           String   @id @default(uuid()) @db.Uuid
   name         String   @db.VarChar(150)
+  email        String?  @unique @db.VarChar(255)
+  passwordHash String?  @db.VarChar(255)
+  portalToken  String?  @unique @db.VarChar(255)
   contact      String?  @db.VarChar(150)
   industry     String?  @db.VarChar(100)
   totalRevenue Float    @default(0)

@@ -87,4 +87,24 @@ export class ClientsController {
   remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.clientsService.remove(id);
   }
+
+  @Post(':id/portal-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'SALES')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate or refresh client portal access token' })
+  @ApiOkResponse({ description: 'Portal token generated successfully.' })
+  generatePortalToken(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.clientsService.generatePortalToken(id);
+  }
+
+  @Post(':id/send-portal-link')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'SALES')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Send Client Portal access link via email to client' })
+  @ApiOkResponse({ description: 'Portal link email sent successfully.' })
+  sendPortalLink(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.clientsService.sendPortalLink(id);
+  }
 }

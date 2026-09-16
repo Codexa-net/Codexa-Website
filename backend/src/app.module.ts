@@ -12,6 +12,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { SettingsModule } from './settings/settings.module';
 import { TechnologiesModule } from './technologies/technologies.module';
 import { UploadModule } from './upload/upload.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ClientPortalModule } from './client-portal/client-portal.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { UploadModule } from './upload/upload.module';
     SettingsModule,
     TechnologiesModule,
     UploadModule,
+    NotificationsModule,
+    ClientPortalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

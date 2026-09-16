@@ -1,18 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { ListClientsQueryDto } from './dto/list-clients-query.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 
 @Injectable()
 export class ClientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
-  create(createClientDto: CreateClientDto) {
+  async create(createClientDto: CreateClientDto) {
+    const email = this.optionalText(createClientDto.email)?.toLowerCase();
+    let passwordHash: string | null = null;
+
+    if (createClientDto.password) {
+      passwordHash = await bcrypt.hash(createClientDto.password, 10);
+    }
+
+    const portalToken = crypto.randomBytes(32).toString('hex');
+
     return this.prisma.client.create({
       data: {
         name: createClientDto.name.trim(),
+        email,
+        passwordHash,
+        portalToken,
         contact: this.optionalText(createClientDto.contact),
         industry: this.optionalText(createClientDto.industry),
         totalRevenue: createClientDto.totalRevenue ?? 0,
@@ -35,6 +53,7 @@ export class ClientsService {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
         { contact: { contains: search, mode: 'insensitive' } },
         { industry: { contains: search, mode: 'insensitive' } },
         { sector: { contains: search, mode: 'insensitive' } },
@@ -75,6 +94,14 @@ export class ClientsService {
     if (updateClientDto.name !== undefined) {
       data.name = updateClientDto.name.trim();
     }
+    if (updateClientDto.email !== undefined) {
+      data.email = this.optionalText(updateClientDto.email)?.toLowerCase();
+    }
+    if (updateClientDto.password !== undefined) {
+      data.passwordHash = updateClientDto.password
+        ? await bcrypt.hash(updateClientDto.password, 10)
+        : null;
+    }
     if (updateClientDto.contact !== undefined) {
       data.contact = this.optionalText(updateClientDto.contact);
     }
@@ -112,6 +139,46 @@ export class ClientsService {
     return this.prisma.client.update({ where: { id }, data });
   }
 
+  async generatePortalToken(id: string) {
+    const client = await this.findOne(id);
+    const portalToken = crypto.randomBytes(32).toString('hex');
+
+    const updated = await this.prisma.client.update({
+      where: { id },
+      data: { portalToken },
+    });
+
+    return {
+      message: 'Portal token generated successfully.',
+      portalToken: updated.portalToken,
+      portalUrl: `https://codexa.net/portal?token=${updated.portalToken}`,
+    };
+  }
+
+  async sendPortalLink(id: string) {
+    const client = await this.findOne(id);
+
+    if (!client.email) {
+      throw new BadRequestException('Client does not have an email address set.');
+    }
+
+    let portalToken = client.portalToken;
+    if (!portalToken) {
+      portalToken = crypto.randomBytes(32).toString('hex');
+      await this.prisma.client.update({
+        where: { id },
+        data: { portalToken },
+      });
+    }
+
+    const portalUrl = `https://codexa.net/portal?token=${portalToken}`;
+    return this.notificationsService.sendPortalLink(
+      client.email,
+      client.name,
+      portalUrl,
+    );
+  }
+
   async remove(id: string) {
     await this.findOne(id);
     await this.prisma.client.delete({ where: { id } });
@@ -122,7 +189,7 @@ export class ClientsService {
     };
   }
 
-  private optionalText(value?: string) {
+  private optionalText(value?: string | null) {
     const trimmed = value?.trim();
     return trimmed || null;
   }
