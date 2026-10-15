@@ -22,31 +22,130 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
-// ضفنا هنا كل الصلاحيات الجديدة اللي اتفقنا عليها
 enum AdminRole {
   SUPER_ADMIN
-  SALES
   BACKEND_LEAD
   FRONTEND_LEAD
   UI_UX_LEAD
   MOBILE_APP_LEAD
+  DEVELOPER
+  UI_UX_DESIGNER
+  GRAPHIC_DESIGNER
+  SALES
+}
+
+enum StageTrack {
+  UI_UX
+  FRONTEND
+  BACKEND
+  MOBILE_APP
+}
+
+enum TransactionType {
+  BONUS
+  DEDUCTION
+  TASK_REWARD
+  WITHDRAWAL
+}
+
+enum RevisionType {
+  INITIAL_TASK
+  FREE_REVISION
+  PAID_ADDON
+}
+
+enum ProjectStageGate {
+  UI_UX
+  BACKEND
+  FRONTEND
+  TESTING
+  COMPLETED
 }
 
 model AdminUser {
-  id           String    @id @default(uuid()) @db.Uuid
-  name         String    @db.VarChar(100)
-  email        String    @unique @db.VarChar(255)
-  passwordHash String    @db.VarChar(255)
-  role         AdminRole @default(SALES)
-  phone        String?   @db.VarChar(30)
-  avatar       String?   @db.Text
-  isActive     Boolean   @default(true)
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id             String      @id @default(uuid()) @db.Uuid
+  name           String      @db.VarChar(100)
+  email          String      @unique @db.VarChar(255)
+  passwordHash   String      @db.VarChar(255)
+  role           AdminRole   @default(SALES)
+  
+  track          StageTrack?
+
+  phone          String?     @db.VarChar(30)
+  avatar         String?     @db.Text
+  isActive       Boolean     @default(true)
+  lastLoginAt    DateTime?
+
+  cvUrl          String?     @db.Text
+  instaPay       String?     @db.VarChar(100)
+  walletNumber   String?     @db.VarChar(50)
+  walletBalance  Float       @default(0.0)
+  totalWithdrawn Float       @default(0.0)
+
+  // تقنيات العضو لتسهيل توزيع المهام
+  technologies   String[]    @default([])
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  assignedStages      ProjectStage[]
+  walletTransactions  WalletTransaction[]
+  notifications       Notification[]
+  activityLogs        ActivityLog[]
 
   @@index([isActive, role])
+  @@index([track])
   @@map("admin_users")
+}
+
+model ActivityLog {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String?    @db.Uuid
+  user      AdminUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  action    String     @db.VarChar(255)
+  type      String     @default("TASK") @db.VarChar(50)
+  createdAt DateTime   @default(now())
+
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String    @db.VarChar(150)
+  message   String    @db.Text
+  type      String    @default("TASK") @db.VarChar(50)
+  link      String?   @db.VarChar(255)
+  isRead    Boolean   @default(false)
+  
+  createdAt DateTime  @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model WalletTransaction {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @db.Uuid
+  user        AdminUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  amount      Float
+  type        TransactionType
+  description String          @db.VarChar(255)
+  receiptNo   String?         @unique @db.VarChar(50)
+  
+  projectId   String?         @db.Uuid
+  stageId     String?         @db.Uuid
+
+  createdAt   DateTime        @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@map("wallet_transactions")
 }
 
 model Service {
@@ -65,24 +164,24 @@ model Service {
 }
 
 model Client {
-  id           String   @id @default(uuid()) @db.Uuid
-  name         String   @db.VarChar(150)
-  email        String?  @unique @db.VarChar(255)
-  passwordHash String?  @db.VarChar(255)
-  portalToken  String?  @unique @db.VarChar(255)
-  contact      String?  @db.VarChar(150)
-  industry     String?  @db.VarChar(100)
-  totalRevenue Float    @default(0)
-  logo         String?  @db.VarChar(500)
-  description  String?  @db.Text
-  sector       String?  @db.VarChar(100)
-  website      String?  @db.VarChar(500)
-  displayOrder Int      @default(0)
-  year         String?  @db.VarChar(4)
-  status       String?  @db.VarChar(50)
-  category     String?  @db.VarChar(50)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(150)
+  email        String?   @unique @db.VarChar(255)
+  passwordHash String?   @db.VarChar(255)
+  portalToken  String?   @unique @db.VarChar(255)
+  contact      String?   @db.VarChar(150)
+  industry     String?   @db.VarChar(100)
+  totalRevenue Float     @default(0)
+  logo         String?   @db.VarChar(500)
+  description  String?   @db.Text
+  sector       String?   @db.VarChar(100)
+  website      String?   @db.VarChar(500)
+  displayOrder Int       @default(0)
+  year         String?   @db.VarChar(4)
+  status       String?   @db.VarChar(50)
+  category     String?   @db.VarChar(50)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   projects Project[]
 
@@ -93,54 +192,59 @@ model Client {
 }
 
 model Project {
-  id               String         @id @default(uuid()) @db.Uuid
-  name             String         @db.VarChar(200)
-  slug             String?        @unique @db.VarChar(220)
-  description      String?        @db.Text
-  shortDescription String?        @db.Text
-  category         String?        @db.VarChar(100)
-  cover            String?        @db.VarChar(500)
-  liveUrl          String?        @db.VarChar(500)
-  caseStudyUrl     String?        @db.VarChar(500)
-  featured         Boolean        @default(false)
-  displayOrder     Int            @default(0)
-  watermark        String?        @db.VarChar(100)
-  themeClass       String?        @db.VarChar(200)
-  glowColor        String?        @db.VarChar(30)
-  year             String?        @db.VarChar(4)
-  services         String?        @db.Text
-  managerName      String?        @db.VarChar(150)
-  designerName     String?        @db.VarChar(150)
-  status           String         @default("قيد التنفيذ") @db.VarChar(50)
-  priority         String         @default("متوسطة") @db.VarChar(50)
-  progress         Int            @default(0)
-  deadline         String?        @db.VarChar(10)
-  clientId         String?        @db.Uuid
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id               String           @id @default(uuid()) @db.Uuid
+  name             String           @db.VarChar(200)
+  slug             String?          @unique @db.VarChar(220)
+  description      String?          @db.Text
+  shortDescription String?          @db.Text
+  category         String?          @db.VarChar(100)
+  cover            String?          @db.VarChar(500)
+  liveUrl          String?          @db.VarChar(500)
+  caseStudyUrl     String?          @db.VarChar(500)
+  featured         Boolean          @default(false)
+  displayOrder     Int              @default(0)
+  watermark        String?          @db.VarChar(100)
+  themeClass       String?          @db.VarChar(200)
+  glowColor        String?          @db.VarChar(30)
+  year             String?          @db.VarChar(4)
+  services         String?          @db.Text
+  managerName      String?          @db.VarChar(150)
+  designerName     String?          @db.VarChar(150)
+  status           String           @default("قيد التنفيذ") @db.VarChar(50)
+  priority         String           @default("متوسطة") @db.VarChar(50)
+  progress         Int              @default(0)
+  deadline         String?          @db.VarChar(10)
+  isPublic         Boolean          @default(false)
+  clientEmail      String?          @db.VarChar(255)
+
+  currentStage     ProjectStageGate @default(UI_UX)
+
+  clientId         String?          @db.Uuid
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   client       Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   technologies Technology[]
-  stages       ProjectStage[] 
+  stages       ProjectStage[]
 
   @@index([clientId])
-  @@index([featured, displayOrder])
   @@index([status])
+  @@index([isPublic])
+  @@index([currentStage])
   @@map("projects")
 }
 
 model Technology {
-  id           String   @id @default(uuid()) @db.Uuid
-  name         String   @unique @db.VarChar(100)
-  category     String?  @db.VarChar(100)
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @unique @db.VarChar(100)
+  category     String?   @db.VarChar(100)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   projects Project[]
 
   @@index([category])
-  @@index([displayOrder])
   @@map("technologies")
 }
 
@@ -159,33 +263,52 @@ model Settings {
   @@map("settings")
 }
 
-// ==========================================
-// الجداول الجديدة (مراحل المشروع وفريق العمل)
-// ==========================================
-
 model ProjectStage {
-  id          String   @id @default(uuid()) @db.Uuid
-  projectId   String   @db.Uuid
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title       String   @db.VarChar(150)
-  order       Int      
-  assignedTo  String?  @db.VarChar(150)
-  progress    Int      @default(0)
-  isCompleted Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String        @id @default(uuid()) @db.Uuid
+  projectId      String        @db.Uuid
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  title          String        @db.VarChar(150)
+  description    String?       @db.Text
+  order          Int           @default(0)
+  
+  track          StageTrack    @default(FRONTEND)
+  revisionType   RevisionType  @default(INITIAL_TASK)
+  
+  assignedUserId String?       @db.Uuid
+  assignedUser   AdminUser?    @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  
+  assignedTo     String?       @db.VarChar(150)
+  
+  progress       Int           @default(0)
+  isCompleted    Boolean       @default(false)
+  deadline       String?       @db.VarChar(20)
+
+  figmaUrl       String?       @db.VarChar(500)
+  feedback       String?       @db.Text
+
+  reward         Float         @default(0.0)
+  isUnderReview  Boolean       @default(false)
+
+  isLeadApproved Boolean       @default(false)
+  isApproved     Boolean       @default(false)
+  isPaid         Boolean       @default(false)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([projectId])
+  @@index([track])
+  @@index([assignedUserId])
   @@map("project_stages")
 }
 
-// الموديل اتحدث بالبيانات والتكنولوجيا زي ما طلبت
 model TeamMember {
   id           String   @id @default(uuid()) @db.Uuid
-  name         String   @db.VarChar(150) // الاسم
-  track        String   @db.VarChar(100) // التخصص (مثلاً ليدر باك، موبايل)
-  technologies String[] // التكنولوجيا اللي شغال بيها
-  phone        String?  @db.VarChar(30)  // رقم الهاتف
+  name         String   @db.VarChar(150)
+  track        String   @db.VarChar(100)
+  technologies String[]
+  phone        String?  @db.VarChar(30)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

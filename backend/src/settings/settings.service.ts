@@ -16,10 +16,29 @@ export class SettingsService {
   }
 
   async update(data: Record<string, unknown>) {
+    // 🟢 فلترة الحقول المعتمدة فقط في schema.prisma لمنع أخطاء Prisma
+    const cleanData: Record<string, any> = {};
+    const allowedFields = [
+      'siteName',
+      'contactEmail',
+      'metaTitle',
+      'metaDescription',
+      'keywords',
+      'linkedinUrl',
+      'facebookUrl',
+      'instagramUrl',
+    ];
+
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) {
+        cleanData[key] = data[key] ? String(data[key]).trim() : null;
+      }
+    }
+
     return (this.prisma as any).settings.upsert({
       where: { id: SETTINGS_ID },
-      create: { id: SETTINGS_ID, ...data },
-      update: data,
+      create: { id: SETTINGS_ID, ...cleanData },
+      update: cleanData,
     });
   }
 }

@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  ArrayNotEmpty,
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEmail,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -46,15 +46,15 @@ export class CreateProjectDto {
   @MaxLength(100)
   category?: string;
 
-  // التعديل هنا: السماح باستقبال التقنيات كـ Objects أو Strings
-  @ApiPropertyOptional({ example: [{name: 'Next.js'}], type: [Object] })
+  @ApiPropertyOptional({ example: [{ name: 'Next.js' }], type: [Object] })
   @IsOptional()
   @IsArray()
   technologies?: any[];
 
-  @ApiPropertyOptional({ example: 'https://cdn.example.com/project-cover.jpg' })
+  // تم التعديل إلى IsString ليقبل الصور المرفوعة محلياً والروابط المباشرة
+  @ApiPropertyOptional({ example: '/uploads/project-cover.jpg', maxLength: 500 })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   @MaxLength(500)
   cover?: string;
 
@@ -146,6 +146,17 @@ export class CreateProjectDto {
   @IsOptional()
   @IsDateString()
   deadline?: string;
+
+  @ApiPropertyOptional({ example: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
+
+  @ApiPropertyOptional({ example: 'client@company.com', maxLength: 255 })
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  clientEmail?: string;
 
   @ApiPropertyOptional({ example: 'uuid-of-client' })
   @IsOptional()

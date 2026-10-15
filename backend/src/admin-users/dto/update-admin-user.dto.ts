@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
   IsIn,
@@ -27,25 +28,48 @@ export class UpdateAdminUserDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(8)
+  @MinLength(6)
   @MaxLength(72)
   password?: string;
 
+  // 🟢 استخدام string هنا يمنع خطأ TS1272 نهائياً
   @IsOptional()
-  @IsIn(ADMIN_ROLE_VALUES)
+  @IsIn(ADMIN_ROLE_VALUES, { message: 'الدور الوظيفي يجب أن يكون من الأدوار المعتمدة' })
   role?: string;
+
+  @IsOptional()
+  track?: string | null;
 
   @IsOptional()
   @IsString()
   @MaxLength(30)
   phone?: string;
 
-  // تمت إضافة حقل الصورة هنا ليقبله الباك إند
   @IsOptional()
   @IsString()
   avatar?: string;
 
   @IsOptional()
+  @IsString()
+  cvUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  instaPay?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  walletNumber?: string;
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  // 🟢 تقنيات ومهارات العضو للتحديث من البروفايل
+  @IsOptional()
+  @IsArray({ message: 'التقنيات يجب أن تكون مصفوفة' })
+  @IsString({ each: true, message: 'كل تقنية يجب أن تكون نصاً' })
+  technologies?: string[];
 }

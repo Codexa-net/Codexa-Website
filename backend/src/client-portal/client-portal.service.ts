@@ -144,6 +144,79 @@ export class ClientPortalService {
     return this.formatProjectWithProgress(project);
   }
 
+  // 🟢 رابط المتابعة العام والآمن للعميل (بدون تسجيل دخول وبدون كشف بيانات الفريق)
+  async getPublicProjectByToken(token: string) {
+    const trimmed = token.trim();
+
+    // 1. البحث عبر الـ portalToken الخاص بالعميل
+    const client = await this.prisma.client.findFirst({
+      where: { portalToken: trimmed },
+      include: {
+        projects: {
+          where: { isPublic: false },
+          include: {
+            stages: {
+              select: {
+                id: true,
+                title: true,
+                track: true,
+                progress: true,
+                isCompleted: true,
+                isLeadApproved: true,
+                order: true,
+              },
+              orderBy: [{ track: 'asc' }, { order: 'asc' }],
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (client && client.projects.length > 0) {
+      const p = client.projects[0];
+      return {
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        progress: p.progress,
+        currentStage: p.currentStage || 'UI_UX',
+        deadline: p.deadline,
+        stages: p.stages,
+      };
+    }
+
+    // 2. البحث المباشر بمعرف المشروع (Project ID)
+    const project = await this.prisma.project.findFirst({
+      where: { id: trimmed },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        progress: true,
+        currentStage: true,
+        deadline: true,
+        stages: {
+          select: {
+            id: true,
+            title: true,
+            track: true,
+            progress: true,
+            isCompleted: true,
+            isLeadApproved: true,
+          },
+          orderBy: [{ track: 'asc' }, { order: 'asc' }],
+        },
+      },
+    });
+
+    if (!project) {
+      throw new NotFoundException('رابط متابعة المشروع غير صالح أو غير موجود.');
+    }
+
+    return project;
+  }
+
   private formatProjectWithProgress(project: any) {
     const totalStages = project.stages ? project.stages.length : 0;
     const completedStages = project.stages

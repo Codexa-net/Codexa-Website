@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -14,17 +13,18 @@ export class CreateContactMessageDto {
     maxLength: 100,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'الاسم مطلوب' })
   @MinLength(2)
   @MaxLength(100)
   name!: string;
 
   @ApiProperty({
-    example: 'ahmed@example.com',
+    example: 'ahmed@example.com أو +201012345678',
+    description: 'البريد الإلكتروني أو رقم الواتساب',
     maxLength: 255,
   })
-  @IsEmail()
-  @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty({ message: 'وسيلة التواصل (البريد أو رقم الواتساب) مطلوبة' })
   @MaxLength(255)
   email!: string;
 
@@ -53,7 +53,7 @@ export class CreateContactMessageDto {
     maxLength: 5000,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'الرسالة مطلوبة' })
   @MinLength(10)
   @MaxLength(5000)
   message!: string;

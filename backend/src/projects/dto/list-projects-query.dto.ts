@@ -1,37 +1,33 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class ListProjectsQueryDto {
-  @ApiPropertyOptional({ example: 'تجارة', maxLength: 100 })
+  @ApiPropertyOptional({ description: 'البحث بالاسم أو الوصف أو التصنيف' })
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   search?: string;
 
-  @ApiPropertyOptional({ example: 'قيد التنفيذ', maxLength: 50 })
+  @ApiPropertyOptional({ description: 'فلترة بحالة المشروع' })
   @IsOptional()
   @IsString()
-  @MaxLength(50)
   status?: string;
 
-  @ApiPropertyOptional({ example: 'uuid-of-client' })
+  @ApiPropertyOptional({ description: 'فلترة بمعرف العميل' })
   @IsOptional()
   @IsString()
-  @MaxLength(36)
   clientId?: string;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ description: 'فلترة المشاريع المميزة' })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }): unknown => {
-    if (value === true || value === 'true') {
-      return true;
-    }
-    if (value === false || value === 'false') {
-      return false;
-    }
-    return value;
-  })
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   featured?: boolean;
+
+  // الحقل المسؤول عن حل الخطأ والسماح بالفلترة للمعرض العام
+  @ApiPropertyOptional({ description: 'فلترة المشاريع العامة المعروضة للزوار' })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isPublic?: boolean;
 }
