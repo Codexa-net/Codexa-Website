@@ -60,7 +60,7 @@ function buildNavLinks(locale: Locale, dict: Dictionary) {
     { label: dict.nav.ourWork, href: `/${locale}/our-work` },
     { label: dict.nav.clients, href: `/${locale}/clients` },
     { label: dict.nav.about, href: `/${locale}/about` },
-    { label: dict.nav.contactUs, href: `/${locale}#contact` },
+    { label: dict.nav.contactUs, href: `/${locale}/contact` }, // تم تعديلها لتوجه لصفحة التواصل
   ]
 }
 
@@ -97,9 +97,9 @@ export function Footer({ locale, dict }: FooterProps) {
 
             {/* Buttons */}
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              {/* Primary CTA */}
+              {/* Primary CTA — يوجه الآن مباشرة لصفحة الفورم التفاعلي */}
               <Link
-                href={`/${locale}#contact`}
+                href={`/${locale}/contact`}
                 className={cn(
                   'inline-flex items-center gap-2.5 rounded-full bg-[#4b3fdf] px-7 py-3.5',
                   'text-sm font-bold text-white shadow-[0_12px_32px_-8px_rgba(75,63,223,0.6)]',
@@ -136,7 +136,7 @@ export function Footer({ locale, dict }: FooterProps) {
       <Container className="py-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 
-                          {/* Nav links */}
+          {/* Nav links */}
           <nav aria-label="Footer navigation">
             <ul role="list" className="flex flex-wrap gap-x-6 gap-y-2.5">
               {navLinks.map(({ label, href }) => (
@@ -193,8 +193,6 @@ export function Footer({ locale, dict }: FooterProps) {
               ))}
             </ul>
           </div>
-
-
 
         </div>
       </Container>

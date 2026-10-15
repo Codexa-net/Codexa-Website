@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Upload, X, Link2, Loader2 } from "lucide-react";
+import { X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FormField, FormTextarea } from "@/components/ui/FormField";
@@ -28,13 +28,12 @@ export function ProjectForm({ project }: { project?: any }) {
   const currentProject = project?.data || project;
   const isEdit = Boolean(currentProject?.id);
 
-  // تخزين التقنيات كنصوص (أو ID حسب الباك إند بتاعك، بس الأسهل حاليا نصوص)
   const initialTechs = Array.isArray(currentProject?.technologies) 
-    ? currentProject.technologies.map((t: any) => typeof t === 'string' ? t : t.name) 
+    ? currentProject.technologies.map((t: any) => typeof t === "string" ? t : t.name) 
     : [];
 
   const [technologies, setTechnologies] = useState<string[]>(initialTechs);
-  const [dbTechnologies, setDbTechnologies] = useState<any[]>([]); // التقنيات القادمة من الباك إند
+  const [dbTechnologies, setDbTechnologies] = useState<any[]>([]);
   
   const [techInput, setTechInput] = useState("");
   const [progress, setProgress] = useState<number>(currentProject?.progress ?? 0);
@@ -46,12 +45,27 @@ export function ProjectForm({ project }: { project?: any }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // حالة زر العرض العام
+  const [isPublic, setIsPublic] = useState<boolean>(Boolean(currentProject?.isPublic));
+
+  // مزامنة حالة المشروع عند فتح شاشة التعديل
+  useEffect(() => {
+    if (currentProject?.isPublic !== undefined) {
+      setIsPublic(Boolean(currentProject.isPublic));
+    }
+    if (currentProject?.cover) {
+      const sanitized = cleanUrl(currentProject.cover);
+      setCoverUrl(sanitized);
+      setPreviewUrl(sanitized);
+    }
+  }, [currentProject?.isPublic, currentProject?.cover]);
+
   // جلب التقنيات من الباك إند
   useEffect(() => {
-    fetch("http://localhost:3001/technologies") // غير البورت لو الباك إند شغال على رقم تاني
-      .then(res => res.json())
-      .then(data => setDbTechnologies(data))
-      .catch(err => console.error("Error fetching techs:", err));
+    fetch("http://localhost:3001/technologies")
+      .then((res) => res.json())
+      .then((data) => setDbTechnologies(Array.isArray(data) ? data : []))
+      .catch((err) => console.error("Error fetching techs:", err));
   }, []);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -71,11 +85,13 @@ export function ProjectForm({ project }: { project?: any }) {
         setCoverUrl(cleanUrl(data.url));
       } else {
         alert(data.error || "تعذر رفع الصورة");
-        setPreviewUrl(""); setCoverUrl("");
+        setPreviewUrl("");
+        setCoverUrl("");
       }
     } catch {
       alert("حدث خطأ أثناء رفع الصورة إلى السيرفر");
-      setPreviewUrl(""); setCoverUrl("");
+      setPreviewUrl("");
+      setCoverUrl("");
     } finally {
       setIsUploading(false);
     }
@@ -103,12 +119,11 @@ export function ProjectForm({ project }: { project?: any }) {
     if (techInput.trim() && !finalTechnologies.includes(techInput.trim())) {
       finalTechnologies.push(techInput.trim());
       
-      // هنا لو كتبت تقنية جديدة مش في الداتا بيز، المفروض تبعتها للباك إند يحفظها
       fetch("http://localhost:3001/technologies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: techInput.trim(), category: "General" })
-      }).catch(err => console.log("Failed to auto-save tech", err));
+        body: JSON.stringify({ name: techInput.trim(), category: "General" }),
+      }).catch((err) => console.log("Failed to auto-save tech", err));
     }
 
     if (finalTechnologies.length === 0) {
@@ -117,9 +132,6 @@ export function ProjectForm({ project }: { project?: any }) {
       return;
     }
 
-    // تجهيز الداتا للإرسال
-    // مهم: عشان نربط بجدول Technology في Prisma، بنبعت مصفوفة كائنات
-    // افترضت هنا أن الـ updateProjectAction بتاعك بيعرف يهندل ده
     const payload = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
@@ -130,8 +142,10 @@ export function ProjectForm({ project }: { project?: any }) {
       deadline: formData.get("deadline") as string,
       priority: formData.get("priority") as string,
       status: formData.get("status") as string,
-      technologies: finalTechnologies.map(techName => ({ name: techName })), // تعديل بناء على الـ Prisma relation
+      technologies: finalTechnologies.map((techName) => ({ name: techName })), 
       progress: Number(progress),
+      isPublic: Boolean(isPublic),
+      clientEmail: (formData.get("clientEmail") as string)?.trim() || null,
     };
 
     try {
@@ -153,7 +167,7 @@ export function ProjectForm({ project }: { project?: any }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} dir="rtl">
       <div className="mb-6 rounded-2xl bg-gradient-to-l from-brand-50 to-white dark:from-gray-900 dark:to-[#111827] p-6 text-right transition-colors">
         <h1 className="text-2xl font-bold text-[#14161f] dark:text-white">
           {isEdit ? "تعديل المشروع" : "إنشاء مشروع جديد"}
@@ -175,16 +189,16 @@ export function ProjectForm({ project }: { project?: any }) {
                   <img src={previewUrl} alt="غلاف المشروع" className="h-full w-full object-cover" />
                 </div>
                 <div className="mt-2.5 flex items-center justify-between px-1">
-                  <button type="button" onClick={removeImage} className="flex items-center gap-1 text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors">
+                  <button type="button" onClick={removeImage} className="flex items-center gap-1 text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors cursor-pointer">
                     <X size={14} /> إزالة أو تغيير الصورة
                   </button>
                 </div>
               </div>
             ) : (
               <div className="rounded-xl border border-border-subtle dark:border-gray-800 bg-[#f7f8fb] dark:bg-gray-800/40 p-4">
-                 <div className="mb-4 flex gap-2 border-b border-border-subtle dark:border-gray-700 pb-3">
-                  <button type="button" onClick={() => setUploadTab("file")} className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${uploadTab === "file" ? "bg-brand-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200"}`}>رفع من الجهاز</button>
-                  <button type="button" onClick={() => setUploadTab("url")} className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${uploadTab === "url" ? "bg-brand-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200"}`}>استخدام رابط مباشر</button>
+                <div className="mb-4 flex gap-2 border-b border-border-subtle dark:border-gray-700 pb-3">
+                  <button type="button" onClick={() => setUploadTab("file")} className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${uploadTab === "file" ? "bg-brand-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200"}`}>رفع من الجهاز</button>
+                  <button type="button" onClick={() => setUploadTab("url")} className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${uploadTab === "url" ? "bg-brand-600 text-white shadow-sm" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200"}`}>استخدام رابط مباشر</button>
                 </div>
 
                 {uploadTab === "file" ? (
@@ -197,6 +211,55 @@ export function ProjectForm({ project }: { project?: any }) {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      </Card>
+
+      <Card className="mb-6 p-6">
+        <h2 className="mb-5 text-right text-lg font-bold text-[#14161f] dark:text-white">إعدادات العميل والعرض</h2>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div>
+            <FormField 
+              label="إيميل العميل (لربط المشروع ببوابة العملاء)" 
+              name="clientEmail" 
+              type="email"
+              dir="ltr"
+              placeholder="client@company.com"
+              defaultValue={currentProject?.clientEmail} 
+            />
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-right">
+              سيظهر المشروع تلقائياً لهذا العميل عند تسجيل الدخول بهذا الإيميل.
+            </p>
+          </div>
+
+          <div className="flex flex-col justify-center">
+            <span className="mb-3 block text-sm font-bold text-[#14161f] dark:text-white text-right">
+              ظهور المشروع للعامة
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isPublic}
+                onClick={() => setIsPublic((prev) => !prev)}
+                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  isPublic ? "bg-brand-600" : "bg-gray-300 dark:bg-gray-700"
+                }`}
+                dir="ltr"
+              >
+                <span
+                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                    isPublic ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+              <span 
+                onClick={() => setIsPublic((prev) => !prev)}
+                className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-300 select-none"
+              >
+                عرض في معرض أعمالنا (Portfolio)
+              </span>
+            </div>
           </div>
         </div>
       </Card>
@@ -216,24 +279,31 @@ export function ProjectForm({ project }: { project?: any }) {
             <div className="flex min-h-[50px] flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-[#f7f8fb] p-2 dark:border-gray-800 dark:bg-gray-900/50">
               {technologies.map((tech: string) => (
                 <span key={tech} className="flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-600 dark:bg-brand-950/40 dark:text-brand-400" dir="ltr">
-                  <button type="button" onClick={() => setTechnologies(technologies.filter((t) => t !== tech))} className="text-brand-400 hover:text-brand-700">✕</button>
+                  <button type="button" onClick={() => setTechnologies(technologies.filter((t) => t !== tech))} className="text-brand-400 hover:text-brand-700 cursor-pointer">✕</button>
                   {tech}
                 </span>
               ))}
-              <input type="text" value={techInput} onChange={(e) => setTechInput(e.target.value)} placeholder={technologies.length === 0 ? "اكتب تقنية واضغط Enter..." : ""} onKeyDown={(e) => {
+              <input 
+                type="text" 
+                value={techInput} 
+                onChange={(e) => setTechInput(e.target.value)} 
+                placeholder={technologies.length === 0 ? "اكتب تقنية واضغط Enter..." : ""} 
+                onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
                     const val = e.currentTarget.value.trim();
                     if (val && !technologies.includes(val)) setTechnologies([...technologies, val]);
                     setTechInput("");
                   }
-                }} className="flex-1 bg-transparent px-2 py-1 text-sm outline-none" dir="ltr" />
+                }} 
+                className="flex-1 bg-transparent px-2 py-1 text-sm outline-none" 
+                dir="ltr" 
+              />
             </div>
 
-            {/* أزرار التقنيات المقترحة من الداتا بيز */}
             <div className="mt-3 flex flex-wrap items-center gap-2 justify-end" dir="ltr">
-              {dbTechnologies.map(t => t.name).filter((t: string) => !technologies.includes(t)).map((tech: string) => (
-                <button key={tech} type="button" onClick={() => setTechnologies([...technologies, tech])} className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600 dark:border-gray-700 dark:bg-[#111827] dark:text-gray-300">
+              {dbTechnologies.map((t) => t.name).filter((t: string) => !technologies.includes(t)).map((tech: string) => (
+                <button key={tech} type="button" onClick={() => setTechnologies([...technologies, tech])} className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600 dark:border-gray-700 dark:bg-[#111827] dark:text-gray-300 cursor-pointer">
                   {tech}
                 </button>
               ))}
@@ -251,13 +321,18 @@ export function ProjectForm({ project }: { project?: any }) {
           <label className="block text-right">
             <span className="mb-2 block text-sm font-bold text-[#14161f] dark:text-white">الأولوية</span>
             <select name="priority" defaultValue={currentProject?.priority ?? "متوسطة"} className="w-full rounded-xl border border-border-subtle bg-[#f7f8fb] dark:bg-gray-800 dark:border-gray-700 dark:text-white px-4 py-3 text-right text-sm outline-none">
-              <option value="عالية">عالية</option><option value="متوسطة">متوسطة</option><option value="منخفضة">منخفضة</option>
+              <option value="عالية">عالية</option>
+              <option value="متوسطة">متوسطة</option>
+              <option value="منخفضة">منخفضة</option>
             </select>
           </label>
           <label className="block text-right sm:col-span-2">
             <span className="mb-2 block text-sm font-bold text-[#14161f] dark:text-white">الحالة</span>
             <select name="status" defaultValue={currentProject?.status ?? "قيد التنفيذ"} className="w-full rounded-xl border border-border-subtle bg-[#f7f8fb] dark:bg-gray-800 dark:border-gray-700 dark:text-white px-4 py-3 text-right text-sm outline-none">
-              <option value="قيد التنفيذ">قيد التنفيذ</option><option value="قيد المراجعة">قيد المراجعة</option><option value="مكتمل">مكتمل</option><option value="متأخر">متأخر</option>
+              <option value="قيد التنفيذ">قيد التنفيذ</option>
+              <option value="قيد المراجعة">قيد المراجعة</option>
+              <option value="مكتمل">مكتمل</option>
+              <option value="متأخر">متأخر</option>
             </select>
           </label>
 

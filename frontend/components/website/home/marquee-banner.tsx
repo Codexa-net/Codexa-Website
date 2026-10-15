@@ -18,22 +18,26 @@ interface MarqueeBannerProps {
 const SERVICES_AR = [
   'تطوير مواقع',
   'تطبيقات موبايل',
+  'متاجر إلكترونية',
+  'أنظمة إدارية',
+  'UI/UX تصميم وجهات',
   'هوية بصرية',
-  'تصميم واجهات',
 ]
 
 const SERVICES_EN = [
   'Web Development',
   'Mobile Apps',
-  'Branding',
-  'UI / UX Design',
+  'E-Commerce',
+  'Admin Dashboards',
+  'UI/UX Design',
+  'Visual Identity',
 ]
 
 const SEP = '✦'
 
 function TrackItem({ text }: { text: string }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-3 whitespace-nowrap px-8 text-sm font-semibold tracking-wide text-white">
+    <span className="inline-flex shrink-0 items-center gap-4 whitespace-nowrap px-8 text-sm font-bold tracking-wide text-white">
       <span className="text-[10px] text-indigo-300">{SEP}</span>
       <span>{text}</span>
     </span>
@@ -51,7 +55,7 @@ export function MarqueeBanner({ locale }: MarqueeBannerProps) {
      */
     <div
       aria-hidden="true"
-      className="relative z-10"
+      className="relative z-10 select-none"
       style={{
         transform: 'rotate(-1.8deg)',
         marginInline: '-6%',
@@ -64,7 +68,7 @@ export function MarqueeBanner({ locale }: MarqueeBannerProps) {
        */}
       <div
         style={{
-          background: '#4f46e5',
+          background: '#4b3fdf',
           overflow: 'hidden',
           paddingBlock: '1rem',
           direction: 'ltr',
@@ -73,21 +77,22 @@ export function MarqueeBanner({ locale }: MarqueeBannerProps) {
       >
         {/*
          * Track: a single flex row containing COPY_A + COPY_A.
-         * The CSS class animates it from translateX(0) → translateX(-50%).
-         * At -50% the second copy is in view, which looks identical to the first.
-         * The animation loops back to 0 invisibly.
+         * The CSS class animate-marquee animates it from translateX(0) → translateX(-50%).
          */}
         <div
-          className="animate-marquee-ltr"
+          className="animate-marquee"
           style={{
-            display: 'inline-flex',
             direction: 'ltr',
           }}
         >
           {/* First copy */}
-          {services.map((s, i) => <TrackItem key={`a${i}`} text={s} />)}
-          {/* Second copy — must be identical for the seamless loop */}
-          {services.map((s, i) => <TrackItem key={`b${i}`} text={s} />)}
+          {services.map((s, i) => (
+            <TrackItem key={`a${i}`} text={s} />
+          ))}
+          {/* Second copy — must be identical for the seamless infinite loop */}
+          {services.map((s, i) => (
+            <TrackItem key={`b${i}`} text={s} />
+          ))}
         </div>
       </div>
     </div>

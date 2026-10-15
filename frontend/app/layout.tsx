@@ -21,9 +21,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <div className={`${cairo.className} font-sans antialiased overflow-x-hidden min-h-screen`}>
+        <div className={`${cairo.className} font-sans antialiased overflow-x-clip min-h-screen`}>
           <ThemeProvider>
             {children}
           </ThemeProvider>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -19,6 +19,8 @@ interface ClientsRankingProps {
 
 export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
   const [selectedCategory, setSelectedCategory] = useState<ClientCategory>('all')
+  const [animatedCount, setAnimatedCount] = useState(0)
+  
   const { ranking } = dict.clients
   const isArabic = locale === 'ar'
 
@@ -35,30 +37,51 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
     return clients.filter((c) => c.category === selectedCategory)
   }, [clients, selectedCategory])
 
+  useEffect(() => {
+    const target = filteredClients.length
+    if (target === 0) {
+      setAnimatedCount(0)
+      return
+    }
+
+    let current = 0
+    const stepTime = Math.abs(Math.floor(1000 / target))
+
+    const timer = setInterval(() => {
+      current += 1
+      setAnimatedCount(current)
+      if (current === target) {
+        clearInterval(timer)
+      }
+    }, stepTime)
+
+    return () => clearInterval(timer)
+  }, [filteredClients.length])
+
   return (
     <Section
       id="clients-directory"
       noContainer
-      className="relative overflow-hidden bg-[#07070a] py-16 text-white sm:py-20 md:py-28 lg:py-32"
+      className="relative overflow-hidden bg-background py-16 text-foreground transition-colors duration-300 dark:bg-[#07070a] dark:text-white sm:py-20 md:py-28 lg:py-32"
     >
       <Container wide className="relative">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="order-2">
             <div className="flex flex-col items-start">
-              <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase dark:text-neutral-400">
                 {ranking.clientCountLabel}
               </span>
-              <span className="font-mono text-4xl font-extrabold tracking-tight text-white sm:text-5xl mt-1">
-                {String(filteredClients.length).padStart(2, '0')}
+              <span className="mt-1 font-mono text-4xl font-extrabold tracking-tight text-foreground dark:text-white sm:text-5xl">
+                {String(animatedCount).padStart(2, '0')}
               </span>
             </div>
           </div>
 
           <div>
             <div className="flex flex-col">
-              <h2 className="font-arabic text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl leading-tight">
+              <h2 className="font-arabic text-3xl font-extrabold leading-tight tracking-tight text-foreground dark:text-white sm:text-4xl lg:text-5xl">
                 <span className="block">{ranking.titleLine1}</span>
-                <span className="block text-white">{ranking.titleLine2}</span>
+                <span className="block text-foreground dark:text-white">{ranking.titleLine2}</span>
               </h2>
 
               <div className="mt-8 flex flex-wrap items-center gap-2">
@@ -71,8 +94,8 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                       className={cn(
                         'cursor-pointer rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200',
                         isActive
-                          ? 'bg-[#4b3fdf] text-white shadow-md shadow-[#4b3fdf]/30 font-semibold'
-                          : 'border border-white/10 bg-white/[0.04] text-neutral-400 hover:border-white/20 hover:bg-white/[0.08] hover:text-white',
+                          ? 'bg-[#4b3fdf] font-semibold text-white shadow-md shadow-[#4b3fdf]/30'
+                          : 'border border-border bg-muted/50 text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-400 dark:hover:border-white/20 dark:hover:bg-white/[0.08] dark:hover:text-white',
                       )}
                     >
                       {cat.label}
@@ -85,14 +108,15 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
         </div>
 
         <div className="mt-14 sm:mt-16 lg:mt-20">
-          <div className="divide-y divide-white/[0.06] border-t border-b border-white/[0.08]">
+          <div className="divide-y divide-border/70 border-t border-b border-border dark:divide-white/[0.06] dark:border-white/[0.08]">
             <AnimatePresence mode="popLayout">
-              {filteredClients.map((client) => {
+              {filteredClients.map((client, index) => {
                 const isActive = client.status === 'active'
                 const statusLabel = isActive
                   ? ranking.statuses.active
                   : ranking.statuses.completed
-                const formattedNumber = String(client.order).padStart(2, '0')
+                const itemOrder = client.order || (index + 1)
+                const formattedNumber = String(itemOrder).padStart(2, '0')
 
                 return (
                   <motion.div
@@ -103,34 +127,34 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.25 }}
                     className={cn(
-                      'group relative flex flex-col gap-4 py-4 px-3 sm:px-4 transition-all duration-200 sm:py-5 lg:flex-row lg:items-center lg:justify-between lg:py-6',
-                      'hover:bg-white/[0.03]',
+                      'group relative flex flex-col gap-4 px-3 py-4 transition-all duration-200 sm:px-4 sm:py-5 lg:flex-row lg:items-center lg:justify-between lg:py-6',
+                      'hover:bg-muted/40 dark:hover:bg-white/[0.03]',
                     )}
                   >
                     <div className="flex items-center gap-4 sm:gap-8 lg:min-w-[280px]">
-                      <span className="font-mono text-xs font-semibold text-neutral-400 sm:text-sm">
+                      <span className="font-mono text-xs font-semibold text-muted-foreground dark:text-neutral-400 sm:text-sm">
                         {formattedNumber}
                       </span>
-                      <span className="text-base font-bold text-white tracking-wide transition-colors group-hover:text-white sm:text-lg md:text-xl">
+                      <span className="text-base font-bold tracking-wide text-foreground transition-colors group-hover:text-[#4b3fdf] dark:text-white dark:group-hover:text-white sm:text-lg md:text-xl">
                         {client.name}
                       </span>
                     </div>
 
-                    <div className="flex items-center text-xs font-medium text-neutral-400 sm:text-sm lg:min-w-[160px] lg:justify-center">
-                      {client.sector?.[locale]}
+                    <div className="flex items-center text-xs font-medium text-muted-foreground dark:text-neutral-400 sm:text-sm lg:min-w-[160px] lg:justify-center">
+                      {client.sector?.[locale] || client.sector}
                     </div>
 
-                    <div className="font-mono text-xs font-medium text-neutral-400 sm:text-sm lg:min-w-[80px] lg:text-center">
-                      {client.year}
+                    <div className="font-mono text-xs font-medium text-muted-foreground dark:text-neutral-400 sm:text-sm lg:min-w-[80px] lg:text-center">
+                      {client.year || "2024"}
                     </div>
 
                     <div className="flex items-center justify-between gap-4 lg:min-w-[200px] lg:justify-end">
                       <span
                         className={cn(
-                          'rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
+                          'whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors',
                           isActive
-                            ? 'border border-[#4b3fdf]/40 bg-[#4b3fdf]/20 text-[#a59dfa]'
-                            : 'border border-white/10 bg-white/[0.05] text-neutral-400',
+                            ? 'border border-[#d8d3ff] bg-[#edeaff] text-[#4b3fdf] dark:border-[#4b3fdf]/40 dark:bg-[#4b3fdf]/20 dark:text-[#a59dfa]'
+                            : 'border border-border/80 bg-muted/60 text-muted-foreground dark:border-white/10 dark:bg-white/[0.05] dark:text-neutral-400',
                         )}
                       >
                         {statusLabel}
@@ -140,21 +164,22 @@ export function ClientsRanking({ clients, locale, dict }: ClientsRankingProps) {
                         <a
                           href={client.website}
                           target="_blank"
+                          rel="noopener noreferrer"
                           className={cn(
-                            'flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-400 transition-all duration-300 sm:size-9',
-                            'group-hover:border-[#4b3fdf] group-hover:bg-[#4b3fdf] group-hover:text-white group-hover:scale-105',
+                            'flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/40 text-muted-foreground transition-all duration-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-400 sm:size-9',
+                            'group-hover:scale-105 group-hover:border-[#4b3fdf] group-hover:bg-[#4b3fdf] group-hover:text-white dark:group-hover:border-[#4b3fdf] dark:group-hover:bg-[#4b3fdf] dark:group-hover:text-white',
                           )}
                         >
-                          <ArrowUpRight className={cn('size-3.5 sm:size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5')} />
+                          <ArrowUpRight className={cn('size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:size-4')} />
                         </a>
                       ) : (
                         <div
                           className={cn(
-                            'flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-400 transition-all duration-300 sm:size-9',
-                            'group-hover:border-[#4b3fdf] group-hover:bg-[#4b3fdf] group-hover:text-white group-hover:scale-105',
+                            'flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/40 text-muted-foreground transition-all duration-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-400 sm:size-9',
+                            'group-hover:scale-105 group-hover:border-[#4b3fdf] group-hover:bg-[#4b3fdf] group-hover:text-white dark:group-hover:border-[#4b3fdf] dark:group-hover:bg-[#4b3fdf] dark:group-hover:text-white',
                           )}
                         >
-                          <ArrowUpRight className={cn('size-3.5 sm:size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5', !isArabic && 'rotate-0')} />
+                          <ArrowUpRight className={cn('size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:size-4', !isArabic && 'rotate-0')} />
                         </div>
                       )}
                     </div>

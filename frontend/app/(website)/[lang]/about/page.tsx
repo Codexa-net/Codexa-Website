@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Image from "next/image"
-import lightProjectImage from "@/public/images/projects light.png"
-import darkProjectImage from "@/public/images/projects dark.jpg"
-
+import Link from "next/link"
+import founderImage from "@/public/images/founder.jpg"
 
 import {
   ArrowUpLeft,
@@ -26,7 +25,6 @@ import {
 } from "@/components/shared/motion/stagger"
 
 import { ValuesGrid } from "@/components/website/about/values-grid"
-
 
 import {
   isValidLocale,
@@ -81,48 +79,142 @@ export async function generateMetadata(
 }
 
 /* =========================================================
-   HERO PROJECT VISUAL
+   HERO PROJECT VISUAL (REAL PROJECTS COLLAGE)
 ========================================================= */
 
-function ProjectVisual() {
+interface ShowcaseItem {
+  title: string
+  subtitle: string
+  badge: string
+  image: string
+}
+
+function ProjectVisual({
+  locale,
+  isArabic,
+  mainProject,
+  secondProject,
+  thirdProject,
+}: {
+  locale: Locale
+  isArabic: boolean
+  mainProject: ShowcaseItem
+  secondProject: ShowcaseItem
+  thirdProject: ShowcaseItem
+}) {
   return (
     <FadeIn
       direction="left"
       distance={60}
       duration={0.8}
-      className="relative mx-auto w-full max-w-[620px]"
+      className="relative mx-auto w-full max-w-[560px] select-none py-6"
     >
-      {/* Light Mode Image */}
-      <Image
-        src={lightProjectImage}
-        alt="Codexa projects"
-        width={1000}
-        height={800}
-        priority
-        className="
-          block
-          h-auto
-          w-full
-          object-contain
-          dark:hidden
-        "
-      />
+      {/* توهج خلفي ناعم متناسق مع الوضع الفاتح والليلي */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center"
+      >
+        <div className="h-72 w-72 rounded-full bg-[#5745e7]/15 blur-[90px] dark:bg-[#5745e7]/25" />
+      </div>
 
-      {/* Dark Mode Image */}
-      <Image
-        src={darkProjectImage}
-        alt="Codexa projects"
-        width={1000}
-        height={800}
-        priority
-        className="
-          hidden
-          h-auto
-          w-full
-          object-contain
-          dark:block
-        "
-      />
+      <div className="relative mx-auto h-[410px] w-full max-w-[480px] sm:h-[460px]">
+        {/* 1. البطاقة الخلفية الكبرى (مستشفى النور) */}
+        <Link
+          href={`/${locale}/our-work`}
+          className="group absolute left-1/2 top-2 z-10 flex h-[310px] w-[265px] -translate-x-1/2 -rotate-[8deg] flex-col overflow-hidden rounded-[26px] border border-white/25 bg-gradient-to-br from-[#6c3ef4] via-[#4b27c7] to-[#18113c] p-5 text-white shadow-[0_28px_65px_-12px_rgba(75,39,199,0.45)] transition-all duration-500 hover:-translate-y-2 hover:-rotate-[5deg] sm:h-[345px] sm:w-[300px]"
+        >
+          <div className="text-center">
+            <span className="inline-block rounded-full bg-white/15 px-3 py-0.5 text-[10px] font-bold tracking-wide text-white/90 backdrop-blur-sm">
+              {mainProject.badge}
+            </span>
+            <h3 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl">
+              {mainProject.title}
+            </h3>
+            <p className="mt-0.5 text-xs font-medium text-white/75">
+              {mainProject.subtitle}
+            </p>
+          </div>
+
+          {/* نافذة النظام */}
+          <div className="mt-4 flex flex-1 flex-col overflow-hidden rounded-t-xl border border-b-0 border-white/20 bg-[#0d0b1f] shadow-2xl">
+            <div className="flex h-5 shrink-0 items-center gap-1.5 border-b border-white/10 bg-white/5 px-3">
+              <span className="size-1.5 rounded-full bg-rose-400/80" />
+              <span className="size-1.5 rounded-full bg-amber-400/80" />
+              <span className="size-1.5 rounded-full bg-emerald-400/80" />
+            </div>
+            <div className="relative size-full overflow-hidden">
+              <img
+                src={mainProject.image}
+                alt={mainProject.title}
+                className="size-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+          </div>
+        </Link>
+
+        {/* 2. البطاقة اليسرى السفلية (منصة الأستاذ التعليمية) */}
+        <Link
+          href={`/${locale}/our-work`}
+          className="group absolute bottom-2 left-2 z-20 flex h-[235px] w-[205px] -rotate-[9deg] flex-col overflow-hidden rounded-[24px] border border-white/30 bg-gradient-to-br from-[#10b981] via-[#059669] to-[#064e3b] p-4 text-white shadow-[0_22px_50px_-12px_rgba(16,185,129,0.4)] transition-all duration-500 hover:-translate-y-2 hover:-rotate-[5deg] sm:left-4 sm:h-[260px] sm:w-[225px]"
+        >
+          <div className="flex items-center justify-between">
+            <span className="size-2 rounded-full bg-emerald-200" />
+            <span className="text-[10px] font-bold text-emerald-100">
+              {secondProject.badge}
+            </span>
+          </div>
+          <h4 className="mt-1 text-base font-black text-white sm:text-lg">
+            {secondProject.title}
+          </h4>
+
+          {/* شاشة التطبيق */}
+          <div className="mt-3 flex flex-1 flex-col overflow-hidden rounded-2xl border-2 border-neutral-900/80 bg-neutral-900 shadow-inner">
+            <div className="mx-auto my-1 h-1 w-8 rounded-full bg-white/20" />
+            <div className="relative size-full overflow-hidden rounded-t-lg">
+              <img
+                src={secondProject.image}
+                alt={secondProject.title}
+                className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+            </div>
+          </div>
+        </Link>
+
+        {/* 3. البطاقة اليمنى الأمامية (متجر إلكترولايت) */}
+        <Link
+          href={`/${locale}/our-work`}
+          className="group absolute bottom-6 right-2 z-30 flex h-[200px] w-[195px] rotate-[6deg] flex-col justify-between overflow-hidden rounded-[24px] border border-white/20 bg-neutral-950 p-4 text-white shadow-[0_25px_55px_-10px_rgba(0,0,0,0.5)] transition-all duration-500 hover:-translate-y-2 hover:rotate-[2deg] sm:right-4 sm:h-[215px] sm:w-[215px]"
+        >
+          <img
+            src={thirdProject.image}
+            alt={thirdProject.title}
+            className="absolute inset-0 size-full object-cover opacity-55 transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/65 to-black/20" />
+
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="rounded-full border border-[#8b7cff]/40 bg-[#5745e7]/80 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+              {thirdProject.badge}
+            </span>
+            <span className="flex size-6 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm">
+              {isArabic ? (
+                <ArrowUpLeft className="size-3.5" />
+              ) : (
+                <ArrowUpRight className="size-3.5" />
+              )}
+            </span>
+          </div>
+
+          <div className="relative z-10 text-right" dir={isArabic ? "rtl" : "ltr"}>
+            <p className="text-[11px] font-semibold text-[#a59dfa]">
+              {thirdProject.subtitle}
+            </p>
+            <h4 className="mt-0.5 text-lg font-black leading-snug text-white sm:text-xl">
+              {thirdProject.title}
+            </h4>
+          </div>
+        </Link>
+      </div>
     </FadeIn>
   )
 }
@@ -162,7 +254,6 @@ function GoalCard({
         ].join(" ")}
       >
         {/* Decorative circle */}
-
         <div
           className={[
             "absolute h-32 w-32 rounded-full",
@@ -212,7 +303,6 @@ function ServicesTimeline({
       className="relative mx-auto mt-20 max-w-[1200px]"
     >
       {/* Central line */}
-
       <div
         className="
           absolute left-1/2 top-0 hidden h-full w-[3px]
@@ -240,7 +330,6 @@ function ServicesTimeline({
               <div className="relative grid items-center md:grid-cols-2">
 
                 {/* Card */}
-
                 <div
                   className={[
                     isLeft
@@ -271,7 +360,6 @@ function ServicesTimeline({
                     "
                   >
                     {/* Decorative shape */}
-
                     <div
                       className={[
                         "absolute top-1/2 h-48 w-48",
@@ -291,7 +379,6 @@ function ServicesTimeline({
                       ].join(" ")}
                     >
                       {/* Icon */}
-
                       <div
                         className="
                           relative
@@ -324,7 +411,6 @@ function ServicesTimeline({
                       </div>
 
                       {/* Content */}
-
                       <div
                         className={[
                           "flex-1",
@@ -359,7 +445,6 @@ function ServicesTimeline({
                 </div>
 
                 {/* Desktop number */}
-
                 <div
                   className="
                     absolute
@@ -395,7 +480,6 @@ function ServicesTimeline({
                 </div>
 
                 {/* Mobile number */}
-
                 <div className="mt-5 flex items-center gap-3 md:hidden">
                   <div
                     className="
@@ -449,9 +533,7 @@ function ValuesSection({
   return (
     <section className="bg-[#171451] py-24 text-white sm:py-28 lg:py-32 dark:bg-[#100e35]">
       <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-
         {/* Title */}
-
         <Reveal>
           <h2 className="text-center text-4xl font-black leading-tight sm:text-5xl lg:text-[54px]">
             {title}
@@ -459,7 +541,6 @@ function ValuesSection({
         </Reveal>
 
         {/* Interactive Values Grid */}
-
         <ValuesGrid
           items={items}
           isArabic={isArabic}
@@ -483,17 +564,53 @@ export default async function AboutPage(
   }
 
   const locale = lang as Locale
-
-  /*
-   * Get all translated content from the dictionary.
-   * No page-level Arabic/English content is hardcoded.
-   */
-
   const dict = await getDictionary(locale)
-
   const data = dict.about
-
   const isArabic = locale === "ar"
+
+  // جلب صورة مستشفى النور الحقيقية من قاعدة البيانات إن وجدت
+  let hospitalImage = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+  try {
+    const apiBase = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "")
+    const res = await fetch(`${apiBase}/projects?isPublic=true`, { cache: "no-store" })
+    if (res.ok) {
+      const payload = await res.json()
+      const list = Array.isArray(payload) ? payload : payload?.data
+      if (Array.isArray(list)) {
+        const hospitalProj = list.find(
+          (p: any) =>
+            (p.name && (p.name.includes("نور") || p.name.toLowerCase().includes("nour"))) ||
+            (p.title && (p.title.includes("نور") || p.title.toLowerCase().includes("nour")))
+        )
+        if (hospitalProj && (hospitalProj.cover || hospitalProj.image)) {
+          hospitalImage = hospitalProj.cover || hospitalProj.image
+        }
+      }
+    }
+  } catch (err) {
+    console.error("تعذر جلب صورة المشروع لصفحة من نحن:", err)
+  }
+
+  const mainProject: ShowcaseItem = {
+    title: isArabic ? "مستشفى النور" : "Al-Nour Hospital",
+    subtitle: isArabic ? "منظومة طبية متكاملة" : "Healthcare ERP System",
+    badge: isArabic ? "أنظمة برمجية خاصة" : "Custom Software",
+    image: hospitalImage,
+  }
+
+  const secondProject: ShowcaseItem = {
+    title: isArabic ? "منصة الأستاذ" : "Al-Ostaz LMS",
+    subtitle: isArabic ? "تكنولوجيا التعليم" : "E-Learning Platform",
+    badge: isArabic ? "منصات تعليمية" : "EdTech",
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+  }
+
+  const thirdProject: ShowcaseItem = {
+    title: isArabic ? "متجر إلكترولايت" : "Electrolite Store",
+    subtitle: isArabic ? "تجارة إلكترونية وحلول دفع" : "E-Commerce & FinTech",
+    badge: isArabic ? "متاجر إلكترونية" : "E-Commerce",
+    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
+  }
 
   return (
     <main
@@ -510,7 +627,6 @@ export default async function AboutPage(
       {/* =====================================================
           HERO
       ===================================================== */}
-
       <section
         className="
           relative
@@ -531,9 +647,7 @@ export default async function AboutPage(
                 : "",
             ].join(" ")}
           >
-
             {/* Visual */}
-
             <div
               className={[
                 "order-2 lg:order-1",
@@ -542,11 +656,16 @@ export default async function AboutPage(
                   : "",
               ].join(" ")}
             >
-              <ProjectVisual />
+              <ProjectVisual
+                locale={locale}
+                isArabic={isArabic}
+                mainProject={mainProject}
+                secondProject={secondProject}
+                thirdProject={thirdProject}
+              />
             </div>
 
             {/* Text */}
-
             <div
               className={[
                 "order-1",
@@ -567,22 +686,19 @@ export default async function AboutPage(
                     mt-5
                     text-5xl
                     font-black
-                    leading-[1.15]
+                    leading-[1.22]
                     tracking-[-0.04em]
                     text-[#0d0b2c]
                     sm:text-6xl
-                    lg:text-[76px]
+                    lg:text-[72px]
                     dark:text-white
                   "
                 >
                   {data.hero.titleFirst}{" "}
-
                   <span className="text-[#5142df] dark:text-[#8173ff]">
                     {data.hero.titleAccent}
                   </span>
-
                   <br />
-
                   {data.hero.titleLast}
                 </h1>
               </Reveal>
@@ -654,7 +770,6 @@ export default async function AboutPage(
       {/* =====================================================
           MISSION / VISION
       ===================================================== */}
-
       <section
         className="
           relative
@@ -667,7 +782,6 @@ export default async function AboutPage(
         "
       >
         <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
-
           <Reveal>
             <div className="text-center">
               <h2 className="text-4xl font-black text-[#11102f] sm:text-5xl dark:text-white">
@@ -705,7 +819,6 @@ export default async function AboutPage(
       {/* =====================================================
           SERVICES
       ===================================================== */}
-
       <section
         className="
           bg-white
@@ -716,13 +829,10 @@ export default async function AboutPage(
         "
       >
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-
           <Reveal>
             <div className="text-center">
-
               <h2 className="text-4xl font-black text-[#11102f] sm:text-5xl dark:text-white">
                 {data.services.titleFirst}{" "}
-
                 <span className="text-[#5745e7] dark:text-[#8173ff]">
                   {data.services.titleAccent}
                 </span>
@@ -731,7 +841,6 @@ export default async function AboutPage(
               <p className="mx-auto mt-5 max-w-[850px] text-lg leading-8 text-[#656d7d] dark:text-gray-400">
                 {data.services.description}
               </p>
-
             </div>
           </Reveal>
 
@@ -739,14 +848,12 @@ export default async function AboutPage(
             items={data.services.items}
             isArabic={isArabic}
           />
-
         </div>
       </section>
 
       {/* =====================================================
           VALUES
       ===================================================== */}
-
       <ValuesSection
         title={data.values.title}
         items={data.values.items}
@@ -754,9 +861,8 @@ export default async function AboutPage(
       />
 
       {/* =====================================================
-          TESTIMONIAL
+          TESTIMONIAL (كلمة المؤسس مع الصورة الحقيقية)
       ===================================================== */}
-
       <section
         className="
           bg-[#12111b]
@@ -773,7 +879,6 @@ export default async function AboutPage(
           distance={45}
         >
           <div className="mx-auto max-w-[1050px] text-center">
-
             <Reveal>
               <p className="text-lg font-black leading-9 sm:text-2xl sm:leading-[1.9] lg:text-[29px]">
                 {data.testimonial.text}
@@ -785,9 +890,16 @@ export default async function AboutPage(
               delay={0.15}
             >
               <div className="mt-10 flex items-center justify-center gap-4">
-
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-sm font-black text-[#16152b]">
-                  أم
+                {/* صورة المؤسس الشخصية المستوردة مباشرة */}
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white/20 shadow-lg">
+                  <Image
+                    src={founderImage}
+                    alt={data.testimonial.name}
+                    width={56}
+                    height={56}
+                    priority
+                    className="h-full w-full object-cover"
+                  />
                 </div>
 
                 <div
@@ -805,10 +917,8 @@ export default async function AboutPage(
                     {data.testimonial.role}
                   </p>
                 </div>
-
               </div>
             </FadeIn>
-
           </div>
         </FadeIn>
       </section>

@@ -1,4 +1,6 @@
-import { useState } from 'react'
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -6,7 +8,7 @@ import { HintBadge } from './hint-badge'
 
 interface ProjectTypeSelectorProps {
   value: string
-  options: string[]
+  options?: string[]
   placeholder: string
   onChange: (v: string) => void
   onBlur: () => void
@@ -15,7 +17,26 @@ interface ProjectTypeSelectorProps {
   hintLabel: string
 }
 
-/* ── Dropdown option item ────────────────────────────────────── */
+// القائمة الكاملة للخدمات
+const FULL_PROJECT_TYPES_AR = [
+  'موقع إلكتروني',
+  'تطبيق موبايل',
+  'متجر إلكتروني',
+  'نظام إداري / Dashboard',
+  'هوية بصرية',
+  'فكرة أخرى',
+]
+
+const FULL_PROJECT_TYPES_EN = [
+  'Website',
+  'Mobile App',
+  'E-commerce Store',
+  'Management System / CRM',
+  'Brand Identity',
+  'Custom Idea / Other',
+]
+
+/* ── خيار القائمة بحجم ناعم وأنيق ───────────────────────────── */
 
 function OptionItem({
   option,
@@ -32,57 +53,45 @@ function OptionItem({
 }) {
   return (
     <motion.li
-      initial={{ opacity: 0, x: isArabic ? 8 : -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.18, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: isArabic ? -3 : 3 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.15, delay: index * 0.02, ease: [0.22, 1, 0.36, 1] }}
     >
-      <button
-        type="button"
+      <div
         role="option"
+        tabIndex={0}
         aria-selected={isSelected}
         onMouseDown={(e) => {
           e.preventDefault()
           onSelect()
         }}
         className={cn(
-          // Reset font size — this button lives inside the large-text div
-          'group relative flex w-full items-center gap-2.5 px-3 py-2',
-          'text-[12px] font-medium leading-none transition-colors duration-150',
-          isArabic ? 'flex-row-reverse text-right' : 'text-left',
+          // إجبار الخط على المقاس المدمج لكسر وراثة الخط العملاق
+          'group relative flex w-full items-center justify-between rounded-xl px-3.5 py-2.5',
+          '!text-xs sm:!text-sm !font-semibold !leading-normal',
+          'cursor-pointer select-none transition-all duration-150 whitespace-nowrap',
+          isArabic ? 'text-right flex-row-reverse' : 'text-left',
           isSelected
-            ? 'bg-[#4b3fdf]/8 text-[#4b3fdf] dark:bg-[#4b3fdf]/20 dark:text-brand-300'
-            : 'text-[#3a3759] hover:bg-[#f5f4fc] hover:text-[#4b3fdf] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-brand-300',
+            ? 'bg-[#4b3fdf]/10 text-[#4b3fdf] dark:bg-[#4b3fdf]/25 dark:text-brand-300'
+            : 'text-gray-700 hover:bg-gray-100/80 hover:text-[#4b3fdf] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white',
         )}
       >
-        {/* Colored left/right accent bar */}
+        <span>{option}</span>
+
         <span
           className={cn(
-            'absolute inset-y-0 w-[3px] rounded-full transition-opacity duration-150',
-            isArabic ? 'right-0' : 'left-0',
-            isSelected ? 'bg-[#4b3fdf] opacity-100' : 'opacity-0 group-hover:opacity-30 bg-[#4b3fdf]',
-          )}
-        />
-
-        {/* Label */}
-        <span className="flex-1">{option}</span>
-
-        {/* Check icon */}
-        <span
-          className={cn(
-            'flex size-4 shrink-0 items-center justify-center rounded-full transition-all duration-200',
-            isSelected
-              ? 'bg-[#4b3fdf] opacity-100 scale-100'
-              : 'bg-transparent opacity-0 scale-75',
+            'flex size-4 shrink-0 items-center justify-center transition-all duration-200',
+            isSelected ? 'opacity-100 scale-100 text-[#4b3fdf] dark:text-brand-400' : 'opacity-0 scale-75',
           )}
         >
-          <Check className="size-2.5 text-white" strokeWidth={3} />
+          <Check className="size-3.5" strokeWidth={2.5} />
         </span>
-      </button>
+      </div>
     </motion.li>
   )
 }
 
-/* ── Main component ─────────────────────────────────────────── */
+/* ── المكون الرئيسي ─────────────────────────────────────────── */
 
 export function ProjectTypeSelector({
   value,
@@ -95,35 +104,54 @@ export function ProjectTypeSelector({
   hintLabel,
 }: ProjectTypeSelectorProps) {
   const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLSpanElement>(null)
+
+  const availableOptions =
+    options && options.length > 3
+      ? options
+      : isArabic
+      ? FULL_PROJECT_TYPES_AR
+      : FULL_PROJECT_TYPES_EN
 
   const hasValue = value.trim().length > 0
   const showHint = !hasValue && !open
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [open])
+
   return (
-    <span className="relative inline-flex">
+    <span ref={containerRef} className="relative inline-flex align-baseline">
       <AnimatePresence>
         {showHint && <HintBadge label={hintLabel} icon="click" />}
       </AnimatePresence>
 
-      {/* Trigger button */}
+      {/* الزر داخل الجملة الكبيرة */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        onBlur={() => {
-          onBlur()
-          setTimeout(() => setOpen(false), 120)
-        }}
+        onBlur={onBlur}
         className={cn(
-          'inline-flex items-center gap-1.5 pb-0.5 font-bold',
-          'border-b-2 border-dashed transition-colors duration-300',
+          'inline-flex items-center gap-1.5 pb-0.5 font-black cursor-pointer align-baseline',
+          'border-b-2 border-dashed transition-all duration-300',
           'hover:border-[#4b3fdf] focus:outline-none',
           isValid
             ? 'border-[#4b3fdf] text-[#4b3fdf]'
             : open
-              ? 'border-[#4b3fdf]/70 text-[#0d0b2c]'
+              ? 'border-[#4b3fdf] text-[#4b3fdf]'
               : hasValue
-                ? 'border-amber-400/60 text-[#0d0b2c]'
-                : 'border-[#4b3fdf]/30 text-[#0d0b2c]',
+                ? 'border-amber-400/80 text-[#0d0b2c] dark:text-white'
+                : 'border-[#4b3fdf]/40 text-[#4b3fdf]',
         )}
       >
         <span>{hasValue ? value : placeholder}</span>
@@ -132,50 +160,44 @@ export function ProjectTypeSelector({
           transition={{ duration: 0.2 }}
           className="inline-flex"
         >
-          <ChevronDown className="h-4 w-4 shrink-0" />
+          <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
         </motion.span>
       </button>
 
-      {/* Dropdown panel */}
+      {/* المنيو الأنيقة المدمجة (معزولة الحجم تماماً) */}
       <AnimatePresence>
         {open && (
-          <motion.ul
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 2, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.97 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 4, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-              // Reset inherited font size from the headline div
-              'text-sm',
-              'absolute top-full z-50 min-w-[160px] overflow-hidden',
-              'rounded-xl py-1',
-              // Glass panel
-              'border border-[#e7e4f7] bg-white/95 backdrop-blur-xl dark:bg-[#19172f]/95 dark:border-white/10',
-              'shadow-[0_16px_48px_-10px_rgba(75,63,223,0.20),0_4px_12px_-4px_rgba(75,63,223,0.08)]',
+              // تحديد الحجم والمقاس الصغير للقائمة
+              '!text-sm !font-normal !leading-tight',
+              'absolute top-full z-50 min-w-[210px] max-w-[260px] overflow-hidden',
+              'rounded-2xl p-1.5 shadow-2xl',
+              'border border-gray-100/80 bg-white/95 backdrop-blur-xl dark:bg-[#141226]/95 dark:border-white/10',
+              'shadow-[0_16px_35px_-8px_rgba(0,0,0,0.25)]',
               isArabic ? 'right-0' : 'left-0',
             )}
-            role="listbox"
           >
-            {/* Subtle top gradient accent */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#4b3fdf]/30 to-transparent"
-            />
-
-            {options.map((option, index) => (
-              <OptionItem
-                key={option}
-                option={option}
-                isSelected={value === option}
-                isArabic={isArabic}
-                index={index}
-                onSelect={() => {
-                  onChange(option)
-                  setOpen(false)
-                }}
-              />
-            ))}
-          </motion.ul>
+            <ul role="listbox" className="space-y-0.5 max-h-60 overflow-y-auto">
+              {availableOptions.map((option, index) => (
+                <OptionItem
+                  key={option}
+                  option={option}
+                  isSelected={value === option}
+                  isArabic={isArabic}
+                  index={index}
+                  onSelect={() => {
+                    onChange(option)
+                    setOpen(false)
+                  }}
+                />
+              ))}
+            </ul>
+          </motion.div>
         )}
       </AnimatePresence>
     </span>

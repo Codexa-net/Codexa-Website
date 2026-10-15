@@ -1,20 +1,26 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { Mail, Trash2, X } from "lucide-react";
+import {
+  Mail,
+  Trash2,
+  X,
+  MessageCircle,
+  Phone,
+  CheckCircle2,
+  Clock,
+  Send,
+} from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
 import { DeleteDialog } from "@/components/ui/DeleteDialog";
 import { markMessageReadAction, deleteMessageAction } from "@/actions/messages";
+import { sendProjectTrackingEmail } from "@/lib/emailjs";
 import { cn } from "@/lib/utils";
 import type { ContactMessage } from "@/app/dashboard/messages/page";
 
-const statusStyles: Record<"جديد" | "تمت القراءة", string> = {
-  "جديد": "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
-  "تمت القراءة": "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
-};
+export type MessageStatus = "جديد" | "قيد المتابعة" | "تم الرد";
 
 function formatDate(iso: string) {
   try {
@@ -28,27 +34,148 @@ function formatDate(iso: string) {
   }
 }
 
+function cleanPhoneNumber(phone?: string | null): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("01")) return "20" + digits.slice(1);
+  return digits;
+}
+
+function getSavedStatus(id: string): MessageStatus | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const saved = localStorage.getItem(`msg_status_${id}`);
+    if (saved === "تم الرد" || saved === "قيد المتابعة" || saved === "جديد") {
+      return saved as MessageStatus;
+    }
+  } catch {}
+  return null;
+}
+
+function resolveStatus(m: ContactMessage): MessageStatus {
+  const local = getSavedStatus(m.id);
+  if (local) return local;
+
+  const raw = String(m.status || "").toUpperCase();
+  if (raw === "تم الرد" || raw === "REPLIED") return "تم الرد";
+  if (raw === "قيد المتابعة" || raw === "PENDING") return "قيد المتابعة";
+  if (m.isRead) return "تم الرد";
+
+  return "جديد";
+}
+
 export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }) {
-  const [items, setItems] = useState<ContactMessage[]>(requests);
+  const [items, setItems] = useState<ContactMessage[]>(() => {
+    return (requests || []).map((m) => ({
+      ...m,
+      status: resolveStatus(m),
+    }));
+  });
+
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [toDelete, setToDelete] = useState<ContactMessage | null>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailFeedback, setEmailFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // تحديث القائمة تلقائياً بمجرد وصول بيانات جديدة من السيرفر
   useEffect(() => {
-    setItems(requests || []);
+    if (!requests) return;
+    setItems(requests.map((m) => ({ ...m, status: resolveStatus(m) })));
   }, [requests]);
 
-  function openDetails(msg: ContactMessage) {
-    setSelected(msg);
-    if (!msg.isRead) {
+  function updateStatus(msgId: string, newStatus: MessageStatus) {
+    try {
+      localStorage.setItem(`msg_status_${msgId}`, newStatus);
+      if (newStatus !== "جديد") {
+        localStorage.setItem(`msg_read_${msgId}`, "true");
+      } else {
+        localStorage.removeItem(`msg_read_${msgId}`);
+      }
+      window.dispatchEvent(new Event("messagesUpdated"));
+    } catch {}
+
+    setItems((list) =>
+      list.map((m) =>
+        m.id === msgId
+          ? { ...m, status: newStatus, isRead: newStatus !== "جديد" }
+          : m
+      )
+    );
+
+    if (selected?.id === msgId) {
+      setSelected((prev) =>
+        prev ? { ...prev, status: newStatus, isRead: newStatus !== "جديد" } : null
+      );
+    }
+
+    if (newStatus !== "جديد") {
       startTransition(async () => {
-        const result = await markMessageReadAction(msg.id);
-        if (result.success) {
-          setItems((list) => list.map((m) => (m.id === msg.id ? { ...m, isRead: true } : m)));
-          setSelected((s) => (s && s.id === msg.id ? { ...s, isRead: true } : s));
-        }
+        try {
+          await markMessageReadAction(msgId);
+        } catch {}
       });
+    }
+  }
+
+  function openDetails(msg: ContactMessage) {
+    const currentStatus = resolveStatus(msg);
+    setSelected({ ...msg, status: currentStatus });
+    setEmailFeedback(null);
+
+    try {
+      localStorage.setItem(`msg_read_${msg.id}`, "true");
+      window.dispatchEvent(new Event("messagesUpdated"));
+    } catch {}
+
+    if (!msg.isRead && currentStatus === "جديد") {
+      updateStatus(msg.id, "قيد المتابعة");
+    }
+  }
+
+  function handleTriggerReply(msgId: string) {
+    updateStatus(msgId, "تم الرد");
+  }
+
+  async function handleSendTrackingEmail() {
+    if (!selected) return;
+
+    const hasEmail = selected.email && selected.email.includes("@");
+    if (!hasEmail) {
+      alert("بيانات العميل لا تحتوي على بريد إلكتروني (مسجل برقم هاتف فقط).");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailFeedback(null);
+
+    try {
+      const res = await sendProjectTrackingEmail({
+        name: selected.name,
+        email: selected.email.trim(),
+        projectName: selected.subject || "مشروعك الجديد",
+        trackingToken: selected.id,
+      });
+
+      if (res.success) {
+        setEmailFeedback({
+          type: "success",
+          msg: "تم إرسال رابط المتابعة بنجاح إلى بريد العميل!",
+        });
+        updateStatus(selected.id, "تم الرد");
+      } else {
+        setEmailFeedback({
+          type: "error",
+          msg: `تعذر إرسال البريد: ${res.error}`,
+        });
+      }
+    } catch (err: any) {
+      setEmailFeedback({
+        type: "error",
+        msg: err?.message || "حدث خطأ غير متوقع أثناء إرسال البريد",
+      });
+    } finally {
+      setIsSendingEmail(false);
     }
   }
 
@@ -58,12 +185,23 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
     startTransition(async () => {
       const result = await deleteMessageAction(id);
       if (result.success) {
+        try {
+          localStorage.removeItem(`msg_status_${id}`);
+          localStorage.removeItem(`msg_read_${id}`);
+          window.dispatchEvent(new Event("messagesUpdated"));
+        } catch {}
         setItems((list) => list.filter((m) => m.id !== id));
         if (selected?.id === id) setSelected(null);
       }
       setToDelete(null);
     });
   }
+
+  const isPhoneInEmail =
+    selected?.email && !selected.email.includes("@") && /^[0-9+ ]+$/.test(selected.email);
+  const clientPhone = selected?.phone || (isPhoneInEmail ? selected?.email : null);
+  const whatsappNumber = cleanPhoneNumber(clientPhone);
+  const hasValidEmail = selected?.email && selected.email.includes("@");
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
@@ -74,7 +212,7 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
               <tr className="border-b border-gray-100 font-semibold text-[#8b8f9c] dark:border-gray-800">
                 <th className="px-6 py-4">التاريخ</th>
                 <th className="px-6 py-4">الاسم</th>
-                <th className="px-6 py-4">البريد الإلكتروني</th>
+                <th className="px-6 py-4">بيانات التواصل</th>
                 <th className="px-6 py-4">الموضوع</th>
                 <th className="px-6 py-4 text-center">الحالة</th>
                 <th className="px-6 py-4 text-center">إجراءات</th>
@@ -89,7 +227,8 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
                 </tr>
               ) : (
                 items.map((r) => {
-                  const status = r.isRead ? "تمت القراءة" : "جديد";
+                  const currentStatus: MessageStatus = resolveStatus(r);
+
                   return (
                     <tr key={r.id} className="transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/40">
                       <td className="px-6 py-4 font-semibold text-gray-500 dark:text-gray-400">
@@ -104,9 +243,28 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
                       <td className="px-6 py-4 font-medium text-gray-700 dark:text-gray-300">
                         {r.subject || "—"}
                       </td>
+
                       <td className="px-6 py-4 text-center">
-                        <Badge className={statusStyles[status]}>{status}</Badge>
+                        {currentStatus === "جديد" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-400">
+                            <span className="size-1.5 rounded-full bg-blue-500 animate-ping" />
+                            جديد
+                          </span>
+                        )}
+                        {currentStatus === "قيد المتابعة" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-600 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400">
+                            <Clock size={12} />
+                            قيد المتابعة
+                          </span>
+                        )}
+                        {currentStatus === "تم الرد" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400">
+                            <CheckCircle2 size={12} />
+                            تم الرد
+                          </span>
+                        )}
                       </td>
+
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
                           <button
@@ -136,7 +294,7 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
         <Pagination total={items.length} shown={items.length} />
       </Card>
 
-      {/* الدرج الجانبي Slide-in Drawer متوافق بالكامل مع Dark Mode */}
+      {/* الدرج الجانبي Slide-in Drawer */}
       <div
         className={cn(
           "fixed inset-0 z-50 transition-opacity duration-300",
@@ -160,46 +318,145 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
                 >
                   <X size={16} />
                 </button>
-                <h2 className="text-lg font-black text-[#14161f] dark:text-white">تفاصيل الطلب</h2>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 text-right">
-                <p className="text-xs font-semibold text-gray-400">المرسل</p>
-                <p className="mt-1 text-base font-bold text-[#14161f] dark:text-white">{selected.name}</p>
-                <p className="mt-1 text-xs text-gray-400" dir="ltr">
-                  {selected.email} • {formatDate(selected.createdAt)}
-                </p>
-                {selected.phone && (
-                  <p className="mt-1 text-xs text-gray-400" dir="ltr">
-                    {selected.phone}
-                  </p>
-                )}
-
-                <p className="mt-6 text-xs font-semibold text-gray-400">نص الرسالة / تفاصيل الفكرة</p>
-                <div className="mt-2 whitespace-pre-line rounded-xl bg-[#f7f8fb] p-4 text-xs leading-6 text-gray-700 dark:bg-gray-800/60 dark:text-gray-200">
-                  {selected.message}
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-black text-[#14161f] dark:text-white">تفاصيل الطلب</h2>
+                  {(selected.status || "قيد المتابعة") === "تم الرد" ? (
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                      تم الرد بنجاح
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+                      بانتظار تواصلك
+                    </span>
+                  )}
                 </div>
               </div>
 
-              <div className="flex gap-3 border-t border-gray-100 p-6 dark:border-gray-800">
-                <button
-                  type="button"
-                  onClick={() => setToDelete(selected)}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 text-gray-500 hover:bg-rose-50 hover:text-rose-500 dark:bg-gray-800 dark:hover:bg-rose-950/30"
-                  title="حذف الرسالة"
-                >
-                  <Trash2 size={16} />
-                </button>
-                <Button
-                  href={`mailto:${selected.email}${
-                    selected.subject ? `?subject=${encodeURIComponent("رد: " + selected.subject)}` : ""
-                  }`}
-                  className="flex-1"
-                >
-                  <Mail size={15} />
-                  الرد عبر البريد
-                </Button>
+              <div className="flex-1 overflow-y-auto p-6 text-right space-y-6">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400">العميل</p>
+                  <p className="mt-1 text-base font-bold text-[#14161f] dark:text-white">{selected.name}</p>
+                  <p className="mt-1 text-xs text-gray-400" dir="ltr">
+                    {selected.email} • {formatDate(selected.createdAt)}
+                  </p>
+                  {clientPhone && (
+                    <p className="mt-1 flex items-center justify-end gap-1.5 text-xs font-mono font-bold text-brand-600 dark:text-brand-400" dir="ltr">
+                      <Phone size={13} />
+                      {clientPhone}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-400">تفاصيل الفكرة المرسلة</p>
+                  <div className="mt-2 whitespace-pre-line rounded-xl bg-[#f7f8fb] p-4 text-xs leading-6 text-gray-700 dark:bg-gray-800/60 dark:text-gray-200 border border-gray-100 dark:border-gray-800">
+                    {selected.message}
+                  </div>
+                </div>
               </div>
+
+              {/* قسم الإجراءات بالأسفل */}
+              <div className="flex flex-col gap-3 border-t border-gray-100 p-6 dark:border-gray-800">
+                {/* زر إرسال رابط المتابعة الرسمي عبر EmailJS (يظهر إذا توفر إيميل) */}
+                {hasValidEmail && (
+                  <button
+                    type="button"
+                    disabled={isSendingEmail}
+                    onClick={handleSendTrackingEmail}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#4b3fdf] px-4 py-3 text-xs font-bold text-white shadow-md shadow-[#4b3fdf]/20 transition-all hover:bg-[#3b30bd] hover:shadow-lg hover:shadow-[#4b3fdf]/30 disabled:opacity-50"
+                  >
+                    {isSendingEmail ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span>جاري إرسال الإيميل...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={14} />
+                        <span>إرسال رابط المتابعة بالبريد (EmailJS)</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* تنبيه حالة إرسال الإيميل */}
+                {emailFeedback && (
+                  <div
+                    className={cn(
+                      "rounded-xl p-2.5 text-center text-xs font-semibold transition-all",
+                      emailFeedback.type === "success"
+                        ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-400"
+                        : "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400"
+                    )}
+                  >
+                    {emailFeedback.msg}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  {whatsappNumber ? (
+                    <a
+                      href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                        `أهلاً أستاذ ${selected.name}، معك فريق Codexa بخصوص طلبك لمشروع (${selected.subject || "الجديد"}).`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => handleTriggerReply(selected.id)}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-bold text-white shadow-sm transition-all hover:bg-emerald-700"
+                    >
+                      <MessageCircle size={15} />
+                      واتساب فوري
+                    </a>
+                  ) : (
+                    <Button
+                      href={`mailto:${selected.email}${
+                        selected.subject ? `?subject=${encodeURIComponent("رد Codexa: " + selected.subject)}` : ""
+                      }`}
+                      onClick={() => handleTriggerReply(selected.id)}
+                      className="flex flex-1 items-center justify-center gap-2 py-3 text-xs font-bold"
+                    >
+                      <Mail size={15} />
+                      الرد عبر البريد
+                    </Button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateStatus(
+                        selected.id,
+                        (selected.status || "قيد المتابعة") === "تم الرد" ? "قيد المتابعة" : "تم الرد"
+                      )
+                    }
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 rounded-xl border px-3.5 py-3 text-xs font-bold transition-all shrink-0",
+                      (selected.status || "قيد المتابعة") === "تم الرد"
+                        ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-400"
+                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    )}
+                    title={(selected.status || "قيد المتابعة") === "تم الرد" ? "إعادة الطلب لقيد المتابعة" : "تحديد كـ تم الرد"}
+                  >
+                    {(selected.status || "قيد المتابعة") === "تم الرد" ? (
+                      <span>إعادة للمتابعة</span>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={14} className="text-emerald-500" />
+                        <span>تحديد كـ تم الرد</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setToDelete(selected)}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:bg-gray-800 dark:hover:bg-rose-950/30"
+                    title="حذف الرسالة"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
         </div>
@@ -214,7 +471,7 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
 
       {isPending && (
         <div className="fixed bottom-6 start-1/2 z-[60] -translate-x-1/2 rounded-full bg-[#14161f] px-4 py-2 text-xs font-semibold text-white shadow-lg dark:bg-white dark:text-black">
-          جاري الحفظ...
+          جاري التحديث...
         </div>
       )}
     </div>

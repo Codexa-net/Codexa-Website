@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-
 import { cn } from '@/lib/utils'
 import { type Project } from '@/types/project'
 import { Container } from '@/components/shared/container'
@@ -13,28 +12,24 @@ interface OurWorkHeroProps {
   projects: Project[]
 }
 
-/**
- * OurWorkHero — matching the Figma "Our Work" hero:
- * Clean white bg with centered title ("اكتشف ما أنجزناه") and fanned-out floating project cards.
- */
 export function OurWorkHero({ title, subtitle, scrollHint, projects }: OurWorkHeroProps) {
   const displayProjects = projects.slice(0, 5)
 
-  // Fan spread layout for the cards
+  // توزيع الكروت بتباعد واضح وأبعاد تمنع التداخل
   const cardStyles = [
-    { rotate: -12, translateX: -120, translateY: 20, scale: 0.85, zIndex: 1 },
-    { rotate: -6, translateX: -50, translateY: 8, scale: 0.92, zIndex: 2 },
-    { rotate: 0, translateX: 0, translateY: 0, scale: 1, zIndex: 3 },
-    { rotate: 6, translateX: 50, translateY: 8, scale: 0.92, zIndex: 2 },
-    { rotate: 12, translateX: 120, translateY: 20, scale: 0.85, zIndex: 1 },
+    { rotate: -10, translateX: -150, translateY: 15, scale: 0.88, zIndex: 1 },
+    { rotate: -5, translateX: -75, translateY: 6, scale: 0.94, zIndex: 2 },
+    { rotate: 0, translateX: 0, translateY: 0, scale: 1, zIndex: 5 },
+    { rotate: 5, translateX: 75, translateY: 6, scale: 0.94, zIndex: 2 },
+    { rotate: 10, translateX: 150, translateY: 15, scale: 0.88, zIndex: 1 },
   ]
 
   const isAnjaznah = title.includes('أنجزناه')
 
   return (
-    <section className="relative overflow-hidden bg-white pb-8 pt-12 md:pb-12 md:pt-20 dark:bg-[#0d0b1f]">
+    <section className="relative overflow-hidden bg-white pb-8 pt-12 md:pb-14 md:pt-20 dark:bg-[#0d0b1f]">
       <Container className="flex flex-col items-center text-center">
-        {/* Title */}
+        {/* العنوان */}
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,17 +59,25 @@ export function OurWorkHero({ title, subtitle, scrollHint, projects }: OurWorkHe
           </motion.p>
         )}
 
-        {/* Fanned floating project cards */}
+        {/* الكروت العائمة ثلاثية الأبعاد */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-12 flex h-48 w-full max-w-xl items-center justify-center sm:h-56 md:mt-16 md:h-64"
+          className="relative mt-12 flex h-56 w-full max-w-xl items-center justify-center sm:h-64 md:mt-16 md:h-72"
         >
           {displayProjects.map((project, index) => {
             const style = cardStyles[index] ?? cardStyles[2]
-            // دمجنا themeFrom و themeTo لعمل شكل متناسق
-            const themeClass = `from-[${project.themeFrom}] to-[${project.themeTo}]` || 'from-[#1e1b4b] to-[#4338ca]'
+            const fromColor = project.themeFrom || '#1e1b4b'
+            const toColor = project.themeTo || '#090818'
+
+            // استخراج صورة الغلاف الحقيقية للمشروع
+            const projectImage =
+              (project as any).cover ||
+              (project as any).image ||
+              (project as any).coverImage ||
+              (project as any).thumbnail ||
+              'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80'
 
             return (
               <motion.div
@@ -87,43 +90,48 @@ export function OurWorkHero({ title, subtitle, scrollHint, projects }: OurWorkHe
                 }}
                 transition={{
                   duration: 0.5,
-                  delay: 0.2 + index * 0.08,
+                  delay: 0.15 + index * 0.06,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 className={cn(
-                  'absolute h-40 w-28 overflow-hidden rounded-2xl shadow-xl sm:h-48 sm:w-32 md:h-52 md:w-36',
-                  'bg-gradient-to-b',
-                  themeClass,
+                  'absolute h-48 w-32 sm:h-56 sm:w-36 md:h-60 md:w-44 overflow-hidden rounded-2xl border border-white/20',
+                  'shadow-[0_20px_45px_-12px_rgba(75,63,223,0.3),0_8px_20px_rgba(0,0,0,0.15)]',
                 )}
                 style={{
                   zIndex: style.zIndex,
                   transform: `translateX(${style.translateX}px) translateY(${style.translateY}px) scale(${style.scale}) rotate(${style.rotate}deg)`,
+                  background: `linear-gradient(160deg, ${fromColor} 0%, ${toColor} 100%)`,
                 }}
               >
-                {/* Mini device mockup inside card */}
-                <div className="flex h-full flex-col p-3">
-                  <p className="text-xs font-bold text-white/90">
-                    {/* هنا التعديل: استخدمنا name بدل title.en */}
+                <div className="flex h-full flex-col p-2.5 text-right sm:p-3" dir="rtl">
+                  {/* رأس الكارت: التصنيف وحالة المشروع */}
+                  <div className="flex items-center justify-between pb-1">
+                    <span className="size-1.5 rounded-full bg-emerald-400" />
+                    <span className="max-w-[85px] truncate text-[9px] font-bold text-white/70">
+                      {project.category}
+                    </span>
+                  </div>
+
+                  {/* اسم المشروع */}
+                  <p className="mt-0.5 line-clamp-1 text-xs font-bold text-white">
                     {project.name}
                   </p>
-                  <p className="mt-0.5 text-[9px] text-white/50">
-                    {/* هنا التعديل: استخدمنا category بدل category.en */}
-                    {project.category}
-                  </p>
-                  <div className="mt-auto overflow-hidden rounded-lg border border-white/15 bg-black/30">
-                    <div className="flex h-3 items-center gap-0.5 border-b border-white/10 bg-white/5 px-1.5">
-                      <span className="size-1 rounded-full bg-red-400/70" />
-                      <span className="size-1 rounded-full bg-yellow-400/70" />
-                      <span className="size-1 rounded-full bg-green-400/70" />
+
+                  {/* نافذة العرض الحقيقية لصورة واجهة المشروع */}
+                  <div className="mt-auto relative flex h-[62%] w-full flex-col overflow-hidden rounded-xl border border-white/20 bg-black/50 shadow-inner">
+                    <div className="flex h-3.5 shrink-0 items-center gap-1 border-b border-white/10 bg-black/40 px-2">
+                      <span className="size-1 rounded-full bg-red-400/80" />
+                      <span className="size-1 rounded-full bg-yellow-400/80" />
+                      <span className="size-1 rounded-full bg-green-400/80" />
                     </div>
-                    <div className="space-y-1 p-2">
-                      <div className="h-1 w-3/4 rounded-full bg-white/20" />
-                      <div className="h-1 w-1/2 rounded-full bg-white/10" />
-                      <div className="grid grid-cols-3 gap-0.5">
-                        {[0, 1, 2].map((i) => (
-                          <div key={i} className="aspect-square rounded-sm bg-white/10" />
-                        ))}
-                      </div>
+
+                    <div className="relative size-full overflow-hidden bg-neutral-900">
+                      <img
+                        src={projectImage}
+                        alt={project.name}
+                        className="size-full object-cover object-top transition-transform duration-500 hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -131,13 +139,14 @@ export function OurWorkHero({ title, subtitle, scrollHint, projects }: OurWorkHe
             )
           })}
         </motion.div>
-        {/* Scroll hint */}
+
+        {/* مؤشر النزول للأسفل */}
         {scrollHint && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-10 flex flex-col items-center gap-2 text-muted-foreground dark:text-gray-500"
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-12 flex flex-col items-center gap-2 text-muted-foreground dark:text-gray-500"
           >
             <p className="text-xs font-medium tracking-wide">{scrollHint}</p>
             <motion.div
@@ -154,7 +163,6 @@ export function OurWorkHero({ title, subtitle, scrollHint, projects }: OurWorkHe
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                aria-hidden="true"
               >
                 <path d="M12 5v14M5 12l7 7 7-7" />
               </svg>

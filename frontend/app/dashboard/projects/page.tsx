@@ -17,13 +17,21 @@ export default async function ProjectsPage() {
     console.error("تعذر جلب المشاريع من الخادم:", error);
   }
 
-  const projectsData = Array.isArray(rawProjects) ? rawProjects : [];
-  const totalProjects = projectsData.length;
-  const activeProjects = projectsData.filter(
+  // 1. التأكد إننا سحبنا الداتا
+  const allProjects = Array.isArray(rawProjects) ? rawProjects : [];
+
+  // 2. 🔥 الفلتر الحاسم: استبعاد أي مشروع تبع "سابقة الأعمال" تماماً من الشاشة دي
+  const companyProjects = allProjects.filter(
+    (p) => p.isPublic !== true && p.isPublic !== "true"
+  );
+
+  // 3. بناء الإحصائيات على مشاريع الشركة الفعلية فقط
+  const totalProjects = companyProjects.length;
+  const activeProjects = companyProjects.filter(
     (p) => p.status === "قيد التنفيذ" || p.status === "قيد المراجعة"
   ).length;
-  const completedProjects = projectsData.filter((p) => p.status === "مكتمل").length;
-  const delayedProjects = projectsData.filter((p) => p.status === "متأخر").length;
+  const completedProjects = companyProjects.filter((p) => p.status === "مكتمل").length;
+  const delayedProjects = companyProjects.filter((p) => p.status === "متأخر").length;
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
@@ -31,10 +39,10 @@ export default async function ProjectsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#14161f] dark:text-white">
-            المشاريع
+            المشاريع الداخلية
           </h1>
           <p className="mt-1 text-xs text-[#8b8f9c] dark:text-gray-400">
-            إدارة ومتابعة جميع مشاريعك من مكان واحد
+            إدارة ومتابعة مشاريع فريق العمل (لا تشمل سابقة الأعمال)
           </p>
         </div>
 
@@ -69,7 +77,8 @@ export default async function ProjectsPage() {
         ))}
       </div>
 
-      <ProjectsListClient projects={projectsData} />
+      {/* الجدول هيعرض مشاريع الشركة الفعلية فقط */}
+      <ProjectsListClient projects={companyProjects} />
     </div>
   );
 }

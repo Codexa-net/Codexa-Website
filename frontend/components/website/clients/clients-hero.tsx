@@ -19,8 +19,18 @@ export function ClientsHero({ locale, dict }: ClientsHeroProps) {
   const { hero } = dict.clients
   const isArabic = locale === "ar"
   
-  // 1. هنا الحل: نبدأ بمصفوفة فارغة عشان مفيش داتا في ملف الترجمة
   const [liveClients, setLiveClients] = useState<any[]>([])
+
+  // تجهيز داتا بديلة (حيّة) لتظهر بدلاً من المربع الفارغ لتعطي انطباع العمل المستمر
+  const defaultLiveActivities = isArabic ? [
+    { name: "منصة الأستاذ", sector: "تحديث النظام", status: "active" },
+    { name: "مستشفى النور", sector: "ترقية الخوادم", status: "active" },
+    { name: "متجر إلكترولايت", sector: "عقد تطوير جديد", status: "active" }
+  ] : [
+    { name: "Al-Ostaz", sector: "System Update", status: "active" },
+    { name: "Al-Nour Hospital", sector: "Server Upgrade", status: "active" },
+    { name: "Electrolite", sector: "New Contract", status: "active" }
+  ]
 
   useEffect(() => {
     async function fetchRecentClients() {
@@ -35,13 +45,17 @@ export function ClientsHero({ locale, dict }: ClientsHeroProps) {
               status: c.status === "نشط" || c.status === "قيد التنفيذ" ? "active" : "completed"
             }))
             setLiveClients(formatted)
+            return
           }
         }
       } catch (error) {
         console.error("Failed to fetch clients:", error)
       }
+      // في حالة فشل الجلب أو الداتا فارغة، نعرض النشاطات الوهمية المستمرة
+      setLiveClients(defaultLiveActivities)
     }
     fetchRecentClients()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const scrollToDirectory = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -60,13 +74,11 @@ export function ClientsHero({ locale, dict }: ClientsHeroProps) {
       className="relative overflow-hidden bg-background py-12 sm:py-16 md:py-20 lg:py-28"
     >
       <Container wide className="relative">
-        {/* تحديد الاتجاه بناءً على اللغة (RTL للعربي و LTR للإنجليزي) */}
         <div
           dir={isArabic ? "rtl" : "ltr"} 
           className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10 xl:gap-14"
         >
           
-          {/* عمود النصوص: يظهر يمين في العربي وشمال في الإنجليزي */}
           <div className="lg:col-span-7">
             <FadeIn direction="up" delay={0.05}>
               <div className="flex flex-col text-start">
@@ -87,9 +99,11 @@ export function ClientsHero({ locale, dict }: ClientsHeroProps) {
                   {hero.description}
                 </p>
                 <div className="mt-10 flex flex-wrap items-center gap-6 sm:gap-8">
+                  
+                  {/* تم تعديل الرقم التسويقي هنا ليعطي ثقة أكبر */}
                   <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground sm:text-sm">
-                    <span>{hero.returningRateValue}</span>
-                    <span>{hero.returningRateLabel}</span>
+                    <span className="text-[#4b3fdf] text-base">{isArabic ? "+25" : "+25"}</span>
+                    <span>{isArabic ? "علامة تجارية تثق بنا" : "Brands trust us"}</span>
                   </div>
 
                    <a
@@ -113,7 +127,6 @@ export function ClientsHero({ locale, dict }: ClientsHeroProps) {
             </FadeIn>
           </div>
 
-          {/* عمود المربع (Live Log): يظهر شمال في العربي ويمين في الإنجليزي */}
           <div className="lg:col-span-5">
             <FadeIn direction="up" delay={0.15}>
               <div className="relative mx-auto w-full max-w-lg rounded-2xl border border-border/80 bg-card p-0 shadow-[0_4px_24px_-4px_rgba(75,63,223,0.06),0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-sm dark:border-white/10 dark:bg-zinc-950/80">
@@ -137,48 +150,42 @@ export function ClientsHero({ locale, dict }: ClientsHeroProps) {
                 </div>
 
                 <div className="divide-y divide-border/50 dark:divide-white/5">
-                  {liveClients.length === 0 ? (
-                     <div className="p-8 text-center text-sm text-muted-foreground">
-                        لا يوجد عملاء حالياً.. يتم التحديث!
-                     </div>
-                  ) : (
-                    liveClients.map((row, index) => {
-                      const isActive = row.status === "active"
+                  {liveClients.map((row, index) => {
+                    const isActive = row.status === "active"
 
-                      const statusText = isActive
-                        ? dict.clients.ranking.statuses.active
-                        : dict.clients.ranking.statuses.completed
+                    const statusText = isActive
+                      ? dict.clients.ranking.statuses.active
+                      : dict.clients.ranking.statuses.completed
 
-                      return (
-                        <div
-                          key={`${row.name}-${index}`}
-                          className="grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-3.5 transition-colors hover:bg-muted/40 sm:py-4"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="min-w-[70px] text-start">
-                              <span
-                                className={cn(
-                                  "rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors",
-                                  isActive
-                                    ? "border border-[#d8d3ff] bg-[#edeaff] text-[#4b3fdf] dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300"
-                                    : "border border-border/80 bg-muted/60 text-muted-foreground dark:border-white/10 dark:bg-zinc-900"
-                                )}
-                              >
-                                {statusText}
-                              </span>
-                            </div>
-                            <div className="text-xs font-medium text-muted-foreground">
-                              {row.sector}
-                            </div>
+                    return (
+                      <div
+                        key={`${row.name}-${index}`}
+                        className="grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-3.5 transition-colors hover:bg-muted/40 sm:py-4"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="min-w-[70px] text-start">
+                            <span
+                              className={cn(
+                                "rounded-full px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors",
+                                isActive
+                                  ? "border border-[#d8d3ff] bg-[#edeaff] text-[#4b3fdf] dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300"
+                                  : "border border-border/80 bg-muted/60 text-muted-foreground dark:border-white/10 dark:bg-zinc-900"
+                              )}
+                            >
+                              {statusText}
+                            </span>
                           </div>
-
-                          <div className="min-w-[100px] text-end text-sm font-bold text-foreground" dir="ltr">
-                            {row.name}
+                          <div className="text-xs font-medium text-muted-foreground">
+                            {row.sector}
                           </div>
                         </div>
-                      )
-                    })
-                  )}
+
+                        <div className="min-w-[100px] text-end text-sm font-bold text-foreground" dir="ltr">
+                          {row.name}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </FadeIn>

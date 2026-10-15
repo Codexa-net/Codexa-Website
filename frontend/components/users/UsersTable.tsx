@@ -14,14 +14,40 @@ interface User {
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "مدير نظام (Super Admin)",
+  BACKEND_LEAD: "قائد الباك إند (Backend Lead)",
+  FRONTEND_LEAD: "قائد الفرونت إند (Frontend Lead)",
+  UI_UX_LEAD: "قائد تصميم الواجهات (UI/UX Lead)",
+  MOBILE_APP_LEAD: "قائد تطبيقات الموبايل (Mobile App Lead)",
+  DEVELOPER: "مطور برمجيات (Developer)",
   SALES: "موظف مبيعات (Sales)",
+};
+
+const getRoleBadgeColor = (role: string) => {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300";
+    case "BACKEND_LEAD":
+      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300";
+    case "FRONTEND_LEAD":
+      return "bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300";
+    case "UI_UX_LEAD":
+      return "bg-pink-100 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300";
+    case "MOBILE_APP_LEAD":
+      return "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300";
+    case "DEVELOPER":
+      return "bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300";
+    case "SALES":
+    default:
+      return "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300";
+  }
 };
 
 export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>(initialUsers || []);
 
-  // تحديث الجدول تلقائياً لو الداتا اتغيرت
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
   useEffect(() => {
     setUsers(initialUsers || []);
   }, [initialUsers]);
@@ -31,7 +57,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
 
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserRole, setNewUserRole] = useState("SALES");
+  const [newUserRole, setNewUserRole] = useState("BACKEND_LEAD");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -45,6 +71,11 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
     }
     return {
       SUPER_ADMIN: { "إدارة المشاريع": true, "إدارة العملاء": true, "حذف بيانات النظام": true, "إدارة المستخدمين": true },
+      BACKEND_LEAD: { "إدارة المشاريع": true, "إدارة العملاء": false, "حذف بيانات النظام": false, "إدارة المستخدمين": false },
+      FRONTEND_LEAD: { "إدارة المشاريع": true, "إدارة العملاء": false, "حذف بيانات النظام": false, "إدارة المستخدمين": false },
+      UI_UX_LEAD: { "إدارة المشاريع": true, "إدارة العملاء": false, "حذف بيانات النظام": false, "إدارة المستخدمين": false },
+      MOBILE_APP_LEAD: { "إدارة المشاريع": true, "إدارة العملاء": false, "حذف بيانات النظام": false, "إدارة المستخدمين": false },
+      DEVELOPER: { "إدارة المشاريع": false, "إدارة العملاء": false, "حذف بيانات النظام": false, "إدارة المستخدمين": false },
       SALES: { "إدارة المشاريع": false, "إدارة العملاء": true, "حذف بيانات النظام": false, "إدارة المستخدمين": false },
     };
   });
@@ -64,7 +95,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
     setEditingUserId(null);
     setNewUserName("");
     setNewUserEmail("");
-    setNewUserRole("SALES");
+    setNewUserRole("BACKEND_LEAD");
     setNewUserPassword("");
     setShowPassword(false);
     setIsModalOpen(true);
@@ -86,8 +117,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
 
     try {
       const isEditing = editingUserId !== null;
-      // استخدام مسار البروكسي الداخلي بدلاً من API_URL
-      const endpoint = isEditing ? `/api/backend/admin-users/${editingUserId}` : `/api/backend/admin-users`;
+      const endpoint = isEditing ? `${API_BASE}/admin-users/${editingUserId}` : `${API_BASE}/admin-users`;
       const method = isEditing ? "PUT" : "POST";
 
       const bodyData: any = {
@@ -100,22 +130,42 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
         bodyData.password = newUserPassword.trim();
       }
 
+      const token = typeof window !== "undefined" ? (localStorage.getItem("token") || localStorage.getItem("accessToken")) : null;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(endpoint, {
         method,
-        headers: { "Content-Type": "application/json" }, // لا نحتاج لإرسال التوكن يدوياً، الكوكي سيتكفل بالأمر
+        headers,
+        credentials: "include",
         body: JSON.stringify(bodyData),
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        alert(errorData.message || "حدث خطأ أثناء حفظ البيانات");
+        const errorData = await res.json().catch(() => ({}));
+        const msg = Array.isArray(errorData.message) 
+          ? errorData.message.join(" - ") 
+          : (errorData.message || "حدث خطأ أثناء حفظ البيانات");
+        alert(msg);
         return;
       }
 
       setIsModalOpen(false);
-      router.refresh(); // تحديث الصفحة لطلب البيانات الجديدة من السيرفر
+      router.refresh();
+
+      const updatedRes = await fetch(`${API_BASE}/admin-users`, { credentials: "include", headers });
+      if (updatedRes.ok) {
+        const data = await updatedRes.json();
+        setUsers(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
+      }
     } catch {
-      alert("تعذر الاتصال بالسيرفر");
+      alert("تعذر الاتصال بالسيرفر. تأكد من عمل سيرفر الباك إند على بورت 3001");
     }
   };
 
@@ -128,9 +178,22 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
     if (!confirm("هل أنت متأكد من حذف هذا المستخدم؟")) return;
 
     try {
-      const res = await fetch(`/api/backend/admin-users/${id}`, { method: "DELETE" });
+      const token = typeof window !== "undefined" ? (localStorage.getItem("token") || localStorage.getItem("accessToken")) : null;
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE}/admin-users/${id}`, { 
+        method: "DELETE",
+        headers,
+        credentials: "include"
+      });
+
       if (res.ok) {
-        router.refresh(); // تحديث الصفحة بعد الحذف
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+        router.refresh();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || "فشل حذف المستخدم");
       }
     } catch {
       alert("فشل حذف المستخدم من الخادم");
@@ -200,12 +263,8 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 font-bold text-gray-700 dark:text-gray-300 font-sans">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
-                        u.role === "SUPER_ADMIN" 
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300" 
-                          : "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                      }`}>
+                    <td className="py-4 px-6 font-bold font-sans">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getRoleBadgeColor(u.role)}`}>
                         {ROLE_LABELS[u.role] || u.role}
                       </span>
                     </td>
@@ -343,8 +402,13 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                   onChange={(e) => setNewUserRole(e.target.value)}
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-xs text-right outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800/60 dark:text-white cursor-pointer"
                 >
-                  <option value="SALES">موظف مبيعات (Sales)</option>
                   <option value="SUPER_ADMIN">مدير نظام (Super Admin)</option>
+                  <option value="BACKEND_LEAD">قائد الباك إند (Backend Lead)</option>
+                  <option value="FRONTEND_LEAD">قائد الفرونت إند (Frontend Lead)</option>
+                  <option value="UI_UX_LEAD">قائد تصميم الواجهات (UI/UX Lead)</option>
+                  <option value="MOBILE_APP_LEAD">قائد تطبيقات الموبايل (Mobile App Lead)</option>
+                  <option value="DEVELOPER">مطور برمجيات (Developer)</option>
+                  <option value="SALES">موظف مبيعات (Sales)</option>
                 </select>
               </div>
 
@@ -386,6 +450,11 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
               className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-800 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-[#111827] dark:text-white cursor-pointer"
             >
               <option value="SUPER_ADMIN">مدير نظام (Super Admin)</option>
+              <option value="BACKEND_LEAD">قائد الباك إند (Backend Lead)</option>
+              <option value="FRONTEND_LEAD">قائد الفرونت إند (Frontend Lead)</option>
+              <option value="UI_UX_LEAD">قائد تصميم الواجهات (UI/UX Lead)</option>
+              <option value="MOBILE_APP_LEAD">قائد تطبيقات الموبايل (Mobile App Lead)</option>
+              <option value="DEVELOPER">مطور برمجيات (Developer)</option>
               <option value="SALES">موظف مبيعات (Sales)</option>
             </select>
           </div>

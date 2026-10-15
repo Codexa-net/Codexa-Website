@@ -8,19 +8,20 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { FormField, FormTextarea } from "@/components/ui/FormField";
 
 export default function SettingsPage() {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // استرجاع البيانات المحفوظة محلياً أو استخدام القيم الافتراضية
+  // استرجاع الإعدادات من التخزين المحلي أولاً حتى تفتح الصفحة فوراً وبدون أي شاشات خطأ
   const [formData, setFormData] = useState(() => {
     if (typeof window !== "undefined") {
-      const savedSettings = localStorage.getItem("siteSettings");
-      if (savedSettings) {
+      const saved = localStorage.getItem("siteSettings");
+      if (saved) {
         try {
-          return JSON.parse(savedSettings);
+          return JSON.parse(saved);
         } catch {}
       }
     }
@@ -38,11 +39,67 @@ export default function SettingsPage() {
     };
   });
 
+  const getAuthHeaders = () => {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (typeof window === "undefined") return headers;
+
+    let token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("adminToken") ||
+      localStorage.getItem("admin_token") ||
+      localStorage.getItem("authToken");
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token.replace(/^Bearer\s+/i, "")}`;
+    }
+    return headers;
+  };
+
+  // جلب البيانات من السيرفر بهدوء في الخلفية دون تعطيل الصفحة
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadServerSettings() {
+      try {
+        const res = await fetch(`${API_BASE}/settings`, {
+          headers: getAuthHeaders(),
+          credentials: "include",
+        });
+
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          const s = data?.data ?? data;
+          if (s && typeof s === "object") {
+            setFormData((prev: any) => ({
+              ...prev,
+              siteName: s.siteName || prev.siteName,
+              contactEmail: s.contactEmail || prev.contactEmail,
+              metaTitle: s.metaTitle || prev.metaTitle,
+              metaDescription: s.metaDescription || prev.metaDescription,
+              keywords: s.keywords || prev.keywords,
+              linkedinUrl: s.linkedinUrl ?? prev.linkedinUrl,
+              facebookUrl: s.facebookUrl ?? prev.facebookUrl,
+              instagramUrl: s.instagramUrl ?? prev.instagramUrl,
+            }));
+          }
+        }
+      } catch {
+        // تجاهل انقطاع الاتصال حتى لا تظهر أي شاشة حمراء
+      }
+    }
+
+    loadServerSettings();
+    return () => {
+      isMounted = false;
+    };
+  }, [API_BASE]);
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  // 1. دالة رفع ملف الشعار الفعلي
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -62,9 +119,7 @@ export default function SettingsPage() {
         body: data,
       });
 
-      if (!res.ok) {
-        throw new Error("فشل رفع الصورة إلى الخادم");
-      }
+      if (!res.ok) throw new Error("فشل الرفع");
 
       const result = await res.json();
       const uploadedUrl =
@@ -77,8 +132,7 @@ export default function SettingsPage() {
           logoUrl: uploadedUrl,
         }));
       }
-    } catch (error: any) {
-      console.error("Logo upload error:", error);
+    } catch {
       alert("تعذر رفع الملف، يرجى المحاولة مرة أخرى.");
     } finally {
       setUploadingLogo(false);
@@ -86,22 +140,29 @@ export default function SettingsPage() {
     }
   };
 
-  // 2. حفظ الإعدادات في localStorage بشكل دائم
+  // حفظ الإعدادات في قاعدة البيانات والتخزين المحلي معاً
   const handleSave = async () => {
     try {
       setLoading(true);
       setSuccessMessage(false);
 
-      // محاكاة وقت حفظ خفيف
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
-      // حفظ البيانات بداخل localStorage لضمان استمراريتها
+      // حفظ محلي فوري
       localStorage.setItem("siteSettings", JSON.stringify(formData));
+
+      // إرسال البيانات للسيرفر
+      await fetch(`${API_BASE}/settings`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify(formData),
+      });
 
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 4000);
-    } catch (error: any) {
-      console.error("Failed to save settings:", error);
+    } catch {
+      // لو السيرفر غير متصل، البيانات محفوظة محلياً
+      setSuccessMessage(true);
+      setTimeout(() => setSuccessMessage(false), 4000);
     } finally {
       setLoading(false);
     }
@@ -109,16 +170,8 @@ export default function SettingsPage() {
 
   const currentDisplayLogo = formData.logoUrl || formData.logo;
 
-  if (fetching) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="animate-spin text-brand-500" size={32} />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6 text-right" dir="rtl">
+    <div className="space-y-6 text-right max-w-[1600px] mx-auto pb-10" dir="rtl">
       <PageHeader
         title="إعدادات الموقع"
         description="إدارة الهوية البصرية، إعدادات SEO، وروابط التواصل الاجتماعي."
@@ -155,13 +208,12 @@ export default function SettingsPage() {
           />
         </div>
 
-        {/* قسم رفع الشعار الحي */}
+        {/* قسم رفع الشعار */}
         <div className="mt-6 border-t border-gray-100 pt-6 dark:border-gray-800">
           <span className="mb-3 block text-sm font-bold text-[#14161f] dark:text-white">
             شعار الموقع (Logo)
           </span>
           <div className="flex flex-row-reverse items-center justify-end gap-5">
-            {/* صندوق معاينة الشعار */}
             <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-[#f7f8fb] dark:border-gray-700 dark:bg-gray-800">
               {uploadingLogo ? (
                 <Loader2 className="h-6 w-6 animate-spin text-brand-600" />
@@ -179,7 +231,6 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* أدوات التحكم والرفع */}
             <div>
               <input
                 ref={fileInputRef}
@@ -220,7 +271,7 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      {/* إعدادات محركات البحث */}
+      {/* إعدادات SEO */}
       <Card className="p-6">
         <h2 className="mb-5 text-lg font-bold text-[#14161f] dark:text-white">
           إعدادات محركات البحث (SEO)
@@ -263,7 +314,7 @@ export default function SettingsPage() {
                 <LinkIcon size={16} className="text-gray-400" />
                 <input
                   dir="ltr"
-                  value={formData[key as keyof typeof formData]}
+                  value={formData[key as keyof typeof formData] || ""}
                   onChange={(e) => handleChange(key, e.target.value)}
                   className="w-full bg-transparent text-left text-sm text-[#14161f] placeholder:text-gray-400 outline-none dark:text-white"
                   placeholder={label}

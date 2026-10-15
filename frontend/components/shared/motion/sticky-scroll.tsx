@@ -11,23 +11,13 @@ import {
 import { cn } from '@/lib/utils'
 
 interface StickyScrollProps {
-  /** Number of scroll steps (each step ~= one viewport height) */
   itemCount: number
-  /** Render the sticky panel; receives the currently active index */
   children: (activeIndex: number) => React.ReactNode
   className?: string
-  /** Extra classes for the sticky panel wrapper */
   panelClassName?: string
-  /** Accessible label for the scroll region */
   ariaLabel?: string
 }
 
-/**
- * StickyScroll — the outer section scrolls while an inner panel stays pinned.
- * Active index is derived from scroll progress through the tall container.
- *
- * Used by Works showcase and Why Choose Us on the Home page.
- */
 export function StickyScroll({
   itemCount,
   children,
@@ -66,16 +56,10 @@ export function StickyScroll({
       style={{ height: `${itemCount * 100}vh` }}
       aria-label={ariaLabel}
     >
-      {/* Entry reveal: the entire sticky section fades+slides up as it enters the viewport */}
-      <motion.div
-        initial={{ opacity: 0, y: 48 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.05 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className={cn('sticky top-0 h-svh overflow-hidden', panelClassName)}
-      >
+      {/* تم التثبيت بشكل نظيف بدون أنيميشن مدخل يتعارض مع السكرول */}
+      <div className={cn('sticky top-0 h-screen overflow-hidden', panelClassName)}>
         {children(activeIndex)}
-      </motion.div>
+      </div>
     </div>
   )
 }
@@ -88,9 +72,6 @@ interface StickyScrollIndicatorProps {
   variant?: 'light' | 'dark'
 }
 
-/**
- * Vertical progress dots for sticky scroll sections.
- */
 export function StickyScrollIndicator({
   count,
   activeIndex,
@@ -125,10 +106,7 @@ export function StickyScrollIndicator({
               'rounded-full transition-all duration-300 outline-none',
               'focus-visible:ring-2 focus-visible:ring-ring',
               isActive
-                ? cn(
-                    'size-2.5',
-                    isDark ? 'bg-white' : 'bg-brand-500',
-                  )
+                ? cn('size-2.5', isDark ? 'bg-white' : 'bg-brand-500')
                 : cn(
                     'size-1.5',
                     isDark
@@ -147,14 +125,9 @@ interface StickyScrollContentProps {
   activeIndex: number
   children: React.ReactNode
   className?: string
-  /** Direction of slide: 'up' (default) or 'left' */
   slideDirection?: 'up' | 'left'
 }
 
-/**
- * AnimatePresence-friendly wrapper for swapping sticky content.
- * Each index change triggers a fresh slide-up + fade-in.
- */
 export function StickyScrollContent({
   activeIndex,
   children,

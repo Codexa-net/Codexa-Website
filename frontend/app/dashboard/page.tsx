@@ -1,5 +1,6 @@
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 import { serverFetchApi } from "@/lib/server-api";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,9 +15,16 @@ async function getCurrentAdmin() {
 }
 
 export default async function DashboardMainPage() {
+  const admin = await getCurrentAdmin();
+
+  // 🟢 تحويل أعضاء الفريق التنفيذي فوراً إلى صفحة مهامهم المباشرة
+  const EXECUTION_ROLES = ["DEVELOPER", "UI_UX_DESIGNER", "GRAPHIC_DESIGNER"];
+  if (admin?.role && EXECUTION_ROLES.includes(admin.role)) {
+    redirect("/dashboard/tasks");
+  }
+
   let projects: any[] = [];
   let clientsCount = 0;
-  const admin = await getCurrentAdmin();
 
   try {
     const [pRes, cRes] = await Promise.allSettled([
@@ -46,9 +54,13 @@ export default async function DashboardMainPage() {
     console.error("تعذر جلب البيانات:", err);
   }
 
+  const companyProjects = projects.filter(
+    (p: any) => p.isPublic !== true && p.isPublic !== "true"
+  );
+
   return (
     <DashboardClient
-      initialProjects={projects}
+      initialProjects={companyProjects}
       totalClients={clientsCount}
       currentUser={admin}
     />

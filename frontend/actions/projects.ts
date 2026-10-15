@@ -9,6 +9,7 @@ export async function createProjectAction(data: any) {
       name: data.name,
       description: data.description || null,
       shortDescription: data.shortDescription || null,
+      cover: data.cover || null,
       category: data.category || null,
       status: data.status || "قيد التنفيذ",
       priority: data.priority || "متوسطة",
@@ -16,6 +17,8 @@ export async function createProjectAction(data: any) {
       deadline: data.deadline || null,
       managerName: data.managerName || null,
       designerName: data.designerName || null,
+      isPublic: Boolean(data.isPublic),
+      clientEmail: data.clientEmail ? data.clientEmail.trim() : null,
       technologies: Array.isArray(data.technologies)
         ? data.technologies
         : typeof data.technologies === "string"
@@ -34,6 +37,8 @@ export async function createProjectAction(data: any) {
     });
 
     revalidatePath("/dashboard/projects");
+    revalidatePath("/ar/our-work");
+    revalidatePath("/en/our-work");
     return { success: true, data: newProject };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -46,6 +51,7 @@ export async function updateProjectAction(id: string, data: any) {
       name: data.name,
       description: data.description || null,
       shortDescription: data.shortDescription || null,
+      cover: data.cover || null,
       category: data.category || null,
       status: data.status || "قيد التنفيذ",
       priority: data.priority || "متوسطة",
@@ -53,6 +59,8 @@ export async function updateProjectAction(id: string, data: any) {
       deadline: data.deadline || null,
       managerName: data.managerName || null,
       designerName: data.designerName || null,
+      isPublic: Boolean(data.isPublic),
+      clientEmail: data.clientEmail ? data.clientEmail.trim() : null,
       technologies: Array.isArray(data.technologies)
         ? data.technologies
         : typeof data.technologies === "string"
@@ -72,6 +80,8 @@ export async function updateProjectAction(id: string, data: any) {
 
     revalidatePath("/dashboard/projects");
     revalidatePath(`/dashboard/projects/${id}/edit`);
+    revalidatePath("/ar/our-work");
+    revalidatePath("/en/our-work");
     return { success: true, data: updated };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -84,6 +94,8 @@ export async function deleteProjectAction(id: string) {
       method: "DELETE",
     });
     revalidatePath("/dashboard/projects");
+    revalidatePath("/ar/our-work");
+    revalidatePath("/en/our-work");
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };

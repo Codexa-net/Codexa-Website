@@ -16,6 +16,14 @@
       "description": "We design and develop digital experiences that blend beauty and function — from visual identity to full digital products",
       "cta": "Start Your Journey"
     },
+    "marquee": [
+      "Web Development",
+      "Mobile Apps",
+      "E-Commerce",
+      "Admin Dashboards",
+      "UI/UX Design",
+      "Visual Identity"
+    ],
     "services": {
       "eyebrow": "How We Work",
       "title": "Not Just a List of Services — A Journey We Build With You",
@@ -23,21 +31,33 @@
       "learnMore": "Learn more about this service",
       "items": [
         {
-          "title": "Web Development",
+          "title": "Web Development & Platforms",
           "summary": "Fast, responsive websites with modern design",
           "description": "We build fast, responsive websites and web apps with modern design tailored to your brand and business goals.",
           "tags": []
         },
         {
-          "title": "Mobile Apps",
+          "title": "Mobile Applications",
           "summary": "iOS and Android with smooth UX",
           "description": "We develop iOS and Android apps with smooth user experience and high performance that keeps customers loyal.",
           "tags": []
         },
         {
-          "title": "Visual Identity",
-          "summary": "Logos and complete brand systems",
-          "description": "We design logos and complete visual identity systems that reflect your brand personality and build market presence.",
+          "title": "E-Commerce Solutions",
+          "summary": "Seamless shopping experience with secure payment integration",
+          "description": "Custom online storefronts equipped with inventory control, analytics, and instant checkout flows to maximize sales.",
+          "tags": []
+        },
+        {
+          "title": "Admin Dashboards & Web Systems",
+          "summary": "Smart control panels to manage your operations and data",
+          "description": "Tailored cloud dashboards and internal business tools to automate processes, track metrics, and manage teams seamlessly.",
+          "tags": []
+        },
+        {
+          "title": "UI/UX & Visual Identity",
+          "summary": "Logos, intuitive interfaces, and brand systems",
+          "description": "We craft full brand systems and engaging UI/UX interfaces that establish presence and drive user satisfaction.",
           "tags": []
         }
       ]
@@ -186,9 +206,10 @@
       ]
     },
     "testimonial": {
-      "text": "We started WEB Studio because we worked in many places where the design was good and the strategy was good, but they never truly came together. Here, everyone works under the same roof. That's the whole idea.",
-      "name": "Ahmed Mostafa",
-      "role": "Founder & Creative Director"
+      "text": "We founded Codexa to bridge the gap between aesthetics and engineering. By bringing strategy, modern UI/UX design, and clean code under one cohesive team, we build digital products that don't just look good, but truly drive business growth.",
+      "name": "Omar El Kady",
+      "role": "Founder & Creative Director",
+      "image": "/images/founder.jpg"
     },
     "cta": {
       "eyebrow": "Let's work together",
@@ -240,7 +261,8 @@
         "all": "All",
         "tech": "Tech & Digital",
         "fitness": "Health & Fitness",
-        "retail": "Retail & Commerce"      },
+        "retail": "Retail & Commerce"
+      },
       "statuses": {
         "active": "Active Partner",
         "completed": "Completed"
@@ -258,7 +280,7 @@
     "placeholderName": "Your name",
     "placeholderProject": "Project name",
     "placeholderProjectType": "Project type",
-    "placeholderEmail": "Your email",
+    "placeholderEmail": "Your email or WhatsApp",
     "submit": "Start your project now",
     "whatsapp": "WhatsApp",
     "successTitle": "Sent!",
@@ -266,7 +288,10 @@
     "projectTypes": [
       "Website",
       "Mobile App",
-      "Visual Identity"
+      "E-Commerce Store",
+      "Management System / Dashboard",
+      "Visual Identity",
+      "Other Idea"
     ],
     "infoTitle": "Direct contact",
     "infoSubtitle": "Or reach us via",

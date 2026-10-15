@@ -7,8 +7,8 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { Navbar } from '@/components/website/layout/navbar'
 import { Footer } from '@/components/website/layout/footer'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { ClassicChatbot } from '@/components/shared/ClassicChatbot'
 
-// Generate static routes for all locales
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }))
 }
@@ -53,8 +53,8 @@ export default async function LocaleLayout(props: LayoutProps<'/[lang]'>) {
   const dict = await getDictionary(locale)
 
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className="overflow-x-hidden">
+    <html lang={locale} dir={dir} className="dark" suppressHydrationWarning>
+      <body className="overflow-x-clip bg-[#030712] text-white">
         <ThemeProvider>
           <div className="flex min-h-svh flex-col">
             <Navbar locale={locale} dict={dict} />
@@ -63,6 +63,8 @@ export default async function LocaleLayout(props: LayoutProps<'/[lang]'>) {
             </main>
             <Footer locale={locale} dict={dict} />
           </div>
+
+          <ClassicChatbot lang={locale} />
         </ThemeProvider>
       </body>
     </html>

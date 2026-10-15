@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { MessagesClient } from "@/components/messages/MessagesClient";
 import { serverFetchApi } from "@/lib/server-api";
+import { redirect } from "next/navigation";
 
 // إيقاف الكاش لضمان جلب الرسائل الجديدة لحظياً
 export const dynamic = "force-dynamic";
@@ -17,8 +18,16 @@ export interface ContactMessage {
   createdAt: string;
 }
 
+async function getCurrentUser() {
+  try {
+    const res = await serverFetchApi("/auth/me");
+    return res?.data ?? res ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function getMessages(): Promise<ContactMessage[]> {
-  // فحص المسارات المحتملة في الـ Backend
   const endpoints = ["/admin/messages?limit=50", "/messages", "/contact"];
 
   for (const ep of endpoints) {
@@ -35,6 +44,20 @@ async function getMessages(): Promise<ContactMessage[]> {
 }
 
 export default async function MessagesPage() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // 🔒 حماية أمنية مشددة: الصفحة محجوبة تماماً عن المصممين والمطورين وتفتح للسوبر أدمن والسيلز فقط
+  const role = String(user.role || "").toUpperCase();
+  const ALLOWED_ROLES = ["SUPER_ADMIN", "SALES", "SALES_LEADER"];
+
+  if (!ALLOWED_ROLES.includes(role)) {
+    redirect("/dashboard/tasks");
+  }
+
   const messagesData = await getMessages();
 
   return (

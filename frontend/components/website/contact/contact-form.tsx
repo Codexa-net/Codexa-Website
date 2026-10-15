@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useForm, Controller, type FieldPath } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -45,6 +45,31 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
     defaultValues: { name: '', projectName: '', projectType: '', email: '' },
   })
 
+  // قائمة أنواع المشاريع المحدثة والشاملة لجميع خدمات الشركة
+  const enrichedProjectTypes = useMemo(() => {
+    const defaultAr = [
+      'موقع إلكتروني وتطبيق ويب',
+      'تطبيق موبايل (iOS & Android)',
+      'متجر إلكتروني وحلول دفع',
+      'نظام إداري خاص (ERP / Dashboard)',
+      'منصة تعليمية أو منظومة طبية',
+      'تصميم واجهات وتجربة مستخدم (UI/UX)',
+      'هوية بصرية كاملة',
+      'فكرة أخرى',
+    ]
+    const defaultEn = [
+      'Website & Web Application',
+      'Mobile App (iOS & Android)',
+      'E-Commerce Store',
+      'Custom ERP / Dashboard System',
+      'EdTech or Healthcare Platform',
+      'UI/UX Design',
+      'Brand Identity',
+      'Other Idea',
+    ]
+    return isArabic ? defaultAr : defaultEn
+  }, [isArabic])
+
   /** A field is considered "valid" only once it has been touched AND passes Zod */
   const isFieldValid = (field: FieldPath<ContactFormValues>) =>
     !!dirtyFields[field] && !errors[field]
@@ -60,17 +85,22 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
     setSubmitError(null)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      
+      const isPhone = !data.email.includes('@') && /^[0-9+ \s-]+$/.test(data.email)
+
       const payload = {
         name: data.name,
-        email: data.email,
-        subject: data.projectType || data.projectName || 'طلب مشروع جديد',
+        email: data.email.trim(),
+        phone: isPhone ? data.email.trim() : undefined,
+        subject: data.projectType || data.projectName || (isArabic ? 'طلب مشروع جديد' : 'New Project Request'),
         message: `${isArabic ? 'اسم المشروع' : 'Project name'}: ${data.projectName}\n${
           isArabic ? 'نوع المشروع' : 'Project type'
-        }: ${data.projectType}`,
+        }: ${data.projectType}\n${
+          isPhone
+            ? (isArabic ? 'رقم الواتساب' : 'WhatsApp')
+            : (isArabic ? 'البريد الإلكتروني' : 'Email')
+        }: ${data.email}`,
       }
 
-      // محاولة الإرسال إلى /messages أولاً، وإلى /contact كبديل
       let res = await fetch(`${apiUrl}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -109,12 +139,12 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
   return (
     <div
       dir={isArabic ? 'rtl' : 'ltr'}
-      className="relative overflow-hidden bg-[#fafaff] dark:bg-[#0d0b1f]"
+      className="relative overflow-hidden bg-[#fafaff] dark:bg-[#0d0b1f] min-h-[calc(100svh-4.5rem)] flex items-center"
     >
       {/* ── Background decoration ── */}
       <BackgroundDecoration />
 
-      <div className="relative mx-auto max-w-[1280px] px-4 py-16 sm:px-8 sm:py-32 lg:py-20">
+      <div className="relative mx-auto w-full max-w-[1220px] px-4 py-12 sm:px-8 lg:py-16">
 
         {/* Eyebrow label */}
         {!submitted && (
@@ -134,7 +164,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-10"
+          className="mt-8 sm:mt-10"
         >
           <AnimatePresence mode="wait">
 
@@ -164,10 +194,10 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
             {!submitted && (
               <motion.div key="form">
 
-                {/* The sentence */}
+                {/* تم زيادة المسافة الرأسية leading-[1.9] لمنع تداخل الشارات العائمة مع السطور */}
                 <div className={cn(
-                  'text-[clamp(1.5rem,5vw,3.75rem)] font-black leading-[1.55] text-[#0d0b2c] dark:text-white',
-                  '[&_input]:text-[clamp(1.5rem,5vw,3.75rem)] [&_button]:text-[clamp(1.5rem,5vw,3.75rem)]',
+                  'text-[clamp(1.4rem,4.2vw,3.35rem)] font-black leading-[1.9] sm:leading-[1.95] text-[#0d0b2c] dark:text-white',
+                  '[&_input]:text-[clamp(1.4rem,4.2vw,3.35rem)] [&_button]:text-[clamp(1.4rem,4.2vw,3.35rem)]',
                 )}>
 
                   {/* Name */}
@@ -187,7 +217,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                       />
                     )}
                   />
-                  {isArabic ? '،' : ','}{' '}
+                  <span>{isArabic ? '، ' : ', '}</span>
 
                   {/* Project name */}
                   <span>{c.sentenceProject} </span>
@@ -217,7 +247,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
-                        options={c.projectTypes}
+                        options={enrichedProjectTypes}
                         placeholder={c.placeholderProjectType}
                         isArabic={isArabic}
                         isValid={isFieldValid('projectType')}
@@ -225,9 +255,9 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                       />
                     )}
                   />
-                  {isArabic ? '،' : ','}{' '}
+                  <span>{isArabic ? '، ' : ', '}</span>
 
-                  {/* Email */}
+                  {/* Email / WhatsApp Field */}
                   <span>{c.sentenceEmail} </span>
                   <Controller
                     name="email"
@@ -237,8 +267,8 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
-                        placeholder={c.placeholderEmail}
-                        type="email"
+                        placeholder={isArabic ? 'رقم الواتساب أو البريد' : 'WhatsApp number or email'}
+                        type="text"
                         isArabic={isArabic}
                         isValid={isFieldValid('email')}
                         hintLabel={hints.email}
@@ -249,18 +279,14 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                   <span className="text-[#6b6879] dark:text-gray-500">{c.sentenceEnd}</span>
                 </div>
 
-                {/* Progress dots — active only when field passes Zod */}
+                {/* Progress dots */}
                 <ProgressDots
                   fields={FORM_FIELDS}
                   isFieldValid={(f) => isFieldValid(f as FieldPath<ContactFormValues>)}
                 />
 
-                {/* CTA */}
-                <motion.div
-                  animate={{ opacity: isValid ? 1 : 0.4 }}
-                  transition={{ duration: 0.4 }}
-                  className="mt-10 flex flex-wrap justify-center gap-4"
-                >
+                {/* CTA Buttons — زر الواتساب واضح دائماً بنسبة 100% */}
+                <div className="mt-8 flex flex-wrap justify-center gap-4">
                   <button
                     type="submit"
                     disabled={!isValid || isSubmitting}
@@ -269,7 +295,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                       'text-sm font-bold text-white transition-all duration-300',
                       'bg-[#4b3fdf] shadow-[0_18px_35px_-12px_rgba(75,63,223,0.5)]',
                       'hover:-translate-y-1 hover:shadow-[0_22px_40px_-12px_rgba(75,63,223,0.6)]',
-                      'disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0',
+                      'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0',
                     )}
                   >
                     {isSubmitting ? (
@@ -285,16 +311,16 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      'inline-flex items-center gap-3 rounded-full border-2 border-[#e7e4f7] px-8 py-4',
-                      'text-sm font-bold text-[#3a3759] transition-all duration-300',
-                      'hover:-translate-y-1 hover:border-green-400/50 hover:bg-green-50 hover:text-green-700',
-                      'dark:border-white/10 dark:text-gray-300 dark:hover:bg-green-950/30 dark:hover:border-green-500/30 dark:hover:text-green-400',
+                      'inline-flex items-center gap-3 rounded-full border-2 border-[#d8d4f2] bg-white px-8 py-4 shadow-sm',
+                      'text-sm font-bold text-[#2d2a4a] transition-all duration-300',
+                      'hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-50 hover:text-green-700',
+                      'dark:border-white/15 dark:bg-white/[0.04] dark:text-gray-200 dark:hover:bg-green-950/30 dark:hover:border-green-500/30 dark:hover:text-green-400',
                     )}
                   >
                     <MessageCircle className="h-4 w-4 text-green-500" />
                     {c.whatsapp}
                   </a>
-                </motion.div>
+                </div>
 
                 {submitError && (
                   <motion.p
@@ -333,5 +359,5 @@ function BackgroundDecoration() {
         <rect width="100%" height="100%" fill="url(#contact-grid)" />
       </svg>
     </div>
-  )
+  ) 
 }

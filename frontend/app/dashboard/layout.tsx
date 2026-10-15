@@ -36,7 +36,6 @@ function unwrapAdmin(response: AuthResponse): CurrentAdmin | null {
 async function getCurrentAdmin(): Promise<CurrentAdmin | null> {
   try {
     const response = await serverFetchApi<AuthResponse>('/auth/me');
-
     return unwrapAdmin(response);
   } catch {
     return null;
@@ -53,12 +52,14 @@ export default async function DashboardLayout({
   return (
     <DashboardThemeProvider>
       <div
-        className="flex min-h-screen w-full bg-[#f7f8fb] dark:bg-[#0b0f17]"
+        className="flex min-h-screen w-full bg-[#f8fafc] dark:bg-[#0b0f17] text-gray-900 dark:text-gray-100 overflow-x-hidden"
         dir="rtl"
       >
+        {/* الشريط الجانبي */}
         <Sidebar initialRole={admin?.role} />
 
-        <div className="flex min-h-screen flex-1 flex-col">
+        {/* حاوية العمل الرئيسية */}
+        <div className="flex min-h-screen flex-1 flex-col transition-all duration-300 min-w-0">
           <TopNav
             user={
               admin
@@ -71,7 +72,7 @@ export default async function DashboardLayout({
             }
           />
 
-          <main className="flex-1 overflow-y-auto p-8">
+          <main className="flex-1 overflow-y-auto p-4 md:p-8">
             {children}
           </main>
         </div>

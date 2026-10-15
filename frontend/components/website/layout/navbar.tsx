@@ -114,17 +114,28 @@ export function Navbar({ locale, dict }: NavbarProps) {
               currentLocale={locale}
               className="hidden sm:inline-flex"
             />
+            
+            {/* زر ابدأ مشروعك مع حلقة إضاءة متحركة احترافية */}
             <Link
               href={`/${locale}/contact`}
               className={cn(
-                'hidden rounded-full border border-brand-500 px-4 py-2',
-                'text-sm font-semibold text-brand-500 transition-colors',
-                'hover:bg-brand-500/5',
-                'outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'group relative hidden items-center justify-center rounded-full p-[1.5px]',
+                'overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'sm:inline-flex',
               )}
             >
-              {dict.nav.startProject}
+              {/* الحلقة المتحركة (Rotating Glowing Border) */}
+              <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#4b3fdf_0%,#a855f7_50%,#4b3fdf_100%)] opacity-80 group-hover:opacity-100" />
+              
+              {/* محتوى الزر الداخلي */}
+              <span className={cn(
+                'relative inline-flex h-full w-full items-center justify-center rounded-full px-5 py-2',
+                'bg-white text-sm font-semibold text-brand-500 transition-all duration-300',
+                'group-hover:bg-brand-500 group-hover:text-white',
+                'dark:bg-[#0d0b1f] dark:text-brand-300',
+              )}>
+                {dict.nav.startProject}
+              </span>
             </Link>
 
             <button
@@ -188,6 +199,18 @@ export function Navbar({ locale, dict }: NavbarProps) {
                       </Link>
                     </li>
                   ))}
+                  {/* زر ابدأ مشروعك داخل قائمة الموبايل مع إطار مضيء */}
+                  <li className="pt-2">
+                    <Link
+                      href={`/${locale}/contact`}
+                      className="group relative flex w-full items-center justify-center rounded-xl p-[1.5px] overflow-hidden"
+                    >
+                      <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#4b3fdf_0%,#a855f7_50%,#4b3fdf_100%)]" />
+                      <span className="relative flex w-full items-center justify-center rounded-[10px] bg-brand-500 py-3 text-sm font-bold text-white shadow-md transition-colors group-hover:bg-brand-600">
+                        {dict.nav.startProject}
+                      </span>
+                    </Link>
+                  </li>
                 </ul>
                 <div className="mt-6 flex items-center justify-between border-t border-border pt-6">
                   <ThemeToggle />
