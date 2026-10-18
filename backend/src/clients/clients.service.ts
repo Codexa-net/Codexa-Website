@@ -8,6 +8,25 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { ListClientsQueryDto } from './dto/list-clients-query.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 
+const CLIENT_SAFE_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  contact: true,
+  industry: true,
+  totalRevenue: true,
+  logo: true,
+  description: true,
+  sector: true,
+  website: true,
+  displayOrder: true,
+  year: true,
+  status: true,
+  category: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 @Injectable()
 export class ClientsService {
   constructor(
@@ -43,6 +62,7 @@ export class ClientsService {
         status: this.optionalText(createClientDto.status),
         category: this.optionalText(createClientDto.category),
       },
+      select: CLIENT_SAFE_SELECT,
     });
   }
 
@@ -69,7 +89,10 @@ export class ClientsService {
 
     return this.prisma.client.findMany({
       where,
-      include: { _count: { select: { projects: true } } },
+      select: {
+        ...CLIENT_SAFE_SELECT,
+        _count: { select: { projects: true } },
+      },
       orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
     });
   }
@@ -77,7 +100,20 @@ export class ClientsService {
   async findOne(id: string) {
     const client = await this.prisma.client.findUnique({
       where: { id },
-      include: { projects: true },
+      select: {
+        ...CLIENT_SAFE_SELECT,
+        portalToken: true,
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            status: true,
+            progress: true,
+            cover: true,
+          },
+        },
+      },
     });
 
     if (!client) {
@@ -136,7 +172,11 @@ export class ClientsService {
       data.category = this.optionalText(updateClientDto.category);
     }
 
-    return this.prisma.client.update({ where: { id }, data });
+    return this.prisma.client.update({
+      where: { id },
+      data,
+      select: CLIENT_SAFE_SELECT,
+    });
   }
 
   async generatePortalToken(id: string) {

@@ -98,7 +98,14 @@ export class AdminUsersController {
   }
 
   @Get(':id/transactions')
-  getTransactions(@Param('id', new ParseUUIDPipe()) id: string) {
+  getTransactions(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const isSuperAdmin = request.user.role === 'SUPER_ADMIN';
+    if (!isSuperAdmin && request.user.id !== id) {
+      throw new ForbiddenException('ليس لديك صلاحية لعرض المعاملات المالية لمستخدم آخر.');
+    }
     return this.adminUsersService.getTransactions(id);
   }
 

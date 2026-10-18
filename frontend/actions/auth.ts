@@ -26,6 +26,7 @@ export async function loginAction(formData: FormData) {
     cookieStore.set('accessToken', data.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: data.expiresIn || 3600,
       path: '/',
     });

@@ -23,7 +23,11 @@ export class UploadController {
       storage: diskStorage({
         destination: './uploads',
         filename: (_req, file, callback) => {
-          const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+          const rawExt = extname(file.originalname).toLowerCase();
+          const cleanExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(rawExt)
+            ? rawExt
+            : '.png';
+          const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${cleanExt}`;
           callback(null, uniqueName);
         },
       }),
@@ -31,9 +35,15 @@ export class UploadController {
         fileSize: 10 * 1024 * 1024,
       },
       fileFilter: (_req, file, callback) => {
-        if (!file.mimetype.startsWith('image/')) {
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+        const fileExt = extname(file.originalname).toLowerCase();
+
+        if (!allowedMimes.includes(file.mimetype) || !allowedExts.includes(fileExt)) {
           return callback(
-            new BadRequestException('Only image files are allowed.'),
+            new BadRequestException(
+              'Only safe raster images (JPEG, PNG, WebP, GIF) are allowed.',
+            ),
             false,
           );
         }

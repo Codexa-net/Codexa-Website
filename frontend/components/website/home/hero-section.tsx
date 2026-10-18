@@ -7,6 +7,7 @@ import { Container } from '@/components/shared/container'
 import { Section } from '@/components/shared/section'
 import { FadeIn } from '@/components/shared/motion/fade-in'
 import { buttonVariants } from '@/components/ui/Button'
+import { ShinyText } from '@/components/shared/magic/ShinyText'
 
 interface HeroSectionProps {
   locale: Locale
@@ -129,7 +130,14 @@ export async function HeroSection({ locale, dict }: HeroSectionProps) {
           </FadeIn>
 
           <div className="mx-auto max-w-2xl text-center lg:max-w-none">
-            <FadeIn direction="up" delay={0.05}>
+            <FadeIn direction="up" delay={0.02}>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs text-indigo-300 backdrop-blur-md">
+                <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                <ShinyText text={isArabic ? 'تقنيات المستقبل وحلول برمجية متقدمة' : 'Next-Gen Digital Craftsmanship'} />
+              </div>
+            </FadeIn>
+
+            <FadeIn direction="up" delay={0.08}>
               <h1
                 className={cn(
                   'text-balance font-bold tracking-tight',

@@ -9,6 +9,15 @@ import {
   UpdateProjectStageDto,
 } from './dto/project-stage.dto';
 
+const SAFE_CLIENT_SELECT = {
+  id: true,
+  name: true,
+  logo: true,
+  website: true,
+  sector: true,
+  category: true,
+} as const;
+
 @Injectable()
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -107,7 +116,7 @@ export class ProjectsService {
           : {}),
       },
       include: {
-        client: true,
+        client: { select: SAFE_CLIENT_SELECT },
         technologies: true,
         stages: {
           orderBy: { order: 'asc' },
@@ -156,7 +165,7 @@ export class ProjectsService {
     return this.prisma.project.findMany({
       where,
       include: {
-        client: true,
+        client: { select: SAFE_CLIENT_SELECT },
         technologies: true,
         stages: {
           orderBy: { order: 'asc' },
@@ -170,7 +179,7 @@ export class ProjectsService {
     const project = await this.prisma.project.findUnique({
       where: { id },
       include: {
-        client: true,
+        client: { select: SAFE_CLIENT_SELECT },
         technologies: true,
         stages: {
           orderBy: { order: 'asc' },
@@ -247,7 +256,7 @@ export class ProjectsService {
       where: { id },
       data,
       include: {
-        client: true,
+        client: { select: SAFE_CLIENT_SELECT },
         technologies: true,
         stages: {
           orderBy: { order: 'asc' },

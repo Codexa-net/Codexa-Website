@@ -8,6 +8,7 @@ import { HeroSection } from '@/components/website/home/hero-section'
 import { MarqueeBanner } from '@/components/website/home/marquee-banner'
 import { WorksShowcase } from '@/components/website/projects/works-showcase'
 import { ServicesSection } from '@/components/website/home/services-section'
+import { BentoShowcase } from '@/components/website/home/bento-showcase'
 import { WhyChooseUsSection } from '@/components/website/home/why-choose-us-section'
 
 export async function generateMetadata(
@@ -45,6 +46,7 @@ export default async function HomePage(props: PageProps<'/[lang]'>) {
         labels={{ viewProject: dict.home.projects.viewProject }}
       />
       <ServicesSection dict={dict} />
+      <BentoShowcase locale={locale} />
       <WhyChooseUsSection dict={dict} />
     </>
   )
