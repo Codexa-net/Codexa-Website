@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 import { serverFetchApi } from "@/lib/server-api";
 import { redirect } from "next/navigation";
@@ -7,7 +8,18 @@ export const revalidate = 0;
 
 async function getCurrentAdmin() {
   try {
-    const res = await serverFetchApi("/auth/me");
+    const cookieStore = await cookies();
+    const rawCookieUser = cookieStore.get("codexa_user")?.value;
+    if (rawCookieUser) {
+      const parsed = JSON.parse(decodeURIComponent(rawCookieUser));
+      if (parsed && parsed.role) {
+        return parsed;
+      }
+    }
+  } catch {}
+
+  try {
+    const res: any = await serverFetchApi("/auth/me");
     return res?.data ?? res ?? null;
   } catch {
     return null;
@@ -16,10 +28,15 @@ async function getCurrentAdmin() {
 
 export default async function DashboardMainPage() {
   const admin = await getCurrentAdmin();
+  const normalizedRole = (admin?.role || "").toUpperCase();
 
-  // 🟢 تحويل أعضاء الفريق التنفيذي فوراً إلى صفحة مهامهم المباشرة
-  const EXECUTION_ROLES = ["DEVELOPER", "UI_UX_DESIGNER", "GRAPHIC_DESIGNER"];
-  if (admin?.role && EXECUTION_ROLES.includes(admin.role)) {
+  // 🟢 1. تحويل مسؤولي المبيعات فوراً إلى صفحة طلبات التواصل والعملاء (وليس صفحة المهام)
+  if (normalizedRole === "SALES" || normalizedRole === "SALES_LEADER") {
+    redirect("/dashboard/messages");
+  }
+
+  // 🟢 2. حظر شاشة مشاريع الشركة الرئيسية عن أي ليدر أو مطور، وتحويلهم فوراً لصفحة مهامهم
+  if (normalizedRole && normalizedRole !== "SUPER_ADMIN") {
     redirect("/dashboard/tasks");
   }
 
@@ -33,21 +50,21 @@ export default async function DashboardMainPage() {
     ]);
 
     if (pRes.status === "fulfilled") {
-      const pData = pRes.value;
+      const pData: any = pRes.value;
       projects = Array.isArray(pData)
         ? pData
         : Array.isArray(pData?.data)
-        ? pData.data
-        : [];
+          ? pData.data
+          : [];
     }
 
     if (cRes.status === "fulfilled") {
-      const cData = cRes.value;
+      const cData: any = cRes.value;
       const clientsList = Array.isArray(cData)
         ? cData
         : Array.isArray(cData?.data)
-        ? cData.data
-        : [];
+          ? cData.data
+          : [];
       clientsCount = clientsList.length;
     }
   } catch (err) {
@@ -55,7 +72,7 @@ export default async function DashboardMainPage() {
   }
 
   const companyProjects = projects.filter(
-    (p: any) => p.isPublic !== true && p.isPublic !== "true"
+    (p: any) => p.isPublic !== true && p.isPublic !== "true",
   );
 
   return (

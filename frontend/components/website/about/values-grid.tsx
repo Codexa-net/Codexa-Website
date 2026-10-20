@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   ArrowUpLeft,
   ArrowUpRight,
@@ -58,17 +59,23 @@ export function ValuesGrid({
   items,
   isArabic,
 }: ValuesGridProps) {
+  /*
+   * Track active card index so touch devices (Mobile / Tablet)
+   * get the exact same expansion animation on tap/click,
+   * while Desktop continues to work on hover and click.
+   */
+  const [activeIndex, setActiveIndex] = useState<number>(0)
+
   return (
     <div
       className={[
-        "mt-16 w-full",
+        "mt-10 sm:mt-16 w-full",
 
         /*
          * Mobile / Tablet
-         * Normal responsive grid because hover expansion
-         * isn't useful on touch screens.
+         * Responsive grid with smooth height expansion on tap.
          */
-        "grid grid-cols-1 gap-5",
+        "grid grid-cols-1 gap-4 sm:gap-5",
         "sm:grid-cols-2",
         "lg:grid-cols-3",
 
@@ -84,13 +91,17 @@ export function ValuesGrid({
         isArabic ? "[direction:rtl]" : "[direction:ltr]",
       ].join(" ")}
     >
-      {items.map((item) => {
+      {items.map((item, index) => {
         const Icon =
           iconMap[item.icon as IconName] ?? Globe
+
+        const isActive = activeIndex === index
 
         return (
           <div
             key={item.number}
+            onClick={() => setActiveIndex(index)}
+            onMouseEnter={() => setActiveIndex(index)}
             className={[
               /*
                * =================================================
@@ -99,14 +110,14 @@ export function ValuesGrid({
                *
                * Every card starts with the same flex value.
                *
-               * On hover:
-               * - hovered card grows
+               * On hover or active state:
+               * - hovered/active card grows
                * - other cards automatically shrink
                *
                * flex-[2.8] is what creates the large expansion
                * shown in your screenshot.
                */
-              "xl:flex-1",
+              isActive ? "xl:flex-[2.8]" : "xl:flex-1",
               "xl:hover:flex-[2.8]",
 
               /*
@@ -120,11 +131,14 @@ export function ValuesGrid({
                * Mobile / tablet cards.
                */
               "w-full",
+              "cursor-pointer",
+              "select-none",
 
               /*
-               * Card height.
+               * Card height (responsive for mobile & desktop).
                */
-              "min-h-[420px]",
+              isActive ? "min-h-[320px]" : "min-h-[220px]",
+              "sm:min-h-[420px]",
               "xl:h-[560px]",
 
               /*
@@ -137,9 +151,11 @@ export function ValuesGrid({
               "border-white/[0.04]",
 
               /*
-               * Default background.
+               * Default & Active background on Mobile/Desktop.
                */
-              "bg-[#24205c]",
+              isActive
+                ? "bg-gradient-to-b from-[#4b42a9] to-[#26205f]"
+                : "bg-[#24205c]",
 
               /*
                * Hover background.
@@ -149,14 +165,17 @@ export function ValuesGrid({
               "hover:to-[#26205f]",
 
               /*
-               * Lift slightly on hover.
+               * Lift slightly on hover or active.
                */
+              isActive ? "-translate-y-1" : "",
               "hover:-translate-y-2",
 
               /*
                * Shadow.
                */
-              "shadow-none",
+              isActive
+                ? "shadow-[0_25px_70px_rgba(70,65,180,0.25)]"
+                : "shadow-none",
               "hover:shadow-[0_25px_70px_rgba(70,65,180,0.25)]",
 
               /*
@@ -198,21 +217,23 @@ export function ValuesGrid({
                     : "[direction:ltr]",
                 ].join(" ")}
               >
-                <span className="text-3xl font-bold text-white">
+                <span className="text-2xl font-bold text-white sm:text-3xl">
                   {item.number}
                 </span>
 
                 <Icon
                   className={[
-                    "h-7 w-7",
-                    "text-white/40",
+                    "h-6 w-6 sm:h-7 sm:w-7",
                     "transition-all",
                     "duration-500",
 
                     /*
                      * Icon becomes brighter/larger when
-                     * the card is hovered.
+                     * the card is hovered or active on mobile.
                      */
+                    isActive
+                      ? "scale-110 text-white"
+                      : "text-white/40",
                     "group-hover:scale-110",
                     "group-hover:text-white",
                   ].join(" ")}
@@ -231,11 +252,10 @@ export function ValuesGrid({
                   /*
                    * Important:
                    *
-                   * We don't use a fixed mt-14 here.
-                   * This allows the title to sit naturally
-                   * inside the expanding card.
+                   * Responsive top padding so mobile cards look
+                   * balanced while desktop keeps pt-16.
                    */
-                  "pt-16",
+                  "pt-8 sm:pt-16",
 
                   isArabic
                     ? "text-right"
@@ -273,13 +293,15 @@ export function ValuesGrid({
                 <div
                   className={[
                     /*
-                     * Hidden initially.
+                     * Open when active on mobile or hovered on desktop.
                      */
                     "grid",
-                    "grid-rows-[0fr]",
+                    isActive
+                      ? "grid-rows-[1fr]"
+                      : "grid-rows-[0fr]",
 
                     /*
-                     * Open on hover.
+                     * Smooth row transition.
                      */
                     "transition-[grid-template-rows]",
                     "duration-500",
@@ -292,13 +314,12 @@ export function ValuesGrid({
 
                     <p
                       className={[
-                        "pt-0",
-
                         /*
-                         * Description appears smoothly.
+                         * Description appears smoothly on tap or hover.
                          */
-                        "opacity-0",
-                        "translate-y-3",
+                        isActive
+                          ? "pt-4 sm:pt-6 opacity-100 translate-y-0"
+                          : "pt-0 opacity-0 translate-y-3",
 
                         "transition-all",
                         "duration-500",
@@ -308,7 +329,7 @@ export function ValuesGrid({
                         "group-hover:opacity-100",
                         "group-hover:translate-y-0",
 
-                        "text-[15px]",
+                        "text-sm sm:text-[15px]",
                         "leading-7",
                         "text-white/70",
                         "sm:leading-8",
@@ -328,7 +349,7 @@ export function ValuesGrid({
                 <div
                   className={[
                     "mt-auto",
-                    "pt-8",
+                    "pt-6 sm:pt-8",
                     "flex",
                     "items-end",
                     "justify-between",
@@ -344,15 +365,15 @@ export function ValuesGrid({
 
                   <span
                     className={[
-                      "text-sm",
+                      "text-xs sm:text-sm",
                       "font-bold",
-                      "text-white/50",
+                      isActive ? "text-white/80" : "text-white/50",
 
                       /*
                        * Allow wrapping inside narrow cards.
                        */
                       "max-w-[150px]",
-                      "leading-8",
+                      "leading-7 sm:leading-8",
 
                       /*
                        * When the card expands, label becomes
@@ -374,8 +395,8 @@ export function ValuesGrid({
                     aria-hidden="true"
                     className={[
                       "flex",
-                      "h-10",
-                      "w-10",
+                      "h-9 sm:h-10",
+                      "w-9 sm:w-10",
                       "shrink-0",
                       "items-center",
                       "justify-center",
@@ -385,22 +406,23 @@ export function ValuesGrid({
                       "transition-all",
                       "duration-500",
 
-                      "border-white/70",
-                      "text-white",
-
                       /*
                        * Screenshot behavior:
                        * arrow becomes filled when active/hovered.
                        */
+                      isActive
+                        ? "border-white bg-white text-[#171451]"
+                        : "border-white/70 text-white",
+
                       "group-hover:border-white",
                       "group-hover:bg-white",
                       "group-hover:text-[#171451]",
                     ].join(" ")}
                   >
                     {isArabic ? (
-                      <ArrowUpLeft className="h-5 w-5" />
+                      <ArrowUpLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                     ) : (
-                      <ArrowUpRight className="h-5 w-5" />
+                      <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </span>
 

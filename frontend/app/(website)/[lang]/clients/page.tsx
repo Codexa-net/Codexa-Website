@@ -6,7 +6,11 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { ClientsHero } from '@/components/website/clients/clients-hero'
 import { ClientsRanking } from '@/components/website/clients/clients-ranking'
 
-// قائمة العملاء الأساسية لضمان ظهور الفهرس والعداد بشكل ممتلئ واحترافي دائما
+type PageProps = {
+  params: Promise<{ lang: string }>
+}
+
+// قائمة الـ 25 عميلاً المعتمدة لضمان ظهور الفهرس والعداد ممتلئاً دائماً
 const SHOWCASE_CLIENTS = [
   {
     id: 'client-alnour',
@@ -237,73 +241,113 @@ const SHOWCASE_CLIENTS = [
 
 function resolveCategory(sectorText: string): 'tech' | 'fitness' | 'retail' | 'branding' {
   const s = sectorText.toLowerCase()
-  if (s.includes('طب') || s.includes('صح') || s.includes('مستشف') || s.includes('رياض') || s.includes('لياق') || s.includes('health') || s.includes('fit')) {
+  if (
+    s.includes('طب') ||
+    s.includes('صح') ||
+    s.includes('مستشف') ||
+    s.includes('رياض') ||
+    s.includes('لياق') ||
+    s.includes('health') ||
+    s.includes('fit')
+  ) {
     return 'fitness'
   }
-  if (s.includes('متجر') || s.includes('تجار') || s.includes('تجزئ') || s.includes('مطعم') || s.includes('سوق') || s.includes('شحن') || s.includes('retail') || s.includes('store')) {
+  if (
+    s.includes('متجر') ||
+    s.includes('تجار') ||
+    s.includes('تجزئ') ||
+    s.includes('مطعم') ||
+    s.includes('سوق') ||
+    s.includes('شحن') ||
+    s.includes('retail') ||
+    s.includes('store')
+  ) {
     return 'retail'
   }
-  if (s.includes('هوي') || s.includes('تجميل') || s.includes('قانون') || s.includes('تأجير') || s.includes('خدم') || s.includes('brand')) {
+  if (
+    s.includes('هوي') ||
+    s.includes('تجميل') ||
+    s.includes('قانون') ||
+    s.includes('تأجير') ||
+    s.includes('خدم') ||
+    s.includes('brand')
+  ) {
     return 'branding'
   }
   return 'tech'
 }
 
-export async function generateMetadata(
-  props: PageProps<'/[lang]/clients'>,
-): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { lang } = await props.params
-
   if (!isValidLocale(lang)) return {}
 
-  const dict = await getDictionary(lang)
+  const dict = await getDictionary(lang as Locale)
 
   return {
-    title: dict.seo.clients.title,
-    description: dict.seo.clients.description,
+    title: dict?.seo?.clients?.title || 'عملاؤنا | Codexa',
+    description: dict?.seo?.clients?.description || 'شركاء النجاح الذين يثقون في كوديكسا.',
   }
 }
 
-export default async function ClientsPage(props: PageProps<'/[lang]/clients'>) {
+export default async function ClientsPage(props: PageProps) {
   const { lang } = await props.params
-
   if (!isValidLocale(lang)) notFound()
 
   const locale = lang as Locale
   const dict = await getDictionary(locale)
   const isEn = locale === 'en'
 
-  const apiBase = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '')
+  const rawApi =
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'https://codexa-website-backend.vercel.app'
+  const apiBase = rawApi.includes('localhost')
+    ? 'https://codexa-website-backend.vercel.app'
+    : rawApi.replace(/\/$/, '')
 
-  // 1. جلب العملاء المسجلين في قاعدة البيانات من لوحة التحكم
+  // 1. جلب بيانات الباك إند بطريقة آمنة تقرأ النص أولاً وتمنع خطأ Unexpected end of JSON input
   let dbClients: any[] = []
   try {
-    const res = await fetch(`${apiBase}/clients`, { cache: 'no-store' })
+    const res = await fetch(`${apiBase}/clients`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(2000),
+    })
+
     if (res.ok) {
-      const payload = await res.json()
-      const records = Array.isArray(payload) ? payload : payload?.data
-      if (Array.isArray(records)) {
-        dbClients = records.map((c: any) => {
-          const rawSector = typeof c.sector === 'string' ? c.sector : (c.industry || 'أعمال وتقنية')
-          return {
-            id: String(c.id || Math.random()),
-            name: c.name || 'عميل كودكسا',
-            category: c.category || resolveCategory(rawSector),
-            sector: typeof c.sector === 'object' && c.sector !== null
-              ? c.sector
-              : { ar: rawSector, en: rawSector },
-            status: c.status === 'نشط' || c.status === 'قيد التنفيذ' || c.status === 'active' ? 'active' : 'completed',
-            year: String(c.year || (c.createdAt ? new Date(c.createdAt).getFullYear() : '2026')),
-            website: c.website || c.url || undefined,
-          }
-        })
+      const text = await res.text()
+      if (text && text.trim().length > 0) {
+        const payload = JSON.parse(text)
+        const records = Array.isArray(payload) ? payload : payload?.data
+        if (Array.isArray(records)) {
+          dbClients = records.map((c: any) => {
+            const rawSector =
+              typeof c.sector === 'string' ? c.sector : c.industry || 'أعمال وتقنية'
+            return {
+              id: String(c.id || Math.random()),
+              name: c.name || 'عميل كودكسا',
+              category: c.category || resolveCategory(rawSector),
+              sector:
+                typeof c.sector === 'object' && c.sector !== null
+                  ? c.sector
+                  : { ar: rawSector, en: rawSector },
+              status:
+                c.status === 'نشط' || c.status === 'قيد التنفيذ' || c.status === 'active'
+                  ? 'active'
+                  : 'completed',
+              year: String(
+                c.year || (c.createdAt ? new Date(c.createdAt).getFullYear() : '2026'),
+              ),
+              website: c.website || c.url || undefined,
+            }
+          })
+        }
       }
     }
-  } catch (error) {
-    console.error('تعذر جلب بيانات العملاء:', error)
+  } catch {
+    // في حال تعذر الاتصال أو كان الرد غير صالح نستمر بالقائمة الأساسية مباشرة
   }
 
-  // 2. تجهيز قائمة العملاء الأساسية
+  // 2. تجهيز قائمة العملاء
   const formattedShowcase = SHOWCASE_CLIENTS.map((sc) => ({
     id: sc.id,
     name: isEn ? sc.nameEn : sc.nameAr,
@@ -316,13 +360,12 @@ export default async function ClientsPage(props: PageProps<'/[lang]/clients'>) {
     website: undefined,
   }))
 
-  // 3. دمج عملاء قاعدة البيانات مع القائمة الأساسية مع منع التكرار في حال تعديل عميل موجود
   const dbNames = new Set(dbClients.map((c) => c.name.trim().toLowerCase()))
   const filteredShowcase = formattedShowcase.filter(
     (sc) =>
       !dbNames.has(sc.name.trim().toLowerCase()) &&
       !dbNames.has(sc.nameAr.trim().toLowerCase()) &&
-      !dbNames.has(sc.nameEn.trim().toLowerCase())
+      !dbNames.has(sc.nameEn.trim().toLowerCase()),
   )
 
   const combinedClients = [...dbClients, ...filteredShowcase].map((client, index) => ({

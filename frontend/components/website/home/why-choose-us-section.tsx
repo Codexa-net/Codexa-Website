@@ -17,11 +17,45 @@ interface WhyChooseUsSectionProps {
 }
 
 const STEP_COLORS = [
-  { from: '#1a1b4b', to: '#0d0d2b' },
-  { from: '#1e1b4b', to: '#161633' },
-  { from: '#3b1b4b', to: '#1a0d2b' },
-  { from: '#4b1b3b', to: '#2b0d1a' },
-  { from: '#1b4b3b', to: '#0d2b1a' },
+  { from: '#191654', to: '#0d0b2b' },
+  { from: '#1e1b4b', to: '#12102e' },
+  { from: '#2a1752', to: '#140b29' },
+  { from: '#31174b', to: '#190b28' },
+  { from: '#172b52', to: '#0b1529' },
+] as const
+
+// بيانات فيجما الإضافية لكل خطوة (العنوان الثنائي العلوي + الكلمات المفتاحية الثلاث بالأسفل)
+const FIGMA_STEP_META = [
+  {
+    bilingualEyebrowAr: 'UNDERSTANDING — الفهم',
+    bilingualEyebrowEn: '01 — UNDERSTANDING',
+    keywordsAr: ['بحث', 'تحليل', 'إنصات'],
+    keywordsEn: ['Research', 'Analysis', 'Listening'],
+  },
+  {
+    bilingualEyebrowAr: 'ARCHITECTURE — التخطيط',
+    bilingualEyebrowEn: '02 — ARCHITECTURE',
+    keywordsAr: ['هيكلة', 'رحلة المستخدم', 'خطة واضحة'],
+    keywordsEn: ['User Flow', 'Wireframes', 'Strategy'],
+  },
+  {
+    bilingualEyebrowAr: 'CRAFT & UI/UX — التصميم',
+    bilingualEyebrowEn: '03 — CRAFT & UI/UX',
+    keywordsAr: ['هوية بصرية', 'واجهات تفاعلية', 'تجربة سلسة'],
+    keywordsEn: ['Visual Identity', 'Interactive UI', 'Seamless UX'],
+  },
+  {
+    bilingualEyebrowAr: 'ENGINEERING — التطوير والبرمجة',
+    bilingualEyebrowEn: '04 — ENGINEERING',
+    keywordsAr: ['كود نظيف', 'سرعة فائقة', 'أمان عالي'],
+    keywordsEn: ['Clean Code', 'High Speed', 'Security'],
+  },
+  {
+    bilingualEyebrowAr: 'LAUNCH & SCALE — الإطلاق والنمو',
+    bilingualEyebrowEn: '05 — LAUNCH & SCALE',
+    keywordsAr: ['اختبار شامل', 'إطلاق', 'دعم مستمر'],
+    keywordsEn: ['QA Testing', 'Deployment', 'Ongoing Support'],
+  },
 ] as const
 
 export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
@@ -30,22 +64,24 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
 
   if (items.length === 0) return null
 
+  const isArabic = /[\u0600-\u06FF]/.test(whyChooseUs.intro.line1)
+
   return (
     <div id="why-choose-us">
-      {/* Intro quote box — scroll reveal */}
-      <Section noContainer className="bg-gray-50 py-16 md:py-20 dark:bg-[#0d0b1f]">
-        <Container narrow>
+      {/* ── القسم التمهيدي الأبيض (مطابق لفيجما بدون إطار منقط) ── */}
+      <Section noContainer className="bg-white py-20 sm:py-28 lg:py-36 dark:bg-[#0d0b1f]">
+        <Container>
           <Reveal>
-            <div
-              className={cn(
-                'mx-auto max-w-2xl rounded-2xl border-2 border-dashed',
-                'border-[#4b3fdf]/40 bg-white dark:bg-white/5 px-8 py-10 text-center sm:px-12 sm:py-12',
-              )}
-            >
-              <p className="text-lg font-bold leading-relaxed text-gray-900 dark:text-white sm:text-xl">
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="text-xs font-semibold tracking-wide text-[#687082] sm:text-sm dark:text-gray-400">
+                {isArabic ? 'ليه تختارنا؟' : whyChooseUs.title || 'Why Choose Us?'}
+              </p>
+
+              <p className="mt-5 text-2xl font-medium leading-[1.4] tracking-tight text-[#11102f] sm:mt-6 sm:text-4xl lg:text-[2.75rem] dark:text-white/90">
                 {whyChooseUs.intro.line1}
               </p>
-              <p className="mt-3 text-lg font-bold leading-relaxed text-gray-900 dark:text-white sm:text-xl">
+
+              <p className="mt-2 text-2xl font-black leading-[1.35] tracking-tight text-[#11102f] sm:mt-3 sm:text-4xl lg:text-[2.85rem] dark:text-white">
                 {whyChooseUs.intro.line2}
               </p>
             </div>
@@ -53,53 +89,57 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
         </Container>
       </Section>
 
-      {/* Sticky process steps */}
+      {/* ── خطوات العمل التفاعلية بالخلفية الكحلية (مطابقة لفيجما 100%) ── */}
       <StickyScroll itemCount={items.length} ariaLabel={whyChooseUs.title}>
         {(activeIndex) => {
           const item = items[activeIndex]
           const stepNumber = String(activeIndex + 1).padStart(2, '0')
           const colors = STEP_COLORS[activeIndex % STEP_COLORS.length]
+          const meta = FIGMA_STEP_META[activeIndex % FIGMA_STEP_META.length]
+          const keywords = isArabic ? meta.keywordsAr : meta.keywordsEn
 
           return (
             <div className="relative h-full w-full overflow-hidden text-white">
-              {/* Animated background for this step */}
+              {/* الخلفية المتدرجة */}
               <motion.div
                 key={`bg-${activeIndex}`}
                 className="absolute inset-0"
-                initial={{ opacity: 0.9 }}
+                initial={{ opacity: 0.92 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, ease: 'easeInOut' }}
                 style={{
-                  background: `linear-gradient(to bottom, ${colors.from}, ${colors.to})`,
+                  background: `radial-gradient(circle at 50% 35%, #262170 0%, ${colors.from} 45%, ${colors.to} 100%)`,
                 }}
               />
 
-              {/* Outline step number watermark — always on the end side (left in RTL, right in LTR) */}
+              {/* الرقم المفرغ الكبير في الأسفل */}
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute bottom-6 end-6 z-0 select-none sm:bottom-10 sm:end-10"
+                className="pointer-events-none absolute bottom-4 end-5 z-0 select-none sm:bottom-8 sm:end-10"
                 style={{
-                  fontSize: 'clamp(6rem, 22vw, 14rem)',
-                  fontWeight: 700,
+                  fontSize: 'clamp(5.5rem, 20vw, 14rem)',
+                  fontWeight: 800,
                   lineHeight: 1,
                   color: 'transparent',
-                  WebkitTextStroke: '1px rgba(255,255,255,0.14)',
+                  WebkitTextStroke: '1.5px rgba(255,255,255,0.12)',
                 }}
               >
                 {stepNumber}
               </span>
 
-              {/* Side step nav — always on the start side (right in RTL, left in LTR) */}
+              {/* القائمة الجانبية للخطوات على الشاشات الكبيرة */}
               <nav
                 aria-label="Process steps"
-                className="absolute start-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-3 sm:start-10 lg:flex"
+                className="absolute start-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-3.5 sm:start-10 lg:flex"
               >
                 {items.map((step, index) => (
                   <span
                     key={step.title}
                     className={cn(
-                      'max-w-[120px] truncate text-start text-xs transition-colors duration-400',
-                      index === activeIndex ? 'text-white' : 'text-white/35',
+                      'max-w-[130px] truncate text-start text-xs font-semibold transition-all duration-400',
+                      index === activeIndex
+                        ? 'scale-105 text-white'
+                        : 'text-white/30',
                     )}
                   >
                     {step.shortLabel ?? step.title}
@@ -107,21 +147,43 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 ))}
               </nav>
 
-              {/* Center content — animates on each step change */}
+              {/* المحتوى المركزي في المنتصف مطابق لفيجما */}
               <div className="relative z-10 flex h-full items-center justify-center">
                 <StickyScrollContent
                   activeIndex={activeIndex}
-                  className="mx-auto max-w-3xl px-6 text-center sm:px-10"
+                  className="mx-auto max-w-4xl px-5 text-center sm:px-10"
                 >
-                  {item.eyebrow && (
-                    <p className="text-sm font-medium text-white/50">{item.eyebrow}</p>
-                  )}
-                  <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl lg:text-[2.75rem]">
+                  {/* العنوان العلوي الثنائي اللغة: UNDERSTANDING — الفهم */}
+                  <p
+                    dir="ltr"
+                    className="text-xs font-semibold tracking-widest text-white/60 uppercase sm:text-sm"
+                  >
+                    {isArabic ? meta.bilingualEyebrowAr : meta.bilingualEyebrowEn}
+                  </p>
+
+                  {/* العنوان الرئيسي الضخم */}
+                  <h2 className="mt-4 text-3xl font-black leading-[1.2] tracking-tight text-white sm:mt-6 sm:text-5xl md:text-6xl lg:text-[4.25rem]">
                     {item.title}
                   </h2>
-                  <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/55 sm:text-lg">
+
+                  {/* الوصف */}
+                  <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-white/65 sm:mt-7 sm:text-lg md:text-xl">
                     {item.description}
                   </p>
+
+                  {/* الكلمات المفتاحية الثلاث في الأسفل: بحث · تحليل · إنصات */}
+                  <div className="mt-7 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-white/55 sm:mt-10 sm:gap-4 sm:text-sm">
+                    {keywords.map((word, idx) => (
+                      <span key={word} className="inline-flex items-center gap-3 sm:gap-4">
+                        <span>{word}</span>
+                        {idx < keywords.length - 1 && (
+                          <span aria-hidden="true" className="text-white/30">
+                            ·
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 </StickyScrollContent>
               </div>
             </div>

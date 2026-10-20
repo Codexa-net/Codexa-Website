@@ -3,6 +3,20 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
+// منع تحذير React 19 الكاذب مع مكتبة next-themes حول وسم <script> أثناء التطوير
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
+  const originalConsoleError = console.error
+  console.error = (...args: unknown[]) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("Encountered a script tag while rendering React component")
+    ) {
+      return
+    }
+    originalConsoleError.apply(console, args)
+  }
+}
+
 function ThemeProvider({
   children,
   ...props

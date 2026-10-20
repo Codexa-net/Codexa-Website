@@ -11,8 +11,6 @@ interface FooterProps {
   dict: Dictionary
 }
 
-/* ── Static data ─────────────────────────────────────────────── */
-
 const socialLinks = [
   {
     label: 'WhatsApp',
@@ -40,7 +38,7 @@ const socialLinks = [
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
         <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
       </svg>
-    ), 
+    ),
   },
   {
     label: 'LinkedIn',
@@ -60,11 +58,9 @@ function buildNavLinks(locale: Locale, dict: Dictionary) {
     { label: dict.nav.ourWork, href: `/${locale}/our-work` },
     { label: dict.nav.clients, href: `/${locale}/clients` },
     { label: dict.nav.about, href: `/${locale}/about` },
-    { label: dict.nav.contactUs, href: `/${locale}/contact` }, // تم تعديلها لتوجه لصفحة التواصل
+    { label: dict.nav.contactUs, href: `/${locale}/contact` },
   ]
 }
-
-/* ── Component ───────────────────────────────────────────────── */
 
 export function Footer({ locale, dict }: FooterProps) {
   const { footer, home } = dict
@@ -76,33 +72,29 @@ export function Footer({ locale, dict }: FooterProps) {
     <footer
       role="contentinfo"
       dir={isArabic ? 'rtl' : 'ltr'}
-      className="bg-[#05060f] text-white"
+      className="overflow-hidden bg-[#05060f] text-white"
     >
-
       {/* ── CTA block ── */}
-      <div id="contact" className="border-b border-white/[0.08] py-20 md:py-28">
+      <div id="contact" className="border-b border-white/[0.08] py-14 sm:py-20 md:py-28">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-medium text-white/40 sm:text-sm">{contactCta.eyebrow}</p>
 
-            {/* Eyebrow */}
-            <p className="text-sm font-medium text-white/40">{contactCta.eyebrow}</p>
-
-            {/* Headline */}
-            <h2 className={cn(
-              'mt-5 font-black leading-[1.15] tracking-tight text-white',
-              'text-[clamp(2rem,5vw,3.5rem)]',
-            )}>
+            <h2
+              className={cn(
+                'mt-4 font-black leading-[1.15] tracking-tight text-white sm:mt-5',
+                'text-[clamp(1.6rem,5vw,3.5rem)]',
+              )}
+            >
               {contactCta.title}
             </h2>
 
-            {/* Buttons */}
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              {/* Primary CTA — يوجه الآن مباشرة لصفحة الفورم التفاعلي */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10 sm:gap-4">
               <Link
                 href={`/${locale}/contact`}
                 className={cn(
-                  'inline-flex items-center gap-2.5 rounded-full bg-[#4b3fdf] px-7 py-3.5',
-                  'text-sm font-bold text-white shadow-[0_12px_32px_-8px_rgba(75,63,223,0.6)]',
+                  'inline-flex items-center gap-2 rounded-full bg-[#4b3fdf] px-6 py-3 sm:gap-2.5 sm:px-7 sm:py-3.5',
+                  'text-xs font-bold text-white shadow-[0_12px_32px_-8px_rgba(75,63,223,0.6)] sm:text-sm',
                   'transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_rgba(75,63,223,0.7)]',
                   'outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                 )}
@@ -111,14 +103,13 @@ export function Footer({ locale, dict }: FooterProps) {
                 {contactCta.cta}
               </Link>
 
-              {/* WhatsApp CTA */}
               <a
                 href="https://wa.me/201277158762"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'inline-flex items-center gap-2.5 rounded-full border border-white/20 px-7 py-3.5',
-                  'text-sm font-bold text-white/80',
+                  'inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 sm:gap-2.5 sm:px-7 sm:py-3.5',
+                  'text-xs font-bold text-white/80 sm:text-sm',
                   'transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:text-white',
                   'outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                 )}
@@ -127,23 +118,20 @@ export function Footer({ locale, dict }: FooterProps) {
                 {contactCta.whatsapp}
               </a>
             </div>
-
           </div>
         </Container>
       </div>
 
-      {/* ── Middle row: contact info + socials ←→ nav ── */}
-      <Container className="py-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-
-          {/* Nav links */}
+      {/* ── Middle row: nav + contact info + socials ── */}
+      <Container className="py-7 sm:py-9">
+        <div className="flex flex-col gap-6 border-b border-white/[0.08] pb-7 sm:pb-9 lg:flex-row lg:items-start lg:justify-between">
           <nav aria-label="Footer navigation">
-            <ul role="list" className="flex flex-wrap gap-x-6 gap-y-2.5">
+            <ul role="list" className="flex flex-wrap gap-x-5 gap-y-2.5 sm:gap-x-6">
               {navLinks.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-white/40 transition-colors hover:text-white"
+                    className="text-xs text-white/45 transition-colors hover:text-white sm:text-sm"
                   >
                     {label}
                   </Link>
@@ -152,27 +140,25 @@ export function Footer({ locale, dict }: FooterProps) {
             </ul>
           </nav>
 
-          {/* Contact info + social icons */}
-          <div className="flex flex-col items-end gap-4">
+          <div className="flex flex-col items-start gap-4 lg:items-end">
             <address className="not-italic">
-              <ul role="list" className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-white/40">
+              <ul role="list" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-white/45 sm:gap-x-5 sm:text-sm">
                 <li>
-                  <a href="mailto:codexa.egy@gmail.com" className="transition-colors hover:text-white/70">
+                  <a href="mailto:codexa.egy@gmail.com" className="transition-colors hover:text-white/75">
                     codexa.egy@gmail.com
                   </a>
                 </li>
                 <li className="text-white/20" aria-hidden="true">|</li>
                 <li>
-                  <a href="tel:01277158762" className="transition-colors hover:text-white/70">
+                  <a href="tel:01277158762" className="transition-colors hover:text-white/75" dir="ltr">
                     01277158762
                   </a>
                 </li>
                 <li className="text-white/20" aria-hidden="true">|</li>
-                <li className="text-white/40">{footer.contact.location}</li>
+                <li className="text-white/45">{footer.contact.location}</li>
               </ul>
             </address>
 
-            {/* Social icons */}
             <ul role="list" className="flex gap-2.5">
               {socialLinks.map(({ label, href, icon }) => (
                 <li key={label}>
@@ -183,7 +169,7 @@ export function Footer({ locale, dict }: FooterProps) {
                     aria-label={label}
                     className={cn(
                       'flex size-9 items-center justify-center rounded-lg',
-                      'border bg-black/10 border-white/12 text-white/40',
+                      'border border-white/12 bg-black/10 text-white/45',
                       'transition-colors duration-200 hover:border-white/30 hover:text-white',
                     )}
                   >
@@ -193,35 +179,50 @@ export function Footer({ locale, dict }: FooterProps) {
               ))}
             </ul>
           </div>
-
         </div>
       </Container>
 
-      {/* ── Large wordmark ── */}
-      <div className="overflow-hidden select-none" aria-hidden="true">
-        <p className={cn(
-          'text-center font-black leading-none tracking-tight h-83',
-          'text-[clamp(20rem,5vw,15rem)]',
-          'bg-gradient-to-b from-white/[0.92] to-white/[0.33] bg-clip-text text-transparent',
-        )}>
-          Codexa
-        </p>
-      </div>
-
-      {/* ── Bottom bar ── */}
+      {/* ── Large Wordmark (مقصوص الحافة السفلية بدون خط أبيض مطابق لـ Figma) ── */}
       <Container>
-        <div className={cn(
-          'flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] py-5',
-          'sm:flex-row',
-        )}>
-          <p className="text-xs text-white/30">{footer.copyright}</p>
+        <div
+          className="w-full overflow-hidden select-none"
+          aria-hidden="true"
+          dir="ltr"
+        >
+          <p
+            className={cn(
+              'w-full text-center font-black tracking-tight',
+              'text-[22vw] leading-[0.82] h-[0.74em] xl:text-[19.5rem]',
+              'bg-gradient-to-b from-white/[0.92] via-white/[0.55] to-white/[0.18] bg-clip-text text-transparent',
+            )}
+          >
+            Codexa
+          </p>
+        </div>
+      </Container>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs text-white/30">
-            <Link href={`/${locale}/privacy`} className="transition-colors hover:text-white/60">
+      {/* ── Bottom bar (بدون border-t وبنفس ترتيب واتجاه Figma) ── */}
+      <Container>
+        <div
+          dir={isArabic ? 'rtl' : 'ltr'}
+          className="flex flex-col items-center justify-between gap-3 pb-20 pt-2 sm:flex-row sm:pb-6 sm:pt-3"
+        >
+          <p className="text-[11px] text-white/40 sm:text-xs" dir={isArabic ? 'rtl' : 'ltr'}>
+            {isArabic ? (
+              <>
+                <span dir="ltr">© 2026</span> جميع الحقوق محفوظة <span dir="ltr">Codexa</span>
+              </>
+            ) : (
+              '© 2026 Codexa. All rights reserved.'
+            )}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-white/40 sm:text-xs">
+            <Link href={`/${locale}/privacy`} className="transition-colors hover:text-white/70">
               {footer.legal.privacy}
             </Link>
             <span aria-hidden="true" className="text-white/15">|</span>
-            <Link href={`/${locale}/terms`} className="transition-colors hover:text-white/60">
+            <Link href={`/${locale}/terms`} className="transition-colors hover:text-white/70">
               {footer.legal.terms}
             </Link>
             <span aria-hidden="true" className="text-white/15">|</span>
@@ -229,7 +230,6 @@ export function Footer({ locale, dict }: FooterProps) {
           </div>
         </div>
       </Container>
-
     </footer>
   )
 }

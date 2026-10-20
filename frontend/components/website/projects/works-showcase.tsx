@@ -6,9 +6,7 @@ import { cn } from '@/lib/utils'
 import { type Locale } from '@/lib/i18n/config'
 import { type Project } from '@/types/project'
 import { Container } from '@/components/shared/container'
-import {
-  StickyScroll,
-} from '@/components/shared/motion/sticky-scroll'
+import { StickyScroll } from '@/components/shared/motion/sticky-scroll'
 import { WorkSlide } from './work-slide'
 import { ProjectsGrid } from './projects-grid'
 
@@ -67,11 +65,7 @@ export function WorksShowcase({
           const project = projects[activeIndex]
 
           return (
-            <Container wide className="flex h-full items-stretch py-10 my-10 md:py-12">
-              {/*
-               * The entire WorkSlide animates as a single unit via AnimatePresence.
-               * Each step change: old slide exits (fade+scale down), new slides in (fade+blur clear).
-               */}
+            <Container wide className="flex h-full items-center justify-center py-4 sm:py-8 md:py-10">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeIndex}
@@ -79,7 +73,7 @@ export function WorksShowcase({
                   initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, y: -16, filter: 'blur(4px)' }}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <WorkSlide
                     project={project}
@@ -87,7 +81,7 @@ export function WorksShowcase({
                     viewLabel={labels.viewProject}
                     currentIndex={activeIndex}
                     totalCount={projects.length}
-                    className="h-full my-5 py-3"
+                    className="w-full"
                   />
                 </motion.div>
               </AnimatePresence>
@@ -98,4 +92,3 @@ export function WorksShowcase({
     </section>
   )
 }
-

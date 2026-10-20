@@ -20,11 +20,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f7f8fb] dark:bg-[#030712] p-4 transition-colors">
-      <div className="w-full max-w-md rounded-2xl border border-border-subtle dark:border-gray-800 bg-white dark:bg-[#111827] p-8 shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-[#f7f8fb] p-4 transition-colors dark:bg-[#030712]">
+      <div className="w-full max-w-md rounded-2xl border border-neutral-200/80 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-extrabold text-brand-500">Codexa</h1>
-          <p className="mt-2 text-sm text-[#8b8f9c] dark:text-gray-400">سجل الدخول للمتابعة إلى لوحة التحكم</p>
+          <h1 className="text-3xl font-extrabold text-[#4b3fdf]">Codexa</h1>
+          <p className="mt-2 text-sm text-[#8b8f9c] dark:text-gray-400">
+            سجل الدخول للمتابعة إلى لوحة التحكم
+          </p>
         </div>
 
         <form action={handleSubmit} className="space-y-5">
@@ -32,7 +34,7 @@ export default function LoginPage() {
             label="البريد الإلكتروني"
             name="email"
             type="email"
-            placeholder=""
+            placeholder="admin@codexa.com"
             required
             dir="ltr"
           />
@@ -40,18 +42,22 @@ export default function LoginPage() {
             label="كلمة المرور"
             name="password"
             type="password"
-            placeholder=""
+            placeholder="••••••••"
             required
             dir="ltr"
           />
 
           {error && (
-            <div className="rounded-lg bg-rose-50 dark:bg-rose-500/10 p-3 text-right text-sm font-bold text-rose-500 dark:text-rose-400">
+            <div className="rounded-lg bg-rose-50 p-3 text-right text-xs font-bold text-rose-500 dark:bg-rose-500/10 dark:text-rose-400 sm:text-sm">
               {error}
             </div>
           )}
 
-          <Button type="submit" className="w-full mt-2 flex justify-center py-3" disabled={isPending}>
+          <Button
+            type="submit"
+            className="mt-2 flex w-full justify-center rounded-xl bg-[#4b3fdf] py-3 font-bold text-white transition-all hover:bg-[#3f34c7] disabled:opacity-70"
+            disabled={isPending}
+          >
             {isPending ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
           </Button>
         </form>

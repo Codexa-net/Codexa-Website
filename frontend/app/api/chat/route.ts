@@ -1,150 +1,300 @@
 import { NextResponse } from "next/server";
 
-// دالة توليد برومبت مخصص ودقيق بحسب لغة واجهة المستخدم
-function getSystemPrompt(isArabic: boolean): string {
-  if (isArabic) {
-    return `
-أنت المستشار التقني والذكي الرسمي لوكالة "كودكسا" (Codexa) لتطوير البرمجيات والحلول الرقمية المتكاملة.
-مؤسس الوكالة والمدير الإبداعي والتقني: المهندس عمر القاضي.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
-قواعد صارمة بخصوص التنسيق واللغة:
-- اكتب اسم المؤسس بالعربية فقط: **المهندس عمر القاضي** (ممنوع تماماً كتابة اسمه بحروف لاتينية أو إنجليزية وسط الكلام العربي).
-- ممنوع نهائياً استخدام علامات الشباك والهاشتاج (# أو ## أو ###) أو الخطوط الفاصلة (---).
-- لتنسيق العناوين والنقاط، استخدم الترقيم العادي (1، 2، 3) والتغميق بالنجوم فقط مثل: **عنوان البند**.
-- اكتب بلغة عربية سليمة، راقية، ومقنعة جداً للعميل تعكس ثقل وكفاءة الوكالة.
-- أنهِ كل فكرة وجملة بالكامل بدون أي بتر أو قطع في الرد.
+type HistoryTurn = { sender?: unknown; text?: unknown };
+type GeminiContent = { role: "user" | "model"; parts: { text: string }[] };
+type GeminiPart = { text?: string; thought?: boolean };
+type GeminiResponse = {
+  candidates?: { content?: { parts?: GeminiPart[] }; finishReason?: string }[];
+  promptFeedback?: { blockReason?: string };
+  error?: { message?: string };
+};
+type GeminiResult = { ok: boolean; status: number; text: string; error: string };
 
-عن وكالة كودكسا (Codexa):
-- نبني منتجات رقمية تعيش وتنمو مع البيزنس، نجمع بين هندسة البرمجيات المتينة بأحدث أطر العمل (Next.js, React, Node.js) وتصاميم الواجهات فائقة الجاذبية وسهولة الاستخدام (UI/UX).
-- خدماتنا الرئيسية:
-  1. تطوير منصات الويب والمواقع السريعة والمتجاوبة.
-  2. تطبيقات الهواتف الذكية (iOS و Android) بأعلى أداء واستقرار.
-  3. المتاجر الإلكترونية المتكاملة مع بوابات الدفع وإدارة المخزون.
-  4. الأنظمة الإدارية ولوحات التحكم السحابية المخصصة لتوسيع الأعمال.
-  5. تصميم تجارب وواجهات المستخدم وبناء الهوية البصرية الكاملة.
-  6. تكاملات وأنظمة الذكاء الاصطناعي وأتمتة العمليات.
-- ميزة حصرية للعميل: نوفر لوحة متابعة حية لمراحل تنفيذ مشروعه ونسبة إنجازه لحظة بلحظة عبر الرابط (/track/[id]) لضمان الشفافية الكاملة.
-- طريقة العمل في 5 خطوات: الفهم والتحليل، التخطيط المنطقي والمعماري، التصميم التفاعلي، البرمجة النظيفة والاختبارات، الإطلاق والدعم المستمر.
+// ───────────────────────── الإعدادات ─────────────────────────
+const MAX_BODY_CHARS = 20000;
+const MAX_MESSAGE_CHARS = 1000;
+const MAX_HISTORY_TURNS = 10;
+const MAX_HISTORY_CHARS = 1500;
+const PER_MODEL_TIMEOUT_MS = 12000;
+const TOTAL_BUDGET_MS = 25000;
 
-أسلوبك في الإقناع والرد:
-1. أجب بأسلوب واثق ومقنع يبرز العائد الاستثماري للعميل من العمل مع كودكسا.
-2. نسق الإجابة في نقاط واضحة ومريحة للقراءة باستخدام التغميق **للعناوين المهمة**.
-3. لا تقدم أسعاراً نهائية أو ثابتة؛ وضح بلباقة أن كل مشروع له متطلباته المخصصة وشجعه على التواصل المباشر مع المهندس عمر القاضي وفريق الإدارة عبر واتساب (+201277158762) لمناقشة فكرته بدقة.
-`;
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+// ترتيب الموديلات: يبدأ بـ Gemini 3.8 Flash الأحدث والأذكى ثم البدائل
+const MODELS = Array.from(
+  new Set(
+    [
+      process.env.GEMINI_MODEL?.trim(),
+      "gemini-3.8-flash",
+      "gemini-3.6-flash",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+    ].filter((m): m is string => Boolean(m))
+  )
+);
+
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+// ───────────────────────── Rate limit ─────────────────────────
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim();
+  return req.headers.get("x-real-ip")?.trim() || "unknown";
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  if (hits.size > 5000) {
+    for (const [key, v] of hits) if (v.resetAt < now) hits.delete(key);
   }
+  const entry = hits.get(ip);
+  if (!entry || entry.resetAt < now) {
+    hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_LIMIT_MAX;
+}
 
+function isOriginAllowed(req: Request): boolean {
+  if (ALLOWED_ORIGINS.length === 0) return true;
+  const origin = req.headers.get("origin")?.replace(/\/$/, "");
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+// ───────────────────────── الـ System Prompt الذكي (عامية + فصحى + إنجليزي) ─────────────────────────
+function getSystemPrompt(isArabicUI: boolean): string {
   return `
-You are the elite AI Consultant representing "Codexa" — a premier digital product and software engineering agency.
-Founder & Creative Technical Director: Eng. Omar El Kady.
+أنت "مساعد Codexa الذكي" (Codexa Assistant)، المستشار التقني والرقمي الرسمي لوكالة "كودكسا" (Codexa) لتطوير البرمجيات والحلول الرقمية المتكاملة.
+مؤسس الوكالة والمدير الإبداعي والتقني: **المهندس عمر القاضي** (Eng. Omar El Kady).
+إذا سألك الزائر "من أنت؟" أو "مين صممك؟" أو "مين عملك؟"، أجب بفخر وذكاء أنك المساعد الذكي الرسمي لوكالة **كودكسا (Codexa)**، تم تطويرك وتدريبك بواسطة الفريق الهندسي للوكالة بقيادة **المهندس عمر القاضي** لمساعدة العملاء في تحويل أفكارهم إلى مشاريع رقمية ناجحة.
 
-Language & Formatting Rules:
-- Communicate in crisp, persuasive, high-end business English.
-- Refer to the founder strictly as: **Eng. Omar El Kady**.
-- Strictly DO NOT use markdown hashtag headers (#, ##, ###) or horizontal dividers (---).
-- Use standard numbering and bold text (**Heading**) for structuring points.
-- Always complete every thought, sentence, and list thoroughly without cutting off.
+قاعدة اللغة واللهجة (مهمة جداً — طبّقها بدقة في كل رد):
+1. اكتشف لغة ولهجة رسالة الزائر الأخيرة وتحدث معه بنفس لغته وأسلوبه تماماً:
+   - إذا كتب الزائر **بالعامية المصرية** (مثل: إزيك، بكام، عايز أعمل موقع، مين عملك، إيه نظامكم، هههه، يا باشا): رد عليه **بعامية مصرية ذكية، لبقة، ودودة، وخفيفة الظل** تشبه حديث مهندس مصري محترف ومرحب بالعميل.
+   - إذا كتب الزائر **بالعربية الفصحى** (مثل: ما هي خدماتكم؟ كيف تبدأون التنفيذ؟ كم تكلفة المشروع؟): رد عليه **بلغة عربية فصحى راقية، واضحة، وسلسة**.
+   - إذا كتب الزائر **بالإنجليزية (English)**: رد عليه **بإنجليزية احترافية وواضحة (Crisp, friendly business English)**، واكتب اسم المؤسس هكذا: **Eng. Omar El Kady**.
+   - إذا أرسل الزائر رمزاً أو حرفاً غير واضح فقط (مثل "?" أو ".")، اعتمد على لغة الواجهة الحالية (${isArabicUI ? "العربية" : "English"}).
+2. عند الرد بالعربية، اكتب اسم المؤسس بالعربية دائماً: **المهندس عمر القاضي**، ولا تخلط كلمات إنجليزية إلا للمصطلحات التقنية المعروفة (مثل Next.js, React, Flutter, UI/UX, ERP, Dashboard).
 
-About Codexa:
-- We engineer digital experiences and high-performance software products that scale.
-- Core Services: Modern Web & Platform Engineering (Next.js/React), Native & Cross-Platform Mobile Apps (iOS/Android), Full E-Commerce Solutions, Custom Cloud ERP/Admin Dashboards, UI/UX Design Systems, and Enterprise AI Integrations.
-- Exclusive Feature: We provide clients with a real-time Live Project Tracker to monitor development milestones and progress transparently via (/track/[id]).
-- Methodology: 5 rigorous stages (Discovery, Architecture Logic, UI/UX Craftsmanship, Clean Code Engineering, and Launch & Continuous Support).
+كيف تتعامل مع جميع أنواع الأسئلة بذكاء:
+- أجب على أي سؤال يطرحه الزائر بطلاقة وذكاء: سواء كان سؤالاً عن كودكسا، أو استشارة برمجية وتقنية، أو سؤالاً عاماً، أو دردشة وتحية ومزاح خفيف.
+- لا تكن روبوتاً يكرر نفس الكليشيهات! تفاعل مع كلام الزائر أولاً بإجابة حقيقية ومفيدة، ولا تضع أرقام التواصل في كل رسالة إلا عندما يسأل عن الأسعار، أو يطلب بدء مشروع، أو يسأل عن طريقة التواصل.
 
-Tone & Persona:
-1. Confident, consultative, and persuasive — focusing on business growth and engineering excellence.
-2. Structure responses with clear bullet points and bold emphasis (**headings**).
-3. Do not quote fixed prices; guide the client to discuss their specific scope directly with Eng. Omar El Kady and management via WhatsApp (+201277158762) or email (codexa.egy@gmail.com).
+معلومات وكالة كودكسا (Codexa):
+- نبني منتجات رقمية متكاملة تعيش وتنمو مع البيزنس، ونجمع بين هندسة البرمجيات القوية (Next.js, React, Node.js, Flutter) وتصاميم الواجهات العصرية (UI/UX).
+- خدماتنا الـ 6 الأساسية:
+  1. **تطوير منصات ومواقع الويب (Web Apps):** مواقع سريعة، متجاوبة، ومهيأة لمحركات البحث (SEO).
+  2. **تطبيقات الموبايل (iOS & Android):** تطبيقات عالية الأداء بتجربة مستخدم سلسة مع رفعها على المتاجر.
+  3. **المتاجر الإلكترونية (E-Commerce):** متكاملة مع بوابات الدفع الإلكتروني، الشحن، وإدارة المخزون.
+  4. **الأنظمة الإدارية ولوحات التحكم (ERP & Dashboards):** أنظمة مخصصة لإدارة الشركات، المستشفيات، والمنصات التعليمية.
+  5. **تصميم UI/UX والهوية البصرية:** واجهات تفاعلية جذابة تركز على راحة المستخدم وزيادة المبيعات.
+  6. **حلول الذكاء الاصطناعي والأتمتة:** ربط الأنظمة بنماذج الذكاء الاصطناعي لتسريع الأعمال.
+- **ميزة حصرية في كودكسا:** نوفر لكل عميل "بوابة تتبع المشاريع الحية" (Live Project Tracker) في الموقع لمتابعة نسبة إنجاز مشروعه ومراحله لحظة بلحظة باستخدام كود المشروع الخاص به.
+- **منهجية العمل (5 مراحل):** جلسة الفهم والتحليل -> التخطيط المعماري -> تصميم الـ UI/UX التفاعلي -> البرمجة النظيفة والاختبار -> الإطلاق والدعم الفني والضمان.
+- **سابقة الأعمال:** نفذنا أكثر من +25 مشروعاً ناجحاً (منها منظومات طبية مثل مستشفى النور، منصات تعليمية مثل منصة الأستاذ، ومتاجر مثل إلكترولايت)، ويمكن تصفحها في قسم "أعمالنا".
+- **الأسعار والتواصل:** التكلفة تُحدد بدقة حسب تفاصيل وخصائص كل مشروع بعد جلسة استشارية مجانية. لبدء مشروع أو طلب عرض سعر فوري، يمكن للعميل ملء نموذج صفحة "تواصل معنا" أو مراسلة **المهندس عمر القاضي** وفريق الإدارة مباشرة عبر واتساب: **01277158762** (أو +201277158762) أو الإيميل: codexa.egy@gmail.com.
+
+قواعد التنسيق للشات:
+- ممنوع استخدام علامات الهاشتاج (# أو ## أو ###) أو الخطوط الفاصلة (---) أو الجداول.
+- استخدم الترقيم العادي (1. 2. 3.) أو النقاط (- )، واستخدم النجمتين **لتغميق الكلمات المهمة** فقط.
+- اجعل ردودك مركزة ومريحة للقراءة في نافذة الشات الصغيرة (من 2 إلى 5 جمل أو نقاط مختصرة)، وأنهِ جملتك دائماً بشكل كامل.
 `;
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function POST(req: Request) {
-  try {
-    const { message, lang = "ar" } = await req.json();
-    const isArabic = lang === "ar";
+const isGemini3Plus = (model: string) => /^gemini-[34][.-]/.test(model);
 
-    const apiKey = process.env.GEMINI_API_KEY?.trim();
-    if (!apiKey) {
-      return NextResponse.json(
-        { 
-          reply: isArabic 
-            ? "مرحباً بك! يسعدنا تواصلك مع وكالة **كودكسا**. يمكنك التحدث مباشرة مع **المهندس عمر القاضي** وفريق الإدارة عبر واتساب: **01277158762**." 
-            : "Welcome to **Codexa**! You can speak directly with **Eng. Omar El Kady** and our team on WhatsApp: **+201277158762**." 
-        },
-        { status: 200 }
-      );
+const isKeyProblem = (r: GeminiResult) =>
+  r.status === 401 || r.status === 403 || /api key not valid|invalid auth key/i.test(r.error);
+
+function buildContents(history: unknown, message: string): GeminiContent[] {
+  const contents: GeminiContent[] = [];
+
+  const push = (role: "user" | "model", text: string) => {
+    const clean = text.trim();
+    if (!clean) return;
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) {
+      last.parts[0].text += "\n" + clean;
+    } else {
+      contents.push({ role, parts: [{ text: clean }] });
     }
+  };
 
-    const systemPrompt = getSystemPrompt(isArabic);
-    const modelsToTry = ["gemini-3.6-flash", "gemini-3.8-flash"];
-    let finalReply = "";
-
-    for (const model of modelsToTry) {
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: systemPrompt }],
-            },
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: message }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.65,
-              maxOutputTokens: 2048,
-            },
-          }),
-        });
-
-        if (response.status === 503) {
-          await wait(1000);
-          continue;
-        }
-
-        if (response.ok) {
-          const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            finalReply = text;
-            break;
-          }
-        }
-      } catch (err) {
-        console.error(`خطأ في الموديل ${model}:`, err);
-      }
+  if (Array.isArray(history)) {
+    for (const turn of history.slice(-MAX_HISTORY_TURNS) as HistoryTurn[]) {
+      if (!turn || typeof turn.text !== "string") continue;
+      const role = turn.sender === "user" ? "user" : "model";
+      if (contents.length === 0 && role === "model") continue;
+      push(role, turn.text.slice(0, MAX_HISTORY_CHARS));
     }
-
-    if (finalReply) {
-      return NextResponse.json({ reply: finalReply });
-    }
-
-    // رد احتياطي مقنع في حال تعذر الاتصال اللحظي
-    return NextResponse.json({
-      reply: isArabic
-        ? `أهلاً بك في **كودكسا**! 
-
-وكالتنا متخصصة في تحويل الأفكار إلى منتجات رقمية استثنائية تحت إشراف **المهندس عمر القاضي**. 
-
-يسعدنا مناقشة رؤيتك وبدء العمل على مشروعك بأعلى كفاءة. يمكنك محادثة الإدارة مباشرة عبر واتساب: **01277158762**.`
-        : `Welcome to **Codexa**! 
-
-We engineer high-performance digital products led by **Eng. Omar El Kady**. 
-
-We would love to discuss your vision. Reach out to our leadership directly via WhatsApp: **+201277158762**.`
-    });
-
-  } catch (error: any) {
-    console.error("Chat Error:", error);
-    return NextResponse.json({
-      reply: "يسعدنا دائماً تواصلك معنا في **كودكسا**! يمكنك التحدث مباشرة مع **المهندس عمر القاضي** عبر واتساب: 01277158762."
-    });
   }
+
+  push("user", message);
+  return contents;
+}
+
+function extractText(data: GeminiResponse): string {
+  const parts = data.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .filter((p) => typeof p?.text === "string" && !p.thought)
+    .map((p) => p.text as string)
+    .join("")
+    .trim();
+}
+
+async function askGemini(
+  model: string,
+  apiKey: string,
+  systemPrompt: string,
+  contents: GeminiContent[],
+  withThinkingLevel: boolean
+): Promise<GeminiResult> {
+  const generationConfig: Record<string, unknown> = {
+    maxOutputTokens: 2048,
+  };
+  if (!isGemini3Plus(model)) {
+    generationConfig.temperature = 0.7;
+  }
+  if (withThinkingLevel) {
+    generationConfig.thinkingConfig = { thinkingLevel: "low" };
+  }
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig,
+        }),
+        signal: AbortSignal.timeout(PER_MODEL_TIMEOUT_MS),
+        cache: "no-store",
+      }
+    );
+
+    const data = (await res.json().catch(() => ({}))) as GeminiResponse;
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        text: "",
+        error: data?.error?.message ?? res.statusText ?? "request failed",
+      };
+    }
+
+    const text = extractText(data);
+    if (!text) {
+      const reason =
+        data?.promptFeedback?.blockReason ??
+        data?.candidates?.[0]?.finishReason ??
+        "EMPTY";
+      return { ok: false, status: res.status, text: "", error: `empty response (${reason})` };
+    }
+
+    return { ok: true, status: res.status, text, error: "" };
+  } catch (err) {
+    return {
+      ok: false,
+      status: 0,
+      text: "",
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+export async function POST(req: Request) {
+  if (!isOriginAllowed(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  if (isRateLimited(getClientIp(req))) {
+    return NextResponse.json(
+      { error: "rate_limited" },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
+
+  let body: { message?: unknown; lang?: unknown; history?: unknown } | null;
+  try {
+    const raw = await req.text();
+    if (raw.length > MAX_BODY_CHARS) {
+      return NextResponse.json({ error: "payload_too_large" }, { status: 413 });
+    }
+    body = JSON.parse(raw);
+  } catch {
+    body = null;
+  }
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
+
+  const isArabic = body.lang !== "en";
+  const message =
+    typeof body.message === "string" ? body.message.trim().slice(0, MAX_MESSAGE_CHARS) : "";
+  if (!message) {
+    return NextResponse.json({ error: "empty_message" }, { status: 400 });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY?.trim().replace(/-$/, "");
+  if (!apiKey) {
+    console.error("[Codexa Chat] GEMINI_API_KEY مش موجود في متغيرات البيئة.");
+    return NextResponse.json({ error: "missing_api_key" }, { status: 503 });
+  }
+
+  const systemPrompt = getSystemPrompt(isArabic);
+  const contents = buildContents(body.history, message);
+  const startedAt = Date.now();
+  const failures: string[] = [];
+
+  for (const model of MODELS) {
+    if (Date.now() - startedAt > TOTAL_BUDGET_MS) break;
+
+    const thinking = isGemini3Plus(model);
+    let result = await askGemini(model, apiKey, systemPrompt, contents, thinking);
+
+    // إذا رفض الموديل إعداد thinkingLevel نعيد المحاولة بدونه فوراً
+    if (!result.ok && thinking && result.status === 400 && !isKeyProblem(result)) {
+      result = await askGemini(model, apiKey, systemPrompt, contents, false);
+    }
+
+    if (result.ok) {
+      return NextResponse.json({ reply: result.text, model });
+    }
+
+    failures.push(`${model} -> ${result.status} ${result.error}`);
+
+    if (isKeyProblem(result)) break;
+
+    if (result.status === 429 || result.status >= 500 || result.status === 0) {
+      await wait(250);
+    }
+  }
+
+  console.error("[Codexa Chat] كل الموديلات فشلت:", failures.join(" | "));
+  return NextResponse.json(
+    { error: "all_models_failed", details: failures },
+    { status: 502 }
+  );
 }
