@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-// قائمة أعضاء الفريق الـ 12 الحقيقيين المسجلين في جدول admin_users على Supabase (بدون تقنيات وهمية)
+// قائمة أعضاء الفريق الـ 12 الحقيقيين المسجلين في جدول admin_users على Supabase
 export const SUPABASE_TEAM_USERS = [
   {
     id: 'ebb68484-a5b3-450c-84b9-2bfae2430008',
@@ -128,9 +128,9 @@ export const SUPABASE_TEAM_USERS = [
     id: 'f5abdd2f-cf3c-423e-92e5-7d82c0b18012',
     name: 'معاذ محمد سيد سالم',
     email: 'mooazmohammed110@codexa.com',
-    role: 'DEVELOPER',
-    track: "MOBILE_APP_LEAD",
-    jobTitle: 'مطور Mobile',
+    role: 'MOBILE_APP_LEAD',
+    track: 'MOBILE_APP',
+    jobTitle: 'قائد فريق Mobile',
     technologies: [],
     status: 'ACTIVE',
     isActive: true,
@@ -200,7 +200,6 @@ export async function resolveLoggedUserFromCookies() {
     }
   } catch {}
 
-  // إذا فشل كل شيء لا ترجع عمر القاضي عشوائياً، بل أرجع null ليتم التعامل معه في الواجهة
   return null;
 }
 
@@ -219,7 +218,7 @@ async function handleFallbackRequest(
     clean === '/profile'
   ) {
     const u = await resolveLoggedUserFromCookies();
-    return u || SUPABASE_TEAM_USERS[0]; // نرجع مدير النظام فقط كاحتياطي أخير للباك إند
+    return u || SUPABASE_TEAM_USERS[0];
   }
 
   if (clean.includes('/contact') || clean.includes('/messages')) {
@@ -242,7 +241,44 @@ async function handleFallbackRequest(
         return newMsg;
       } catch {}
     }
-    return messagesStore;
+
+    if (method === 'PATCH') {
+      const idMatch = endpoint.match(/\/([^/?]+)(?:\/read)?$/);
+      const targetId = idMatch?.[1];
+      if (targetId) {
+        let statusUpdate: string | undefined;
+        try {
+          if (options.body) {
+            const parsed = JSON.parse(String(options.body));
+            statusUpdate = parsed.status;
+          }
+        } catch {}
+
+        globalForStore.__codexaMessages = messagesStore.map((m) =>
+          m.id === targetId
+            ? {
+                ...m,
+                isRead: true,
+                status: statusUpdate || m.status,
+              }
+            : m,
+        );
+      }
+      return { success: true };
+    }
+
+    if (method === 'DELETE') {
+      const idMatch = endpoint.match(/\/([^/?]+)$/);
+      const targetId = idMatch?.[1];
+      if (targetId) {
+        globalForStore.__codexaMessages = messagesStore.filter(
+          (m) => m.id !== targetId,
+        );
+      }
+      return { success: true };
+    }
+
+    return globalForStore.__codexaMessages;
   }
 
   if (
@@ -293,10 +329,11 @@ export async function serverFetchApi<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const isProd = process.env.NODE_ENV === 'production';
   const configuredBaseUrl =
     process.env.API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
-    'http://127.0.0.1:3001';
+    'https://codexa-website-backend.vercel.app';
 
   const normalizedEndpoint = endpoint.startsWith('/')
     ? endpoint
@@ -329,12 +366,13 @@ export async function serverFetchApi<T = unknown>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
+  // على فيرسل نتصل بالباك إند الحي فوراً بدون إضاعة الوقت في localhost
   const candidateBases = Array.from(
     new Set(
       [
-        'http://127.0.0.1:3001',
         configuredBaseUrl.replace(/\/+$/, ''),
         'https://codexa-website-backend.vercel.app',
+        !isProd ? 'http://127.0.0.1:3001' : '',
       ].filter(Boolean),
     ),
   );
@@ -345,7 +383,7 @@ export async function serverFetchApi<T = unknown>(
         ...options,
         headers,
         cache: 'no-store',
-        signal: AbortSignal.timeout(2200),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (response.ok) {

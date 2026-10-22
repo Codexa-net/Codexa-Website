@@ -58,8 +58,24 @@ const ROLE_LABELS: Record<string, string> = {
   SALES_LEADER: "مشرف مبيعات",
 };
 
+const KNOWN_MEMBER_TRACKS: Record<string, { role: string; track: string | null; isGraphic?: boolean }> = {
+  "alqadi@codexa.net": { role: "SUPER_ADMIN", track: "FULL_STACK" },
+  "fareselsharkawy517@codexa.com": { role: "GRAPHIC_DESIGNER", track: "UI_UX", isGraphic: true },
+  "mariamhammad441@codexa.com": { role: "UI_UX_DESIGNER", track: "UI_UX" },
+  "fabecv10@codexa.com": { role: "UI_UX_LEAD", track: "UI_UX" },
+  "abdelazizkishk19@codexa.com": { role: "DEVELOPER", track: "FRONTEND" },
+  "amangalal246@codexa.com": { role: "UI_UX_DESIGNER", track: "UI_UX" },
+  "remonaymananes@codexa.com": { role: "DEVELOPER", track: "BACKEND" },
+  "mosaied20005@codexa.com": { role: "SALES", track: null },
+  "seifelsayed68@codexa.com": { role: "BACKEND_LEAD", track: "BACKEND" },
+  "muhamedelsanadiki@codexa.com": { role: "DEVELOPER", track: "FRONTEND" },
+  "shroukelsaeid2@codexa.com": { role: "UI_UX_DESIGNER", track: "UI_UX" },
+  "mooazmohammed110@codexa.com": { role: "MOBILE_APP_LEAD", track: "MOBILE_APP" },
+};
+
 export default function ProfilePage() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL || "https://codexa-website-backend.vercel.app";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -87,10 +103,67 @@ export default function ProfilePage() {
     return headers;
   };
 
+  const getUserScopedAvatar = (userId?: string, email?: string, serverAvatar?: string | null): string => {
+    if (typeof window === 'undefined') return serverAvatar || '';
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanId = (userId || '').trim();
+
+    try {
+      const rawOv = localStorage.getItem('codexa_users_overrides');
+      if (rawOv) {
+        const overrides = JSON.parse(rawOv);
+        const userOv = (cleanId && overrides[cleanId]) || (cleanEmail && overrides[cleanEmail]);
+        if (userOv && userOv.avatar !== undefined) {
+          return userOv.avatar || '';
+        }
+      }
+
+      if (cleanEmail) {
+        const scopedByEmail = localStorage.getItem(`codexa_avatar_${cleanEmail}`);
+        if (scopedByEmail !== null) return scopedByEmail;
+      }
+      if (cleanId) {
+        const scopedById = localStorage.getItem(`codexa_avatar_${cleanId}`);
+        if (scopedById !== null) return scopedById;
+      }
+    } catch {}
+
+    return serverAvatar || '';
+  };
+
+  const saveUserScopedAvatar = (userId?: string, email?: string, avatarValue?: string | null) => {
+    if (typeof window === 'undefined') return;
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanId = (userId || '').trim();
+    const val = avatarValue || '';
+
+    try {
+      if (cleanEmail) {
+        if (val) localStorage.setItem(`codexa_avatar_${cleanEmail}`, val);
+        else localStorage.removeItem(`codexa_avatar_${cleanEmail}`);
+      }
+      if (cleanId) {
+        if (val) localStorage.setItem(`codexa_avatar_${cleanId}`, val);
+        else localStorage.removeItem(`codexa_avatar_${cleanId}`);
+      }
+
+      const rawOv = localStorage.getItem('codexa_users_overrides');
+      const overrides = rawOv ? JSON.parse(rawOv) : {};
+
+      if (cleanId) {
+        overrides[cleanId] = { ...(overrides[cleanId] || {}), avatar: val || null };
+      }
+      if (cleanEmail) {
+        overrides[cleanEmail] = { ...(overrides[cleanEmail] || {}), avatar: val || null };
+      }
+
+      localStorage.setItem('codexa_users_overrides', JSON.stringify(overrides));
+    } catch {}
+  };
+
   const applyUserDataToState = useCallback((u: any) => {
     if (!u || !u.name) return;
 
-    // دمج أي تعديلات محفوظة لهذا المستخدم تحديداً
     let userOv: any = {};
     try {
       const rawOv = localStorage.getItem("codexa_users_overrides");
@@ -100,13 +173,23 @@ export default function ProfilePage() {
       }
     } catch {}
 
+    const emailLower = (u.email || "").trim().toLowerCase();
+    const known = KNOWN_MEMBER_TRACKS[emailLower];
+    let role = (u.role || known?.role || "DEVELOPER").toUpperCase();
+    if (emailLower === "mooazmohammed110@codexa.com" && role === "DEVELOPER") {
+      role = "MOBILE_APP_LEAD";
+    }
+
+    const finalAvatar = getUserScopedAvatar(u.id, u.email, userOv.avatar !== undefined ? userOv.avatar : u.avatar);
+
     const merged: UserProfile = {
       ...u,
       ...userOv,
       id: u.id,
       name: u.name,
       email: u.email,
-      role: (u.role || "DEVELOPER").toUpperCase(),
+      role,
+      avatar: finalAvatar || null,
       technologies: Array.isArray(userOv.technologies)
         ? userOv.technologies
         : Array.isArray(u.technologies)
@@ -125,7 +208,6 @@ export default function ProfilePage() {
 
   const loadProfile = useCallback(async () => {
     try {
-      // 1. قراءة المستخدم النشط الموثق من TopNav أولاً
       const win = window as unknown as { __codexaActiveUser?: any };
       if (win.__codexaActiveUser?.name) {
         applyUserDataToState(win.__codexaActiveUser);
@@ -137,7 +219,6 @@ export default function ProfilePage() {
         }
       }
 
-      // 2. جلب أحدث البيانات من السيرفر إن وجد
       const res = await fetch(`${API_BASE}/auth/me`, {
         credentials: "include",
         headers: getAuthHeaders(),
@@ -198,21 +279,22 @@ export default function ProfilePage() {
 
       setAvatar("");
       if (fileInputRef.current) fileInputRef.current.value = "";
-      try {
-        const rawOv = localStorage.getItem("codexa_users_overrides");
-        const overrides = rawOv ? JSON.parse(rawOv) : {};
-        overrides[profile.id] = { ...(overrides[profile.id] || {}), avatar: null };
-        localStorage.setItem("codexa_users_overrides", JSON.stringify(overrides));
+      
+      saveUserScopedAvatar(profile.id, profile.email, null);
 
+      try {
         const savedUser = localStorage.getItem("user");
         if (savedUser) {
           const parsed = JSON.parse(savedUser);
           parsed.avatar = null;
           localStorage.setItem("user", JSON.stringify(parsed));
+          localStorage.setItem("codexa_user", JSON.stringify(parsed));
         }
         window.dispatchEvent(new Event("storage"));
-        window.dispatchEvent(new Event("userUpdated"));
+        window.dispatchEvent(new Event("avatarUpdated"));
+        window.dispatchEvent(new Event("profileUpdated"));
       } catch {}
+
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 3000);
     } finally {
@@ -250,8 +332,10 @@ export default function ProfilePage() {
         ? "#graphic"
         : null;
 
+    const finalAvatar = avatar.trim() ? avatar.trim() : null;
+
     const payload = {
-      avatar: avatar.trim() ? avatar.trim() : null,
+      avatar: finalAvatar,
       phone: phone.trim() || null,
       instaPay: instaPay.trim() || null,
       walletNumber: walletNumber.trim() || null,
@@ -260,7 +344,8 @@ export default function ProfilePage() {
     };
 
     try {
-      // حفظ التعديلات محلياً للعضو الحالي وفي الـ API معاً
+      saveUserScopedAvatar(profile.id, profile.email, finalAvatar);
+
       const rawOv = localStorage.getItem("codexa_users_overrides");
       const overrides = rawOv ? JSON.parse(rawOv) : {};
       overrides[profile.id] = { ...(overrides[profile.id] || {}), ...payload };
@@ -285,7 +370,9 @@ export default function ProfilePage() {
       }).catch(() => null);
 
       window.dispatchEvent(new Event("storage"));
-      window.dispatchEvent(new Event("userUpdated"));
+      window.dispatchEvent(new Event("avatarUpdated"));
+      window.dispatchEvent(new Event("profileUpdated"));
+      
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 3000);
     } catch {
@@ -399,7 +486,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className=" absolute bottom-0 end-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-brand-600 text-white shadow-md transition-all hover:bg-brand-500 dark:border-[#111827]"
+                className="absolute bottom-0 end-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-brand-600 text-white shadow-md transition-all hover:bg-brand-500 dark:border-[#111827]"
                 title="اختر صورة جديدة"
               >
                 <Camera size={14} />

@@ -18,6 +18,7 @@ import {
   Send,
   Sparkles,
   ClipboardList,
+  Menu,
 } from 'lucide-react';
 import { logoutAction } from '@/actions/auth';
 
@@ -37,6 +38,7 @@ const ROLE_TRANSLATIONS: Record<string, string> = {
   PROJECT_MANAGER: 'مدير مشاريع',
 };
 
+// الدليل المعتمد للفريق بدون فرض أي صورة ثابتة لأي عضو
 const TEAM_DIRECTORY = [
   {
     id: 'ebb68484-a5b3-450c-84b9-2bfae2430008',
@@ -44,7 +46,47 @@ const TEAM_DIRECTORY = [
     email: 'alqadi@codexa.net',
     role: 'SUPER_ADMIN',
     track: 'FULL_STACK',
+    avatar: null,
     jobTitle: 'مدير نظام (Super Admin)',
+    technologies: [],
+    phone: null,
+    status: 'ACTIVE',
+    isActive: true,
+  },
+  {
+    id: '739ba699-b7d4-4c0c-873f-f93716d1a003',
+    name: 'يوسف شهاب',
+    email: 'fabecv10@codexa.com',
+    role: 'UI_UX_LEAD',
+    track: 'UI_UX',
+    avatar: null,
+    jobTitle: 'قائد فريق التصميم و UI/UX',
+    technologies: [],
+    phone: null,
+    status: 'ACTIVE',
+    isActive: true,
+  },
+  {
+    id: 'f2a27e68-efb7-469a-92ef-057247b0d009',
+    name: 'سيف السيد',
+    email: 'seifelsayed68@codexa.com',
+    role: 'BACKEND_LEAD',
+    track: 'BACKEND',
+    avatar: null,
+    jobTitle: 'قائد فريق Backend',
+    technologies: [],
+    phone: null,
+    status: 'ACTIVE',
+    isActive: true,
+  },
+  {
+    id: 'f5abdd2f-cf3c-423e-92e5-7d82c0b18012',
+    name: 'معاذ محمد سيد سالم',
+    email: 'mooazmohammed110@codexa.com',
+    role: 'MOBILE_APP_LEAD',
+    track: 'MOBILE_APP',
+    avatar: null,
+    jobTitle: 'قائد فريق Mobile',
     technologies: [],
     phone: null,
     status: 'ACTIVE',
@@ -56,6 +98,7 @@ const TEAM_DIRECTORY = [
     email: 'fareselsharkawy517@codexa.com',
     role: 'GRAPHIC_DESIGNER',
     track: 'UI_UX',
+    avatar: null,
     cvUrl: '#graphic',
     jobTitle: 'مصمم جرافيك (Graphic Designer)',
     technologies: [],
@@ -69,31 +112,8 @@ const TEAM_DIRECTORY = [
     email: 'mariamhammad441@codexa.com',
     role: 'UI_UX_DESIGNER',
     track: 'UI_UX',
+    avatar: null,
     jobTitle: 'مصمم واجهات (UI/UX)',
-    technologies: [],
-    phone: null,
-    status: 'ACTIVE',
-    isActive: true,
-  },
-  {
-    id: '739ba699-b7d4-4c0c-873f-f93716d1a003',
-    name: 'يوسف شهاب',
-    email: 'fabecv10@codexa.com',
-    role: 'UI_UX_LEAD',
-    track: 'UI_UX',
-    jobTitle: 'قائد فريق التصميم و UI/UX',
-    technologies: [],
-    phone: null,
-    status: 'ACTIVE',
-    isActive: true,
-  },
-  {
-    id: '7d5123ad-9f77-4f24-b82e-99e6ec03b004',
-    name: 'عبدالعزيز محمد كشك',
-    email: 'abdelazizkishk19@codexa.com',
-    role: 'DEVELOPER',
-    track: 'FRONTEND',
-    jobTitle: 'مطور Frontend',
     technologies: [],
     phone: null,
     status: 'ACTIVE',
@@ -105,7 +125,47 @@ const TEAM_DIRECTORY = [
     email: 'amangalal246@codexa.com',
     role: 'UI_UX_DESIGNER',
     track: 'UI_UX',
+    avatar: null,
     jobTitle: 'مصمم واجهات (UI/UX)',
+    technologies: [],
+    phone: null,
+    status: 'ACTIVE',
+    isActive: true,
+  },
+  {
+    id: 'f3a90b17-52f1-4d29-a73b-13574aff3411',
+    name: 'شروق السعيد',
+    email: 'shroukelsaeid2@codexa.com',
+    role: 'UI_UX_DESIGNER',
+    track: 'UI_UX',
+    avatar: null,
+    jobTitle: 'مصمم واجهات (UI/UX)',
+    technologies: [],
+    phone: null,
+    status: 'ACTIVE',
+    isActive: true,
+  },
+  {
+    id: '7d5123ad-9f77-4f24-b82e-99e6ec03b004',
+    name: 'عبدالعزيز محمد كشك',
+    email: 'abdelazizkishk19@codexa.com',
+    role: 'DEVELOPER',
+    track: 'FRONTEND',
+    avatar: null,
+    jobTitle: 'مطور Frontend',
+    technologies: [],
+    phone: null,
+    status: 'ACTIVE',
+    isActive: true,
+  },
+  {
+    id: 'f32c3e16-e344-410e-9897-e08017da3010',
+    name: 'محمد صناديكي',
+    email: 'muhamedelsanadiki@codexa.com',
+    role: 'DEVELOPER',
+    track: 'FRONTEND',
+    avatar: null,
+    jobTitle: 'مطور Frontend',
     technologies: [],
     phone: null,
     status: 'ACTIVE',
@@ -117,6 +177,7 @@ const TEAM_DIRECTORY = [
     email: 'remonaymananes@codexa.com',
     role: 'DEVELOPER',
     track: 'BACKEND',
+    avatar: null,
     jobTitle: 'مطور Backend',
     technologies: [],
     phone: null,
@@ -129,55 +190,8 @@ const TEAM_DIRECTORY = [
     email: 'mosaied20005@codexa.com',
     role: 'SALES',
     track: null,
+    avatar: null,
     jobTitle: 'مسؤول مبيعات (Sales)',
-    technologies: [],
-    phone: null,
-    status: 'ACTIVE',
-    isActive: true,
-  },
-  {
-    id: 'f2a27e68-efb7-469a-92ef-057247b0d009',
-    name: 'سيف السيد',
-    email: 'seifelsayed68@codexa.com',
-    role: 'BACKEND_LEAD',
-    track: 'BACKEND',
-    jobTitle: 'قائد فريق Backend',
-    technologies: [],
-    phone: null,
-    status: 'ACTIVE',
-    isActive: true,
-  },
-  {
-    id: 'f32c3e16-e344-410e-9897-e08017da3010',
-    name: 'محمد صناديكي',
-    email: 'muhamedelsanadiki@codexa.com',
-    role: 'DEVELOPER',
-    track: 'FRONTEND',
-    jobTitle: 'مطور Frontend',
-    technologies: [],
-    phone: null,
-    status: 'ACTIVE',
-    isActive: true,
-  },
-  {
-    id: 'f3a90b17-52f1-4d29-a73b-13574aff3411',
-    name: 'شروق السعيد',
-    email: 'shroukelsaeid2@codexa.com',
-    role: 'UI_UX_DESIGNER',
-    track: 'UI_UX',
-    jobTitle: 'مصمم واجهات (UI/UX)',
-    technologies: [],
-    phone: null,
-    status: 'ACTIVE',
-    isActive: true,
-  },
-  {
-    id: 'f5abdd2f-cf3c-423e-92e5-7d82c0b18012',
-    name: 'معاذ محمد سيد سالم',
-    email: 'mooazmohammed110@codexa.com',
-    role: 'MOBILE_APP_LEAD',
-    track: 'MOBILE_APP',
-    jobTitle: 'قائد فريق Mobile',
     technologies: [],
     phone: null,
     status: 'ACTIVE',
@@ -238,6 +252,73 @@ function decodeJwtFromClient(): any {
   }
 }
 
+// قراءة الصورة الخاصة بمستخدم محدد فقط دون الخلط بين الحسابات على نفس المتصفح
+function getUserScopedAvatar(userId?: string, email?: string, serverAvatar?: string | null): string {
+  if (typeof window === 'undefined') return serverAvatar || '';
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanId = (userId || '').trim();
+
+  try {
+    const rawOv = localStorage.getItem('codexa_users_overrides');
+    if (rawOv) {
+      const overrides = JSON.parse(rawOv);
+      const userOv = (cleanId && overrides[cleanId]) || (cleanEmail && overrides[cleanEmail]);
+      if (userOv && userOv.avatar !== undefined) {
+        return userOv.avatar || '';
+      }
+    }
+
+    if (cleanEmail) {
+      const scopedByEmail = localStorage.getItem(`codexa_avatar_${cleanEmail}`);
+      if (scopedByEmail !== null) return scopedByEmail;
+    }
+    if (cleanId) {
+      const scopedById = localStorage.getItem(`codexa_avatar_${cleanId}`);
+      if (scopedById !== null) return scopedById;
+    }
+  } catch {}
+
+  return serverAvatar || '';
+}
+
+// حفظ صورة المستخدم في مساره المعزول وفي سجل الفريق ليراها أعضاء فريقه والسوبر أدمن
+function saveUserScopedAvatar(userId?: string, email?: string, avatarValue?: string | null) {
+  if (typeof window === 'undefined') return;
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanId = (userId || '').trim();
+  const val = avatarValue || '';
+
+  try {
+    if (cleanEmail) {
+      if (val) localStorage.setItem(`codexa_avatar_${cleanEmail}`, val);
+      else localStorage.removeItem(`codexa_avatar_${cleanEmail}`);
+    }
+    if (cleanId) {
+      if (val) localStorage.setItem(`codexa_avatar_${cleanId}`, val);
+      else localStorage.removeItem(`codexa_avatar_${cleanId}`);
+    }
+
+    const rawOv = localStorage.getItem('codexa_users_overrides');
+    const overrides = rawOv ? JSON.parse(rawOv) : {};
+
+    if (cleanId) {
+      overrides[cleanId] = { ...(overrides[cleanId] || {}), avatar: val || null };
+    }
+    if (cleanEmail) {
+      overrides[cleanEmail] = { ...(overrides[cleanEmail] || {}), avatar: val || null };
+    }
+
+    localStorage.setItem('codexa_users_overrides', JSON.stringify(overrides));
+  } catch {}
+}
+
+function getRoleSortPriority(role?: string): number {
+  const r = (role || '').toUpperCase();
+  if (r === 'SUPER_ADMIN') return 0;
+  if (r.endsWith('_LEAD') || r === 'SALES_LEADER') return 1;
+  return 2;
+}
+
 function enrichTeamList(rawList: any[], viewerRole?: string): any[] {
   let overrides: Record<string, any> = {};
   let deletedIds: string[] = [];
@@ -255,10 +336,10 @@ function enrichTeamList(rawList: any[], viewerRole?: string): any[] {
     .filter((u) => !deletedIds.includes(String(u.id)))
     .map((u) => {
       const known = findMemberInDirectory(u);
+      const resolvedId = String(u.id || known?.id || '');
       const emailLower = (u.email || known?.email || '').trim().toLowerCase();
-      const ov = overrides[u.id] || overrides[emailLower] || {};
+      const ov = overrides[resolvedId] || overrides[emailLower] || {};
 
-      // إذا كان معاذ مسجلاً في السيرفر القديم كـ DEVELOPER نرقيه تلقائياً إلى MOBILE_APP_LEAD
       let rawMergedRole = (ov.role || u.role || known?.role || 'DEVELOPER').toUpperCase();
       if (emailLower === 'mooazmohammed110@codexa.com' && rawMergedRole === 'DEVELOPER') {
         rawMergedRole = 'MOBILE_APP_LEAD';
@@ -292,22 +373,29 @@ function enrichTeamList(rawList: any[], viewerRole?: string): any[] {
           ? u.technologies
           : [];
 
+      // جلب صورة العضو الخاصة به فقط (من السيرفر أو من تعديله الشخصي المحفوظ)
+      const memberAvatar = getUserScopedAvatar(resolvedId, emailLower, u.avatar);
+      const isLeadMember = rawMergedRole.endsWith('_LEAD') || rawMergedRole === 'SALES_LEADER';
+
       return {
         ...known,
         ...u,
         ...ov,
-        id: u.id || known?.id,
+        id: resolvedId,
         name: ov.name || u.name || known?.name,
         email: ov.email || u.email || known?.email,
         role: rawMergedRole,
+        isLead: isLeadMember,
         track: mergedTrack,
+        avatar: memberAvatar || null,
         cvUrl: mergedCvUrl,
         phone: ov.phone !== undefined ? ov.phone : (u.phone || null),
         technologies: realTechs,
         skills: realTechs,
         isActive: ov.isActive !== undefined ? ov.isActive : (u.isActive ?? true),
       };
-    });
+    })
+    .sort((a, b) => getRoleSortPriority(a.role) - getRoleSortPriority(b.role));
 
   const vRole = (viewerRole || '').toUpperCase();
   if (vRole === 'UI_UX_LEAD') {
@@ -349,21 +437,20 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       serverUserProp.name !== 'عضو الفريق'
     ) {
       const matched = findMemberInDirectory(serverUserProp);
+      const uId = serverUserProp.id || matched?.id || '';
+      const uEmail = serverUserProp.email || matched?.email || '';
       let role = (serverUserProp.role || matched?.role || 'DEVELOPER').toUpperCase();
-      if (
-        (serverUserProp.email || matched?.email || '').toLowerCase() ===
-          'mooazmohammed110@codexa.com' &&
-        role === 'DEVELOPER'
-      ) {
+      if (uEmail.toLowerCase() === 'mooazmohammed110@codexa.com' && role === 'DEVELOPER') {
         role = 'MOBILE_APP_LEAD';
       }
       resolvedUser = {
         ...(matched || {}),
         ...serverUserProp,
-        id: serverUserProp.id || matched?.id,
+        id: uId,
         name: serverUserProp.name || matched?.name,
-        email: serverUserProp.email || matched?.email,
+        email: uEmail,
         role,
+        avatar: getUserScopedAvatar(uId, uEmail, serverUserProp.avatar),
         track: serverUserProp.track || matched?.track || null,
       };
     }
@@ -374,21 +461,20 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
         const parsed = JSON.parse(cookieUserRaw);
         const matched = findMemberInDirectory(parsed);
         if (matched || parsed?.email) {
+          const uId = parsed.id || matched?.id || '';
+          const uEmail = parsed.email || matched?.email || '';
           let role = (parsed.role || matched?.role || 'DEVELOPER').toUpperCase();
-          if (
-            (parsed.email || matched?.email || '').toLowerCase() ===
-              'mooazmohammed110@codexa.com' &&
-            role === 'DEVELOPER'
-          ) {
+          if (uEmail.toLowerCase() === 'mooazmohammed110@codexa.com' && role === 'DEVELOPER') {
             role = 'MOBILE_APP_LEAD';
           }
           resolvedUser = {
             ...(matched || {}),
             ...parsed,
-            id: parsed.id || matched?.id,
+            id: uId,
             name: parsed.name || matched?.name,
-            email: parsed.email || matched?.email,
+            email: uEmail,
             role,
+            avatar: getUserScopedAvatar(uId, uEmail, parsed.avatar),
             track: parsed.track || matched?.track || null,
           };
         }
@@ -399,7 +485,10 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       const jwtDecoded = decodeJwtFromClient();
       const matchedFromJwt = findMemberInDirectory(jwtDecoded);
       if (matchedFromJwt) {
-        resolvedUser = { ...matchedFromJwt };
+        resolvedUser = {
+          ...matchedFromJwt,
+          avatar: getUserScopedAvatar(matchedFromJwt.id, matchedFromJwt.email, null),
+        };
       }
     }
 
@@ -422,6 +511,7 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
             id: matched.id,
             email: matched.email,
             role,
+            avatar: getUserScopedAvatar(matched.id, matched.email, parsed.avatar),
             track: parsed.track || matched.track,
           };
         }
@@ -429,14 +519,24 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
     }
 
     if (resolvedUser) {
-      const rawOv = localStorage.getItem('codexa_users_overrides');
-      if (rawOv) {
-        const overrides = JSON.parse(rawOv);
-        const userOv =
-          overrides[resolvedUser.id] ||
-          overrides[(resolvedUser.email || '').toLowerCase()];
-        if (userOv) {
-          resolvedUser = { ...resolvedUser, ...userOv };
+      const emailLower = (resolvedUser.email || '').toLowerCase();
+      const scopedAvatar = getUserScopedAvatar(
+        resolvedUser.id,
+        emailLower,
+        resolvedUser.avatar,
+      );
+      resolvedUser.avatar = scopedAvatar || '';
+
+      // синхronize active user's own avatar with localStorage so /dashboard/profile reads the right one
+      const previousOwner = localStorage.getItem('codexa_avatar_owner');
+      if (previousOwner !== emailLower) {
+        localStorage.setItem('codexa_avatar_owner', emailLower);
+        if (scopedAvatar) {
+          localStorage.setItem('codexa_avatar', scopedAvatar);
+          localStorage.setItem('user_avatar', scopedAvatar);
+        } else {
+          localStorage.removeItem('codexa_avatar');
+          localStorage.removeItem('user_avatar');
         }
       }
 
@@ -457,12 +557,19 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       localStorage.setItem('userId', resolvedUser.id);
       localStorage.setItem('userName', resolvedUser.name);
 
+      // حفظ الكوكي بدون وضع صورة Base64 ضخمة بداخلها حتى لا تتجاوز حد الـ 4KB للكوكيز
+      const compactAvatar =
+        resolvedUser.avatar && !String(resolvedUser.avatar).startsWith('data:')
+          ? resolvedUser.avatar
+          : '';
+
       document.cookie = `codexa_user=${encodeURIComponent(
         JSON.stringify({
           id: resolvedUser.id,
           name: resolvedUser.name,
           email: resolvedUser.email,
           role: resolvedUser.role,
+          avatar: compactAvatar,
           track: resolvedUser.track,
         }),
       )}; path=/; max-age=604800; SameSite=Lax`;
@@ -488,6 +595,7 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       url.includes(':3001') ||
       url.includes('codexa-website-backend.vercel.app') ||
       url.includes('/auth/me') ||
+      url.includes('/auth/profile') ||
       url.includes('/project-stages') ||
       url.includes('/contact-messages') ||
       url.includes('/admin-users') ||
@@ -498,11 +606,31 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
     }
 
     const lower = url.toLowerCase();
+    const method = (init?.method || 'GET').toUpperCase();
     const currentActive =
       win.__codexaActiveUser ||
       JSON.parse(localStorage.getItem('user') || 'null') ||
       activeUser;
     const currentViewerRole = (currentActive?.role || 'DEVELOPER').toUpperCase();
+
+    // 🟢 التقاط أي تحديث للصورة الشخصية أو البروفايل وحفظه للعضو نفسه ليظهر لكل فريقه وللسوبر أدمن
+    if (
+      (method === 'PUT' || method === 'PATCH' || method === 'POST') &&
+      (lower.includes('/auth/profile') ||
+        lower.includes('/auth/me') ||
+        lower.includes('/admin-users/')) &&
+      init?.body &&
+      typeof init.body === 'string'
+    ) {
+      try {
+        const parsedBody = JSON.parse(init.body);
+        if ('avatar' in parsedBody) {
+          const targetId = currentActive?.id;
+          const targetEmail = currentActive?.email;
+          saveUserScopedAvatar(targetId, targetEmail, parsedBody.avatar);
+        }
+      } catch {}
+    }
 
     if (lower.includes('/auth/me') || lower.includes('/auth/profile')) {
       try {
@@ -513,17 +641,23 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
           const serverU = data?.data ?? data;
           if (serverU && serverU.email) {
             const matched = findMemberInDirectory(serverU);
+            const uId = serverU.id || matched?.id || '';
+            const uEmail = serverU.email || matched?.email || '';
             let role = (serverU.role || matched?.role || currentViewerRole).toUpperCase();
-            if (
-              serverU.email.toLowerCase() === 'mooazmohammed110@codexa.com' &&
-              role === 'DEVELOPER'
-            ) {
+            if (uEmail.toLowerCase() === 'mooazmohammed110@codexa.com' && role === 'DEVELOPER') {
               role = 'MOBILE_APP_LEAD';
+            }
+            const userAvatar = getUserScopedAvatar(uId, uEmail, serverU.avatar);
+            if (serverU.avatar) {
+              saveUserScopedAvatar(uId, uEmail, serverU.avatar);
             }
             const merged = {
               ...(matched || {}),
               ...serverU,
+              id: uId,
+              email: uEmail,
               role,
+              avatar: userAvatar,
               track: serverU.track || matched?.track || null,
             };
             win.__codexaActiveUser = merged;
@@ -549,7 +683,7 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
         if (
           lower.includes('/admin-users') &&
           !lower.includes('/transactions') &&
-          (!init?.method || init.method.toUpperCase() === 'GET')
+          method === 'GET'
         ) {
           const clone = res.clone();
           const json = await clone.json().catch(() => null);
@@ -568,7 +702,7 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
         if (
           lower.includes('/projects') &&
           !lower.includes('ispublic=true') &&
-          (!init?.method || init.method.toUpperCase() === 'GET')
+          method === 'GET'
         ) {
           const clone = res.clone();
           const json = await clone.json().catch(() => null);
@@ -594,7 +728,11 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
 
     if (lower.includes('/transactions')) {
       safePayload = [];
-    } else if (lower.includes('/admin-users') || lower.includes('/team') || lower.includes('/users')) {
+    } else if (
+      lower.includes('/admin-users') ||
+      lower.includes('/team') ||
+      lower.includes('/users')
+    ) {
       safePayload = enrichTeamList(TEAM_DIRECTORY, currentViewerRole);
     } else if (lower.includes('/projects')) {
       safePayload = [];
@@ -674,25 +812,20 @@ export default function TopNav({ user }: { user?: any }) {
 
   const [currentUser, setCurrentUser] = useState(() => {
     const matched = findMemberInDirectory(user);
-    if (user?.name && user.name !== 'المستخدم' && user.name !== 'عضو الفريق') {
-      return {
-        id: user.id || matched?.id || '',
-        name: user.name,
-        email: user.email || matched?.email || '',
-        role: (user.role || matched?.role || 'DEVELOPER').toUpperCase(),
-        avatar: user.avatar || '',
-      };
-    }
+    const uId = user?.id || matched?.id || '';
+    const email = user?.email || matched?.email || '';
+
     return {
-      id: matched?.id || '',
-      name: matched?.name || '',
-      email: matched?.email || '',
-      role: (matched?.role || 'DEVELOPER').toUpperCase(),
-      avatar: '',
+      id: uId,
+      name: user?.name || matched?.name || 'عضو الفريق',
+      email: email,
+      role: (user?.role || matched?.role || 'DEVELOPER').toUpperCase(),
+      avatar: getUserScopedAvatar(uId, email, user?.avatar),
     };
   });
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001';
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL || 'https://codexa-website-backend.vercel.app';
 
   const getAuthHeaders = () => {
     const token =
@@ -707,16 +840,65 @@ export default function TopNav({ user }: { user?: any }) {
   useEffect(() => {
     const synced = syncAndProtectClientSession(user);
     if (synced?.name) {
+      const scopedAvatar = getUserScopedAvatar(synced.id, synced.email, synced.avatar);
+
       setCurrentUser({
         id: synced.id,
         name: synced.name,
         email: synced.email || '',
         role: (synced.role || 'DEVELOPER').toUpperCase(),
-        avatar: synced.avatar || user?.avatar || '',
+        avatar: scopedAvatar,
       });
       window.dispatchEvent(new Event('codexaUserSynced'));
     }
   }, [user]);
+
+  // 🟢 الاستماع لتغيير أو حذف الصورة من صفحة الملف الشخصي وربطها بحساب العضو الحالي فقط
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      try {
+        const activeRaw = localStorage.getItem('user') || localStorage.getItem('codexa_user');
+        const parsedUser = activeRaw ? JSON.parse(activeRaw) : null;
+        const uId = parsedUser?.id || currentUser.id;
+        const uEmail = (parsedUser?.email || currentUser.email || '').toLowerCase();
+
+        // قراءة الصورة الجديدة التي رفعتها صفحة الملف الشخصي (أو الفارغة عند الضغط على إزالة الصورة)
+        const latestAvatar =
+          localStorage.getItem('codexa_avatar') ??
+          localStorage.getItem('user_avatar') ??
+          parsedUser?.avatar ??
+          '';
+
+        saveUserScopedAvatar(uId, uEmail, latestAvatar);
+        localStorage.setItem('codexa_avatar_owner', uEmail);
+
+        if (parsedUser) {
+          parsedUser.avatar = latestAvatar;
+          localStorage.setItem('user', JSON.stringify(parsedUser));
+          localStorage.setItem('codexa_user', JSON.stringify(parsedUser));
+        }
+
+        setCurrentUser((prev) => ({ ...prev, avatar: latestAvatar }));
+
+        // إرسال التحديث للباك إند ليظهر لباقي أعضاء التيم على أجهزتهم أيضاً
+        if (uId) {
+          fetch(`${API_BASE}/admin-users/${uId}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            credentials: 'include',
+            body: JSON.stringify({ avatar: latestAvatar || null }),
+          }).catch(() => null);
+        }
+      } catch {}
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    window.addEventListener('profileUpdated', handleAvatarUpdate);
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+      window.removeEventListener('profileUpdated', handleAvatarUpdate);
+    };
+  }, [API_BASE, currentUser.id, currentUser.email]);
 
   const rawRole = (currentUser.role || 'DEVELOPER').toUpperCase();
   const isSalesOrAdmin =
@@ -939,13 +1121,16 @@ export default function TopNav({ user }: { user?: any }) {
     setActiveMenu((prev) => (prev === menu ? null : menu));
   };
 
-  // 🟢 تسجيل خروج نظيف بدون استدعاء مزدوج أو Runtime Error
+  // 🟢 تسجيل خروج نظيف يمسح الجلسة والمفاتيح المؤقتة حتى لا تظهر صورة المستخدم السابق للمستخدم الجديد
   async function handleLogout() {
     try {
       const win = window as unknown as { __codexaActiveUser?: any };
       win.__codexaActiveUser = undefined;
       localStorage.removeItem('user');
       localStorage.removeItem('codexa_user');
+      localStorage.removeItem('codexa_avatar');
+      localStorage.removeItem('user_avatar');
+      localStorage.removeItem('codexa_avatar_owner');
       localStorage.removeItem('userRole');
       localStorage.removeItem('userId');
       localStorage.removeItem('userName');
@@ -977,28 +1162,40 @@ export default function TopNav({ user }: { user?: any }) {
     }
   };
 
-  const displayRole =
-    ROLE_TRANSLATIONS[rawRole] || currentUser.role || 'عضو الفريق';
+  const displayRole = ROLE_TRANSLATIONS[rawRole] || currentUser.role || 'عضو الفريق';
   const firstLetter = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'ع';
   const unreadCount = notifications.length;
 
   return (
     <header
-      className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-gray-100 bg-white px-8 transition-colors dark:border-gray-800 dark:bg-[#0d111a]"
+      className="sticky top-0 z-30 flex h-14 sm:h-16 w-full items-center justify-between border-b border-gray-100 bg-white/95 px-3 sm:px-6 md:px-8 backdrop-blur-md transition-colors dark:border-gray-800 dark:bg-[#0d111a]/95"
       dir="rtl"
     >
-      <div />
+      {/* زر القائمة الجانبية في شاشات الموبايل */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('toggleSidebar'))}
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 md:hidden"
+          aria-label="فتح القائمة"
+        >
+          <Menu size={18} />
+        </button>
+        <span className="font-black text-sm sm:text-base tracking-tight text-gray-900 dark:text-white md:hidden font-sans">
+          Codexa
+        </span>
+      </div>
 
-      <div ref={containerRef} className="flex items-center gap-4">
-        <div className="flex items-center gap-2 border-e border-gray-200 pe-4 dark:border-gray-700">
+      <div ref={containerRef} className="flex items-center gap-1.5 sm:gap-3.5">
+        <div className="flex items-center gap-1 sm:gap-2 border-e border-gray-200 pe-1.5 sm:pe-4 dark:border-gray-700">
           {mounted && (
             <button
               type="button"
               onClick={toggleDashboardTheme}
-              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               title="مظهر الداشبورد"
             >
-              {dashTheme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+              {dashTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           )}
 
@@ -1006,11 +1203,10 @@ export default function TopNav({ user }: { user?: any }) {
             <button
               type="button"
               onClick={() => toggleMenu('notifications')}
-              className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               aria-label="الإشعارات"
             >
-              <Bell size={17} />
-
+              <Bell size={16} />
               {unreadCount > 0 ? (
                 <span className="absolute -end-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-black text-white shadow-md ring-2 ring-white dark:ring-[#0d111a]">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-60" />
@@ -1018,18 +1214,18 @@ export default function TopNav({ user }: { user?: any }) {
                 </span>
               ) : (
                 <span
-                  className="absolute end-2 top-2 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#0d111a]"
+                  className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#0d111a]"
                   title="جميع التحديثات مقروءة"
                 />
               )}
             </button>
 
             {activeMenu === 'notifications' && (
-              <div className="animate-in fade-in zoom-in-95 absolute end-0 top-11 z-50 w-88 rounded-3xl border border-gray-200/80 bg-white p-4 text-right shadow-2xl duration-150 dark:border-gray-800 dark:bg-[#111827]">
+              <div className="animate-in fade-in zoom-in-95 fixed inset-x-3 top-15 z-50 w-auto max-w-[calc(100vw-1.5rem)] sm:absolute sm:inset-x-auto sm:end-0 sm:top-11 sm:w-88 sm:max-w-none rounded-3xl border border-gray-200/80 bg-white p-4 text-right shadow-2xl duration-150 dark:border-gray-800 dark:bg-[#111827]">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5 text-xs font-bold text-gray-900 dark:text-white">
-                      <Sparkles size={14} className="text-brand-500" />
+                      <Sparkles size={14} className="text-brand-500 shrink-0" />
                       <span>مركز التحديثات والمهام</span>
                     </span>
                     {unreadCount > 0 && (
@@ -1051,7 +1247,7 @@ export default function TopNav({ user }: { user?: any }) {
                   )}
                 </div>
 
-                <div className="mt-2 max-h-80 divide-y divide-gray-100 overflow-y-auto dark:divide-gray-800/60">
+                <div className="mt-2 max-h-72 sm:max-h-80 divide-y divide-gray-100 overflow-y-auto dark:divide-gray-800/60">
                   {unreadCount > 0 ? (
                     notifications.map((n) => (
                       <button
@@ -1074,7 +1270,7 @@ export default function TopNav({ user }: { user?: any }) {
                       </button>
                     ))
                   ) : (
-                    <div className="space-y-1 py-9 text-center text-xs text-gray-400">
+                    <div className="space-y-1 py-8 text-center text-xs text-gray-400">
                       <CheckCircle2 className="mx-auto mb-2 size-7 text-emerald-500 opacity-80" />
                       <p className="font-bold text-gray-700 dark:text-gray-200">
                         لا توجد إشعارات جديدة
@@ -1092,10 +1288,10 @@ export default function TopNav({ user }: { user?: any }) {
           {isSalesOrAdmin && (
             <Link
               href="/dashboard/messages"
-              className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-gray-800"
+              className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-gray-800"
               title="إدارة طلبات التواصل والعملاء"
             >
-              <MessageSquare size={17} />
+              <MessageSquare size={16} />
             </Link>
           )}
         </div>
@@ -1104,9 +1300,9 @@ export default function TopNav({ user }: { user?: any }) {
           <button
             type="button"
             onClick={() => toggleMenu('user')}
-            className="flex cursor-pointer items-center gap-3 rounded-full p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60"
+            className="flex cursor-pointer items-center gap-2.5 rounded-full p-0.5 sm:p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60"
           >
-            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-sm font-bold text-white shadow-sm">
+            <div className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-sm font-bold text-white shadow-sm ring-1 ring-brand-500/20">
               {currentUser.avatar ? (
                 <img
                   src={currentUser.avatar}
@@ -1118,8 +1314,8 @@ export default function TopNav({ user }: { user?: any }) {
               )}
             </div>
 
-            <div className="hidden text-right sm:block">
-              <div className="text-xs font-bold dark:text-white">
+            <div className="hidden sm:block text-right">
+              <div className="text-xs font-bold dark:text-white leading-tight">
                 {currentUser.name || 'عضو الفريق'}
               </div>
               <div className="text-[10px] text-gray-400">{displayRole}</div>
@@ -1127,7 +1323,14 @@ export default function TopNav({ user }: { user?: any }) {
           </button>
 
           {activeMenu === 'user' && (
-            <div className="absolute end-0 top-12 z-50 w-48 rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-[#111827]">
+            <div className="absolute end-0 top-11 sm:top-12 z-50 w-52 rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-[#111827]">
+              <div className="border-b border-gray-100 px-3 py-2 sm:hidden dark:border-gray-800">
+                <p className="truncate text-xs font-bold text-gray-900 dark:text-white">
+                  {currentUser.name || 'عضو الفريق'}
+                </p>
+                <p className="truncate text-[10px] text-gray-400">{displayRole}</p>
+              </div>
+
               <Link
                 href="/dashboard/profile"
                 onClick={() => setActiveMenu(null)}

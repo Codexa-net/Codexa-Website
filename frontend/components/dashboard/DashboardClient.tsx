@@ -19,8 +19,6 @@ import {
   Users,
   Link2,
   Check,
-  ShieldCheck,
-  Briefcase,
   Layers,
   ClipboardCheck,
 } from "lucide-react";
@@ -66,50 +64,42 @@ function getRoleWelcomeConfig(role: string, name: string) {
     case "SUPER_ADMIN":
       return {
         greeting: `مرحباً بعودتك، ${name} 👋`,
-        badge: "مدير النظام (Super Leader)",
         subtitle: "نظرة عامة على مشاريعك وأداء الفريق، والأنشطة التي تهم اليوم.",
       };
     case "UI_UX_LEAD":
       return {
         greeting: `مرحباً بعودتك، ${name} 🎨`,
-        badge: "قائد فريق التصميم و UI/UX",
         subtitle: "متابعة مهام فريق التصميم و UI/UX، مراجعة الشاشات المسلمة، وتوزيع المهام الفنية.",
       };
     case "BACKEND_LEAD":
       return {
         greeting: `مرحباً بعودتك، ${name} ⚙️`,
-        badge: "قائد فريق Backend",
         subtitle: "متابعة مهام تطوير الأنظمة الخلفية وقواعد البيانات، ومراجعة تسليمات مطوري الباك إند.",
       };
     case "FRONTEND_LEAD":
       return {
         greeting: `مرحباً بعودتك، ${name} 💻`,
-        badge: "قائد فريق Frontend",
         subtitle: "متابعة مهام تطوير الواجهات الأمامية، ومراجعة تسليمات مطوري الفرونت إند.",
       };
     case "FULL_STACK_LEAD":
       return {
         greeting: `مرحباً بعودتك، ${name} 🌐`,
-        badge: "قائد فريق Full-Stack",
         subtitle: "متابعة مهام الربط الشامل بين الفرونت إند والباك إند ومراجعة التسليمات.",
       };
     case "MOBILE_APP_LEAD":
       return {
         greeting: `مرحباً بعودتك، ${name} 📱`,
-        badge: "قائد فريق Mobile App",
         subtitle: "متابعة مهام تطوير تطبيقات الموبايل ومراجعة تسليمات الفريق.",
       };
     case "SALES":
     case "SALES_LEADER":
       return {
         greeting: `مرحباً بعودتك، ${name} 💼`,
-        badge: "مسؤول المبيعات وتطوير الأعمال",
         subtitle: "متابعة طلبات التواصل من العملاء، تسجيل العملاء الجدد، ومتابعة حالة العقود.",
       };
     default:
       return {
         greeting: `مرحباً بعودتك، ${name} 👋`,
-        badge: "فريق كوديكسا",
         subtitle: "متابعة المهام المسندة إليك ومراحل التنفيذ اليومية.",
       };
   }
@@ -302,15 +292,11 @@ export function DashboardClient({
   }
 
   return (
-    <div className="space-y-8 text-right font-sans" dir="rtl">
-      {/* الترويسة العلوية المخصصة حسب الدور */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8 text-right font-sans" dir="rtl">
+      {/* الترويسة العلوية النظيفة بدون تكرار شارة المسمى الوظيفي الموجودة في الهيدر */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-brand-500/10 px-3 py-0.5 text-[11px] font-bold text-brand-500">
-            <ShieldCheck size={13} />
-            <span>{welcomeConfig.badge}</span>
-          </div>
-          <h1 className="text-2xl font-black text-[#14161f] dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-black text-[#14161f] dark:text-white">
             {welcomeConfig.greeting}
           </h1>
           <p className="mt-1 text-xs text-[#8b8f9c] dark:text-gray-400">
@@ -325,7 +311,7 @@ export function DashboardClient({
           {isSuperAdmin && (
             <Link
               href="/dashboard/projects/new"
-              className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 sm:px-6 py-2.5 sm:py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
               <Plus size={16} /> إضافة مشروع جديد +
             </Link>
@@ -333,7 +319,7 @@ export function DashboardClient({
           {isSales && (
             <Link
               href="/dashboard/messages"
-              className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 sm:px-6 py-2.5 sm:py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
               <MessageSquare size={16} /> طلبات التواصل الواردة
             </Link>
@@ -341,7 +327,7 @@ export function DashboardClient({
           {isLead && (
             <Link
               href="/dashboard/tasks"
-              className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 sm:px-6 py-2.5 sm:py-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
               <ClipboardCheck size={16} /> إدارة مهام فريقي
             </Link>
@@ -349,78 +335,78 @@ export function DashboardClient({
         </div>
       </div>
 
-      {/* الكروت الإحصائية الأربعة المربوطة حياً */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl border border-gray-100 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
+      {/* الكروت الإحصائية الأربعة: تعرض 2 بجانب بعض في الهاتف مثل شاشة المكتب و4 في اللابتوب */}
+      <div className="grid grid-cols-2 gap-3.5 sm:gap-5 lg:grid-cols-4">
+        <Card className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
+            <span className="text-[11px] sm:text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
               عدد المشاريع
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400">
-              <FolderKanban size={20} />
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400">
+              <FolderKanban size={19} />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-black text-[#14161f] dark:text-white">
+          <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-black text-[#14161f] dark:text-white">
               {totalProjects}
             </span>
-            <span className="text-xs font-semibold text-brand-600">إجمالي</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-brand-600">إجمالي</span>
           </div>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-100 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
+        <Card className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
+            <span className="text-[11px] sm:text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
               المشاريع النشطة
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
-              <Rocket size={20} />
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
+              <Rocket size={19} />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-black text-[#14161f] dark:text-white">
+          <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-black text-[#14161f] dark:text-white">
               {activeProjects}
             </span>
-            <span className="text-xs font-semibold text-purple-600">قيد التنفيذ</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-purple-600">قيد التنفيذ</span>
           </div>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-100 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
+        <Card className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
+            <span className="text-[11px] sm:text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
               المشاريع المكتملة
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-              <CheckCircle2 size={20} />
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+              <CheckCircle2 size={19} />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-black text-[#14161f] dark:text-white">
+          <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-black text-[#14161f] dark:text-white">
               {completedProjects}
             </span>
-            <span className="text-xs font-semibold text-emerald-600">تم التسليم</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-emerald-600">تم التسليم</span>
           </div>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-100 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
+        <Card className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
+            <span className="text-[11px] sm:text-xs font-semibold text-[#8b8f9c] dark:text-gray-400">
               عدد العملاء
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
-              <Users size={20} />
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+              <Users size={19} />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-black text-[#14161f] dark:text-white">
+          <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+            <span className="font-mono text-2xl sm:text-3xl font-black text-[#14161f] dark:text-white">
               {totalClients}
             </span>
-            <span className="text-xs font-semibold text-blue-600">مسجلين</span>
+            <span className="text-[11px] sm:text-xs font-semibold text-blue-600">مسجلين</span>
           </div>
         </Card>
       </div>
 
-      {/* 🟢 شريط الفرق السريع للسوبر أدمن: كل كارت يوجه مباشرة للفريق المختار فقط */}
+      {/* شريط الفرق السريع للسوبر أدمن: كل كارت يوجه مباشرة للفريق المختار فقط */}
       {isSuperAdmin && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[
@@ -489,7 +475,7 @@ export function DashboardClient({
 
       {/* الرسوم البيانية */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
+        <Card className="flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
           <div>
             <h2 className="text-base font-bold text-[#14161f] dark:text-white">
               حالة المشاريع
@@ -537,7 +523,7 @@ export function DashboardClient({
           </div>
         </Card>
 
-        <Card className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs lg:col-span-2 dark:border-gray-800 dark:bg-[#111827]">
+        <Card className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-xs lg:col-span-2 dark:border-gray-800 dark:bg-[#111827]">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-[#14161f] dark:text-white">
@@ -548,7 +534,7 @@ export function DashboardClient({
               </p>
             </div>
           </div>
-          <div className="flex h-[280px] w-full items-center justify-center">
+          <div className="flex h-[260px] sm:h-[280px] w-full items-center justify-center">
             {totalProjects === 0 ? (
               <div className="flex h-full w-full flex-col justify-center rounded-xl border border-dashed border-gray-200 text-center dark:border-gray-800">
                 <FolderKanban className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
@@ -563,9 +549,9 @@ export function DashboardClient({
         </Card>
       </div>
 
-      {/* جدول أحدث المشاريع */}
-      <Card className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-5 dark:border-gray-800">
+      {/* جدول أحدث المشاريع بكامل الأعمدة والفلاتر والترقيم */}
+      <Card className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-xs dark:border-gray-800 dark:bg-[#111827]">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-100 pb-5 dark:border-gray-800">
           <div>
             <h2 className="text-base font-bold text-[#14161f] dark:text-white">
               أحدث المشاريع
@@ -574,8 +560,8 @@ export function DashboardClient({
               متابعة حالة المشاريع الجارية ونسب الإنجاز.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative w-60">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="relative w-full sm:w-60">
               <Search
                 size={14}
                 className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400"
@@ -591,7 +577,7 @@ export function DashboardClient({
                 className="w-full rounded-full border border-gray-200 bg-[#f7f8fb] py-2 pe-10 ps-4 text-right text-xs outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
               />
             </div>
-            <div className="flex items-center gap-1 rounded-xl bg-gray-50 p-1 text-xs font-semibold text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-xl bg-gray-50 p-1 text-xs font-semibold text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
               {["الكل", "قيد التنفيذ", "مكتمل", "متأخر", "قيد المراجعة"].map((st) => (
                 <button
                   key={st}
@@ -600,7 +586,7 @@ export function DashboardClient({
                     setStatusFilter(st);
                     setCurrentPage(1);
                   }}
-                  className={`cursor-pointer rounded-lg px-3 py-1.5 transition-all ${
+                  className={`cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 transition-all ${
                     statusFilter === st
                       ? "bg-white text-gray-900 shadow-xs dark:bg-gray-700 dark:text-white"
                       : "hover:text-gray-900 dark:hover:text-white"
@@ -625,7 +611,7 @@ export function DashboardClient({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
+            <table className="w-full min-w-[780px] text-right text-xs">
               <thead>
                 <tr className="border-b border-gray-100 font-semibold text-[#8b8f9c] dark:border-gray-800">
                   <th className="py-4 pe-4">اسم المشروع</th>
@@ -749,7 +735,7 @@ export function DashboardClient({
         )}
 
         {/* الترقيم (Pagination) */}
-        <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-5 text-xs font-semibold text-gray-400 dark:border-gray-800">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-5 text-xs font-semibold text-gray-400 dark:border-gray-800">
           <span>
             عرض <span className="font-mono">{totalCount === 0 ? 0 : startIndex + 1}</span> -{" "}
             <span className="font-mono">
@@ -794,7 +780,7 @@ export function DashboardClient({
 
       {/* الإجراءات السريعة */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs lg:col-span-3 dark:border-gray-800 dark:bg-[#111827]">
+        <Card className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-xs lg:col-span-3 dark:border-gray-800 dark:bg-[#111827]">
           <h3 className="mb-4 text-sm font-bold text-[#14161f] dark:text-white">
             الإجراءات السريعة
           </h3>

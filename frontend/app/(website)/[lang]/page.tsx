@@ -10,7 +10,6 @@ import { WorksShowcase } from '@/components/website/projects/works-showcase'
 import { ServicesSection } from '@/components/website/home/services-section'
 import { WhyChooseUsSection } from '@/components/website/home/why-choose-us-section'
 
-// الـ 7 مشاريع الحقيقية المعتمدة في الموقع (نفس مشاريع وصور صفحة أعمالنا 01 / 07)
 const REAL_HOME_PROJECTS: Project[] = [
   {
     id: 'web-alnour-hospital',
@@ -28,7 +27,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'منصة طبية شاملة لإدارة المستشفيات والعيادات التخصصية؛ توفر نظام حجز إلكتروني سريع لتقليل فترات انتظار المرضى، إدارة مركزية للسجلات الصحية الإلكترونية بنظام صلاحيات متعدد، وتنظيم جداول الأطباء والعمليات.',
       en: 'A comprehensive medical platform for managing hospitals and specialized clinics; featuring fast online booking, centralized electronic health records with role-based access, and doctor scheduling.',
     },
-    image: 'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'PHP · MySQL · JavaScript · Role-Based Auth',
@@ -59,7 +58,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'نظام إدارة تعلم (LMS) متكامل للسناتر والمدرسين؛ يقوم بحماية الفيديوهات من التحميل وتسجيل الشاشة (DRM)، ويوفر محركاً لإنشاء اختبارات تفاعلية بتصحيح آلي، بالإضافة إلى لوحة تتبع لمراقبة حضور الطلاب وتسليم الواجبات.',
       en: 'An integrated Learning Management System (LMS) featuring DRM video protection, automated interactive quizzes, and real-time student attendance and assignment tracking.',
     },
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'Next.js · NestJS · PostgreSQL · AWS S3',
@@ -90,7 +89,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'منصة تجارة إلكترونية ضخمة للأجهزة المنزلية؛ تتميز بمحرك بحث وفلاتر متقدمة تعتمد على المواصفات التقنية (الفولت، السعة، الماركة)، مع حاسبة ذكية لخطط التقسيط البنكية، وربط مباشر مع شركات الشحن لتتبع الطلبات.',
       en: 'A large-scale home appliances e-commerce platform with advanced technical filters, smart bank installment calculators, and direct shipping API integrations.',
     },
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'Next.js · TypeScript · Node.js · Redis',
@@ -121,7 +120,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'برنامج لإدارة العمليات اليومية في الصالات الرياضية؛ ينظم اشتراكات الأعضاء ويصدر تنبيهات قرب الانتهاء، يدير جداول الكباتن وحجز الحصص (Classes)، ويتكامل مع أجهزة البصمة والباركود للتحكم في بوابات الدخول.',
       en: 'A complete gym operations system managing member subscriptions, trainer schedules, class bookings, and biometric/barcode gate access control.',
     },
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'React · Express · Prisma · MySQL',
@@ -152,7 +151,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'نظام (PropTech) مخصص للمطورين العقاريين؛ يتيح استعراض الوحدات السكنية عبر خرائط تفاعلية، ويحتوي على نظام مالي يحسب جداول الأقساط والدفعات المستحقة، مع أرشفة سحابية آمنة للعقود القانونية ومتابعة التحصيلات.',
       en: 'A PropTech platform for real estate developers featuring interactive unit maps, automated installment calculators, and cloud contract archiving.',
     },
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'Vue.js · Laravel · PostgreSQL · TailwindCSS',
@@ -183,7 +182,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'نظام كاشير (Cloud POS) متكامل لإدارة المطاعم؛ يستقبل الطلبات من صالة الطعام عبر مسح QR Code، ويقوم بتوجيه الطلب فوراً لشاشات المطبخ (KDS)، مع ربط كل وجبة بمكوناتها لخصمها آلياً من المخزن.',
       en: 'An all-in-one Cloud POS for restaurants with QR table ordering, instant Kitchen Display System (KDS) routing, and automated recipe inventory deduction.',
     },
-    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'React · NestJS · Socket.io · MongoDB',
@@ -214,7 +213,7 @@ const REAL_HOME_PROJECTS: Project[] = [
       ar: 'تطبيق موبايل تفاعلي لمتابعة التمارين؛ يعرض خطط التدريب بفيديوهات عالية الجودة، يوفر عداداً لفترات الراحة بين الجولات، ويتيح تسجيل الأوزان والتكرارات لإنشاء رسوم بيانية توضح تطور الأداء البدني.',
       en: 'An interactive fitness mobile app offering HD workout plans, rest timers, weight/rep logging, and visual performance progress charts.',
     },
-    image: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?auto=format&fit=crop&fm=webp&w=480&q=70',
     year: '2026',
     services: {
       ar: 'Flutter · Firebase · Node.js · UI/UX',
@@ -232,62 +231,7 @@ const REAL_HOME_PROJECTS: Project[] = [
 ]
 
 async function getHomeShowcaseProjects(): Promise<Project[]> {
-  const rawApi =
-    process.env.API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'https://codexa-website-backend.vercel.app'
-  const apiBase = rawApi.includes('localhost')
-    ? 'https://codexa-website-backend.vercel.app'
-    : rawApi.replace(/\/$/, '')
-
-  const projectsList = [...REAL_HOME_PROJECTS]
-
-  try {
-    const res = await fetch(`${apiBase}/projects?isPublic=true`, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(2500),
-    })
-
-    if (res.ok) {
-      const payload = await res.json()
-      const list = Array.isArray(payload) ? payload : payload?.data
-
-      if (Array.isArray(list) && list.length > 0) {
-        // إذا كان مشروع مستشفى النور أو غيره مرفوعاً بصورة مخصصة في الداتابيز نحدّث صورته تلقائياً
-        for (const dbProj of list) {
-          const dbName = (dbProj.name || dbProj.title || '').trim()
-          const dbCover = (dbProj.cover || dbProj.image || '').trim()
-
-          if (
-            dbCover &&
-            !dbCover.includes('projects light') &&
-            !dbCover.includes('projects dark')
-          ) {
-            const matchIdx = projectsList.findIndex(
-              (p) =>
-                p.title.ar.includes(dbName) ||
-                dbName.includes(p.title.ar) ||
-                (dbName.includes('نور') && p.id === 'web-alnour-hospital'),
-            )
-            if (matchIdx !== -1) {
-              projectsList[matchIdx] = {
-                ...projectsList[matchIdx],
-                image: dbCover,
-                description: {
-                  ar: dbProj.description || dbProj.shortDescription || projectsList[matchIdx].description.ar,
-                  en: dbProj.description || dbProj.shortDescription || projectsList[matchIdx].description.en,
-                },
-              }
-            }
-          }
-        }
-      }
-    }
-  } catch {
-    // في حال عدم استجابة السيرفر نعرض الـ 7 مشاريع الحقيقية فوراً
-  }
-
-  return projectsList.slice(0, 7)
+  return REAL_HOME_PROJECTS.slice(0, 7)
 }
 
 export async function generateMetadata(
@@ -316,14 +260,33 @@ export default async function HomePage(props: PageProps<'/[lang]'>) {
 
   return (
     <>
+      <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://images.unsplash.com" />
+      {projects.slice(0, 4).map((p) => (
+        <link
+          key={p.id}
+          rel="preload"
+          as="image"
+          href={p.image}
+          fetchPriority="high"
+        />
+      ))}
+
       <HeroSection locale={locale} dict={dict} />
-      <MarqueeBanner locale={locale} />
-      <WorksShowcase
-        projects={projects}
-        locale={locale}
-        variant="sticky"
-        labels={{ viewProject: dict.home.projects.viewProject }}
-      />
+
+      <div className="relative z-20">
+        <MarqueeBanner locale={locale} />
+      </div>
+
+      <div className="codexa-home-showcase relative z-10">
+        <WorksShowcase
+          projects={projects}
+          locale={locale}
+          variant="sticky"
+          labels={{ viewProject: dict.home.projects.viewProject }}
+        />
+      </div>
+
       <ServicesSection dict={dict} />
       <WhyChooseUsSection dict={dict} />
     </>

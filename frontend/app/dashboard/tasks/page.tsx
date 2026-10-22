@@ -253,7 +253,8 @@ function getTasksWelcomeBanner(role: string, name: string, track?: string) {
 
 export default function UnifiedTasksPage() {
   const router = useRouter();
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL || "https://codexa-website-backend.vercel.app";
 
   const [currentUser, setCurrentUser] = useState<{
     id: string;
@@ -935,29 +936,29 @@ export default function UnifiedTasksPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 pb-10 text-right" dir="rtl">
+    <div className="mx-auto max-w-[1600px] space-y-5 sm:space-y-6 pb-10 text-right" dir="rtl">
       {/* الترويسة واختيار المشروع */}
-      <div className="flex flex-col justify-between gap-6 border-b border-gray-200 pb-5 lg:flex-row lg:items-center dark:border-gray-800">
+      <div className="flex flex-col justify-between gap-4 border-b border-gray-200 pb-4 sm:pb-5 lg:flex-row lg:items-center dark:border-gray-800">
         <div className="flex-1">
-          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-brand-500/10 px-3 py-0.5 text-[11px] font-bold text-brand-500">
+          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-brand-500/10 px-3 py-0.5 text-[10px] sm:text-[11px] font-bold text-brand-500">
             <ShieldCheck size={13} />
             <span>{welcomeBanner.badge}</span>
           </div>
-          <h1 className="flex items-center gap-2 text-2xl font-black text-gray-900 dark:text-white">
+          <h1 className="flex items-center gap-2 text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
             <span>{welcomeBanner.greeting}</span>
           </h1>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
             {welcomeBanner.subtitle}
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="shrink-0 text-sm font-bold text-gray-700 dark:text-gray-400">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 shrink-0">
+          <span className="shrink-0 text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-400">
             المشروع الداخلي:
           </span>
-          <div className="relative min-w-[260px]">
+          <div className="relative w-full sm:min-w-[260px]">
             {internalProjects.length === 0 ? (
-              <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-xs font-bold text-gray-400 dark:border-gray-700 dark:bg-gray-800/60">
+              <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-xs font-bold text-gray-400 dark:border-gray-700 dark:bg-gray-800/60">
                 لا توجد مشاريع جارية حالياً
               </div>
             ) : (
@@ -978,8 +979,8 @@ export default function UnifiedTasksPage() {
       </div>
 
       {/* تسلسل المشروع + سويتش نوع المشروع حسب صلاحية وتخصص العضو */}
-      <Card className="space-y-4 border border-gray-200 bg-white p-5 text-gray-900 shadow-xs dark:border-gray-800 dark:bg-gradient-to-r dark:from-gray-900 dark:to-[#111827] dark:text-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
+      <Card className="space-y-4 border border-gray-200 bg-white p-3.5 sm:p-5 text-gray-900 shadow-xs dark:border-gray-800 dark:bg-gradient-to-r dark:from-gray-900 dark:to-[#111827] dark:text-white">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
               تسلسل تسليم المشروع:
@@ -988,29 +989,26 @@ export default function UnifiedTasksPage() {
               {activeProject?.name || "لم يتم اختيار مشروع بعد"}
             </span>
             {activeProject && (
-              <span className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 font-mono text-[11px] text-brand-700 dark:border-brand-500/30 dark:bg-brand-500/20 dark:text-brand-300">
+              <span className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 font-mono text-[10px] sm:text-[11px] text-brand-700 dark:border-brand-500/30 dark:bg-brand-500/20 dark:text-brand-300">
                 المرحلة المفتوحة: {currentStage}
               </span>
             )}
           </div>
 
-          {/* 🟢 أزرار نطاق المشروع مفلترة حسب التخصص:
-              - السوبر ليدر و UI/UX: يظهر لهم الـ 3 أزرار
-              - مطور وليدر الموبايل: يظهر له (تطبيق موبايل + منظومة شاملة) فقط
-              - مطور وليدر الويب: يظهر له (موقع ويب + منظومة شاملة) فقط */}
+          {/* 🟢 أزرار نطاق المشروع بتصميم متجاوب أنيق لا ينكسر على الموبايل */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-100 p-1 text-[11px] font-bold dark:border-gray-800 dark:bg-gray-800/80">
+            <div className="flex w-full sm:w-auto items-center justify-between sm:justify-start gap-1 overflow-x-auto no-scrollbar rounded-xl border border-gray-200 bg-gray-100 p-1 text-[11px] font-bold dark:border-gray-800 dark:bg-gray-800/80">
               {canSeeWebScope && (
                 <button
                   type="button"
                   onClick={() => handleScopeChange("WEB_ONLY")}
-                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all ${
+                  className={`flex flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 transition-all ${
                     projectScope === "WEB_ONLY"
                       ? "bg-brand-600 text-white shadow-xs"
                       : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                   }`}
                 >
-                  <Monitor size={12} />
+                  <Monitor size={12} className="shrink-0" />
                   <span>موقع ويب (Web)</span>
                 </button>
               )}
@@ -1019,13 +1017,13 @@ export default function UnifiedTasksPage() {
                 <button
                   type="button"
                   onClick={() => handleScopeChange("MOBILE_ONLY")}
-                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all ${
+                  className={`flex flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 transition-all ${
                     projectScope === "MOBILE_ONLY"
                       ? "bg-brand-600 text-white shadow-xs"
                       : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                   }`}
                 >
-                  <Smartphone size={12} />
+                  <Smartphone size={12} className="shrink-0" />
                   <span>تطبيق موبايل (App)</span>
                 </button>
               )}
@@ -1034,13 +1032,13 @@ export default function UnifiedTasksPage() {
                 <button
                   type="button"
                   onClick={() => handleScopeChange("FULL_SYSTEM")}
-                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 transition-all ${
+                  className={`flex flex-1 sm:flex-initial justify-center cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 transition-all ${
                     projectScope === "FULL_SYSTEM"
                       ? "bg-brand-600 text-white shadow-xs"
                       : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                   }`}
                 >
-                  <Layers size={12} />
+                  <Layers size={12} className="shrink-0" />
                   <span>منظومة شاملة (Web + App)</span>
                 </button>
               )}
@@ -1085,8 +1083,9 @@ export default function UnifiedTasksPage() {
           </div>
         </div>
 
+        {/* 🟢 عرض المراحل شبكياً 2x2 على الهاتف بدلاً من عمود واحد طويل */}
         <div
-          className={`grid grid-cols-1 gap-4 ${
+          className={`grid grid-cols-2 gap-2.5 sm:gap-4 ${
             visibleTracks.length === 3 ? "md:grid-cols-3" : "md:grid-cols-4"
           }`}
         >
@@ -1097,31 +1096,31 @@ export default function UnifiedTasksPage() {
             return (
               <div
                 key={tr.key}
-                className="relative space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3.5 dark:border-gray-700/70 dark:bg-gray-800/50"
+                className="relative space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-2.5 sm:p-3.5 dark:border-gray-700/70 dark:bg-gray-800/50"
               >
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 text-[11px] sm:text-xs">
+                  <span className="flex items-center gap-1 font-bold text-gray-800 dark:text-gray-100 truncate">
                     <span>{index + 1}.</span> {tr.stepLabel}
                   </span>
                   {isLocked ? (
-                    <span className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded bg-gray-200 px-2 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-gray-700/80 dark:text-gray-400">
-                      <Lock size={10} /> بانتظار أمر البدء
+                    <span className="inline-flex w-fit shrink-0 items-center gap-1 whitespace-nowrap rounded bg-gray-200 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-gray-600 dark:bg-gray-700/80 dark:text-gray-400">
+                      <Lock size={9} /> بانتظار البدء
                     </span>
                   ) : stats.total === 0 ? (
-                    <span className="shrink-0 whitespace-nowrap rounded border border-gray-300 bg-gray-200/80 px-2 py-0.5 text-[10px] font-bold text-gray-600 dark:border-gray-600/50 dark:bg-gray-700/60 dark:text-gray-300">
-                      بانتظار إضافة مهام
+                    <span className="inline-flex w-fit shrink-0 whitespace-nowrap rounded border border-gray-300 bg-gray-200/80 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-gray-600 dark:border-gray-600/50 dark:bg-gray-700/60 dark:text-gray-300">
+                      بانتظار مهام
                     </span>
                   ) : stats.status === "COMPLETED" ? (
-                    <span className="shrink-0 whitespace-nowrap rounded bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="inline-flex w-fit shrink-0 whitespace-nowrap rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                       مكتمل 100%
                     </span>
                   ) : stats.status === "UNDER_REVIEW" ? (
-                    <span className="shrink-0 whitespace-nowrap rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                    <span className="inline-flex w-fit shrink-0 whitespace-nowrap rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-amber-600 dark:text-amber-400">
                       قيد المراجعة
                     </span>
                   ) : (
-                    <span className="shrink-0 whitespace-nowrap rounded bg-blue-500/15 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                      قيد التنفيذ ({stats.progress}%)
+                    <span className="inline-flex w-fit shrink-0 whitespace-nowrap rounded bg-blue-500/15 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                      جاري ({stats.progress}%)
                     </span>
                   )}
                 </div>
@@ -1139,9 +1138,9 @@ export default function UnifiedTasksPage() {
                   />
                 </div>
 
-                <div className="flex justify-between pt-1 font-mono text-[10px] text-gray-500 dark:text-gray-400">
+                <div className="flex justify-between pt-0.5 font-mono text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
                   <span>
-                    معتمد: {stats.approvedCount} من {stats.total}
+                    معتمد: {stats.approvedCount}/{stats.total}
                   </span>
                   <span>
                     {isLocked ? "مغلق" : stats.total === 0 ? "—" : `${stats.progress}%`}
@@ -1156,7 +1155,7 @@ export default function UnifiedTasksPage() {
       {/* لوحة المسارات لليدرز والسوبر أدمن */}
       {!isExecutionMember ? (
         <div
-          className={`grid grid-cols-1 items-start gap-6 md:grid-cols-2 ${
+          className={`grid grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-2 ${
             visibleTracks.length === 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"
           }`}
         >
@@ -1175,7 +1174,7 @@ export default function UnifiedTasksPage() {
                     : "border-gray-200 dark:border-gray-800"
                 }`}
               >
-                <div className="space-y-3 border-b border-gray-100 p-4 dark:border-gray-800">
+                <div className="space-y-3 border-b border-gray-100 p-3.5 sm:p-4 dark:border-gray-800">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2.5">
                       <div className={`shrink-0 rounded-xl p-2 ${track.headerBg}`}>
@@ -1240,9 +1239,9 @@ export default function UnifiedTasksPage() {
                   )}
                 </div>
 
-                <div className="max-h-[620px] min-h-[380px] space-y-3 overflow-y-auto bg-gray-50/70 p-3 dark:bg-[#0b0f17]/30">
+                <div className="max-h-[520px] sm:max-h-[620px] min-h-[160px] md:min-h-[360px] space-y-3 overflow-y-auto bg-gray-50/70 p-3 dark:bg-[#0b0f17]/30">
                   {trackStages.length === 0 ? (
-                    <div className="flex h-32 flex-col items-center justify-center text-xs font-medium text-gray-400 dark:text-gray-500">
+                    <div className="flex h-28 md:h-32 flex-col items-center justify-center text-xs font-medium text-gray-400 dark:text-gray-500">
                       لا توجد مهام حالياً
                     </div>
                   ) : (
@@ -1260,7 +1259,7 @@ export default function UnifiedTasksPage() {
                       return (
                         <div
                           key={task.id}
-                          className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-[#151d2f]"
+                          className="space-y-3 rounded-xl border border-gray-200 bg-white p-3.5 sm:p-4 shadow-xs dark:border-gray-800 dark:bg-[#151d2f]"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
@@ -1508,11 +1507,11 @@ export default function UnifiedTasksPage() {
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {myTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-[#151d2f]"
+                  className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-xs dark:border-gray-800 dark:bg-[#151d2f]"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -1655,7 +1654,7 @@ export default function UnifiedTasksPage() {
       {/* مودال تسليم المهمة النهائي */}
       {isSubmitModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#111827]">
+          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-gray-800 dark:bg-[#111827]">
             <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
               <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                 <FileCheck2 className="text-brand-500" size={18} />
@@ -1724,7 +1723,7 @@ export default function UnifiedTasksPage() {
       {/* مودال إرسال الملاحظات وطلب تعديل */}
       {isFeedbackModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#111827]">
+          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-gray-800 dark:bg-[#111827]">
             <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
               <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                 <AlertTriangle className="text-amber-500" size={17} />
@@ -1779,9 +1778,9 @@ export default function UnifiedTasksPage() {
       {/* مودال إسناد مهمة جديدة */}
       {isModalOpen && !isSales && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-[#111827]">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-gray-800 dark:bg-[#111827]">
             <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
                 إسناد مهمة جديدة —{" "}
                 {TRACKS_ORDER.find((t) => t.key === modalTrack)?.title}
               </h3>
@@ -1833,7 +1832,7 @@ export default function UnifiedTasksPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block font-bold text-gray-700 dark:text-gray-300">
                     رابط فيجما (Figma)
@@ -1863,7 +1862,7 @@ export default function UnifiedTasksPage() {
                 </div>
               </div>
 
-              <div className={isSuperAdmin ? "grid grid-cols-2 gap-3" : "space-y-1"}>
+              <div className={isSuperAdmin ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : "space-y-1"}>
                 {isSuperAdmin && (
                   <div>
                     <label className="mb-1 block font-bold text-gray-700 dark:text-gray-300">

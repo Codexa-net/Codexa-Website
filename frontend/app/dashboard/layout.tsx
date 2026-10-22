@@ -52,14 +52,14 @@ export default async function DashboardLayout({
   return (
     <DashboardThemeProvider>
       <div
-        className="flex min-h-screen w-full bg-[#f8fafc] dark:bg-[#0b0f17] text-gray-900 dark:text-gray-100 overflow-x-hidden"
+        className="relative flex min-h-screen w-full bg-[#f8fafc] text-gray-900 overflow-x-hidden dark:bg-[#0b0f17] dark:text-gray-100"
         dir="rtl"
       >
-        {/* الشريط الجانبي */}
+        {/* الشريط الجانبي: درج منزلق أنيق في الهاتف، وثابت على الشاشات الكبيرة */}
         <Sidebar initialRole={admin?.role} />
 
-        {/* حاوية العمل الرئيسية */}
-        <div className="flex min-h-screen flex-1 flex-col transition-all duration-300 min-w-0">
+        {/* مساحة العمل الرئيسية */}
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col w-full">
           <TopNav
             user={
               admin
@@ -72,7 +72,7 @@ export default async function DashboardLayout({
             }
           />
 
-          <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          <main className="flex-1 w-full px-3 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 overflow-y-auto">
             {children}
           </main>
         </div>

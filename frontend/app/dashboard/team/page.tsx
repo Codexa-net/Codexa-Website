@@ -20,6 +20,7 @@ import {
   Check,
   UserMinus,
   Shield,
+  Crown,
 } from "lucide-react";
 
 interface AssignedStage {
@@ -71,7 +72,6 @@ const ROLE_OPTIONS = [
   { value: "LEAD_MOBILE", label: "👑 قائد فريق Mobile (Lead)", role: "MOBILE_APP_LEAD", track: "MOBILE_APP", isGraphic: false },
 ];
 
-// 🟢 معاذ مضبوط هنا كـ MOBILE_APP_LEAD
 const KNOWN_MEMBER_TRACKS: Record<string, { role: string; track: string | null; isGraphic?: boolean }> = {
   "alqadi@codexa.net": { role: "SUPER_ADMIN", track: "FULL_STACK" },
   "fareselsharkawy517@codexa.com": { role: "GRAPHIC_DESIGNER", track: "UI_UX", isGraphic: true },
@@ -87,8 +87,14 @@ const KNOWN_MEMBER_TRACKS: Record<string, { role: string; track: string | null; 
   "mooazmohammed110@codexa.com": { role: "MOBILE_APP_LEAD", track: "MOBILE_APP" },
 };
 
+function isLeaderRole(role?: string): boolean {
+  const r = (role || "").toUpperCase();
+  return r.endsWith("_LEAD") || r === "SALES_LEADER";
+}
+
 export default function TeamPage() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL || "https://codexa-website-backend.vercel.app";
 
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string; email: string; name?: string } | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -233,7 +239,6 @@ export default function TeamPage() {
   const userRole = (currentUser?.role || "").toUpperCase();
   const isSuperAdmin = userRole === "SUPER_ADMIN";
   const isLead = userRole.endsWith("_LEAD");
-  // 🟢 إسناد المهام مسموح فقط للسوبر ليدر وقادة الفرق الفنية (مخفي تماماً عن المبيعات)
   const canAssignTasks = isSuperAdmin || isLead;
 
   const getLeaderDepartment = (role: string): string | null => {
@@ -647,41 +652,47 @@ export default function TeamPage() {
     return false;
   });
 
-  const filteredMembers = members.filter((m) => {
-    if (m.role === "SUPER_ADMIN") return false;
+  const filteredMembers = members
+    .filter((m) => {
+      if (m.role === "SUPER_ADMIN") return false;
 
-    const memberDept = getMemberDepartment(m);
-    const isSelfLeader =
-      currentUser &&
-      (m.id === currentUser.id ||
-        m.email.toLowerCase() === currentUser.email.toLowerCase());
+      const memberDept = getMemberDepartment(m);
+      const isSelfLeader =
+        currentUser &&
+        (m.id === currentUser.id ||
+          m.email.toLowerCase() === currentUser.email.toLowerCase());
 
-    if (!isSuperAdmin) {
-      if ((m.role.includes("_LEAD") || m.role === "SALES_LEADER") && !isSelfLeader) {
-        return false;
+      if (!isSuperAdmin) {
+        if ((m.role.includes("_LEAD") || m.role === "SALES_LEADER") && !isSelfLeader) {
+          return false;
+        }
+        if (currentLeaderTrack) {
+          const matchesLeaderDept =
+            memberDept === currentLeaderTrack ||
+            ((currentLeaderTrack === "FRONTEND" || currentLeaderTrack === "BACKEND") &&
+              memberDept === "FULL_STACK");
+          if (!matchesLeaderDept) return false;
+        }
       }
-      if (currentLeaderTrack) {
-        const matchesLeaderDept =
-          memberDept === currentLeaderTrack ||
-          ((currentLeaderTrack === "FRONTEND" || currentLeaderTrack === "BACKEND") &&
-            memberDept === "FULL_STACK");
-        if (!matchesLeaderDept) return false;
-      }
-    }
 
-    const matchesSearch =
-      m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (m.phone && m.phone.includes(searchTerm)) ||
-      (m.technologies || []).some((t) =>
-        t.toLowerCase().includes(searchTerm.toLowerCase()),
-      ) ||
-      (isSuperAdmin && m.email.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSearch =
+        m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (m.phone && m.phone.includes(searchTerm)) ||
+        (m.technologies || []).some((t) =>
+          t.toLowerCase().includes(searchTerm.toLowerCase()),
+        ) ||
+        (isSuperAdmin && m.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    if (!matchesSearch) return false;
+      if (!matchesSearch) return false;
 
-    if (activeTab === "ALL") return isSuperAdmin;
-    return memberDept === activeTab;
-  });
+      if (activeTab === "ALL") return isSuperAdmin;
+      return memberDept === activeTab;
+    })
+    .sort((a, b) => {
+      const aLead = isLeaderRole(a.role) ? 1 : 0;
+      const bLead = isLeaderRole(b.role) ? 1 : 0;
+      return bLead - aLead;
+    });
 
   const canManageSelectedMember =
     isSuperAdmin ||
@@ -698,25 +709,26 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 md:p-8" dir="rtl">
-      <div className="flex flex-col justify-between gap-4 border-b border-gray-200 pb-5 md:flex-row md:items-center dark:border-gray-800">
+    <div className="space-y-4 sm:space-y-6 pb-8" dir="rtl">
+      {/* الترويسة العلوية */}
+      <div className="flex flex-col justify-between gap-3.5 border-b border-gray-200 pb-4 sm:pb-5 md:flex-row md:items-center dark:border-gray-800">
         <div>
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
-            <Users className="text-brand-500" size={28} />
+          <h1 className="flex items-center gap-2.5 text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <Users className="shrink-0 text-brand-500" size={24} />
             <span>
               {isSuperAdmin
                 ? "إدارة فرق العمل والمطورين"
                 : "فريق العمل والتوزيع الفني"}
             </span>
           </h1>
-          <p className="mt-1 text-xs text-gray-500 md:text-sm dark:text-gray-400">
+          <p className="mt-1 text-[11px] sm:text-xs md:text-sm text-gray-500 dark:text-gray-400">
             {isSuperAdmin
               ? "متابعة المهارات التقنية، ومؤشرات ضغط العمل، وتوزيع المهام المباشرة"
               : "استعراض أعضاء فريقك ومؤشر تفرغهم لتوزيع المهام (تُسعّر المهام وتُصرف بعد مراجعة واعتماد السوبر ليدر)"}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 self-start md:self-auto">
           <button
             onClick={fetchTeam}
             className="cursor-pointer rounded-xl border border-gray-200 bg-white p-2.5 text-gray-700 shadow-xs transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-[#1e2330] dark:text-gray-300 dark:hover:bg-gray-800"
@@ -731,7 +743,7 @@ export default function TeamPage() {
                 setAddTechnologies([]);
                 setIsAddModalOpen(true);
               }}
-              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow-xs transition-all hover:bg-brand-500"
+              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-xl bg-brand-600 px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:bg-brand-500"
             >
               <UserPlus size={16} />
               <span>إضافة عضو جديد</span>
@@ -740,8 +752,9 @@ export default function TeamPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-2.5 shadow-xs dark:border-gray-800 dark:bg-[#11141c]">
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* شريط الفلترة والبحث */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-2.5 shadow-xs dark:border-gray-800 dark:bg-[#11141c]">
+        <div className="flex w-full items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] lg:w-auto lg:flex-wrap">
           {visibleTrackConfig.map((t) => {
             const count = members.filter((m) => {
               if (m.role === "SUPER_ADMIN") return false;
@@ -764,7 +777,7 @@ export default function TeamPage() {
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`flex cursor-pointer items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                className={`flex shrink-0 whitespace-nowrap cursor-pointer items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-3.5 py-2 text-[11px] sm:text-xs font-bold transition-all ${
                   activeTab === t.key
                     ? "bg-brand-600 text-white shadow-xs"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800/60 dark:hover:text-white"
@@ -772,7 +785,7 @@ export default function TeamPage() {
               >
                 <span>{t.label}</span>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] ${
+                  className={`rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] ${
                     activeTab === t.key
                       ? "bg-white/20 text-white"
                       : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
@@ -785,17 +798,17 @@ export default function TeamPage() {
           })}
         </div>
 
-        <div className="relative w-full md:w-72">
+        <div className="relative w-full lg:w-72 shrink-0">
           <Search
             className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-            size={16}
+            size={15}
           />
           <input
             type="text"
             placeholder="بحث بالاسم أو المهارة (React, Figma)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-8 pr-11 text-xs text-gray-900 transition-all placeholder:text-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700/80 dark:bg-[#161a23] dark:text-white dark:placeholder:text-gray-500"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-8 pr-10 text-xs text-gray-900 transition-all placeholder:text-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700/80 dark:bg-[#161a23] dark:text-white dark:placeholder:text-gray-500"
           />
           {searchTerm && (
             <button
@@ -813,18 +826,19 @@ export default function TeamPage() {
           جاري تحميل بيانات الفريق والتقنيات...
         </div>
       ) : filteredMembers.length === 0 ? (
-        <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-xs dark:border-gray-800 dark:bg-[#161a23]">
+        <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-10 sm:p-12 text-center shadow-xs dark:border-gray-800 dark:bg-[#161a23]">
           <Layers className="mx-auto text-gray-400 dark:text-gray-600" size={40} />
-          <h3 className="text-base font-bold text-gray-800 dark:text-white">
+          <h3 className="text-sm sm:text-base font-bold text-gray-800 dark:text-white">
             لا يوجد أعضاء في هذا القسم حالياً
           </h3>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filteredMembers.map((member) => {
             const jobTitle = getJobTitle(member.role, member.track, member.cvUrl);
             const cleanCv = member.cvUrl?.replace("#graphic", "");
             const workload = getWorkload(member);
+            const isMemberLead = isLeaderRole(member.role);
             const isSelfCard =
               currentUser &&
               (member.id === currentUser.id ||
@@ -833,28 +847,48 @@ export default function TeamPage() {
             return (
               <div
                 key={member.id}
-                className="relative flex flex-col justify-between space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-xs transition-all hover:border-gray-300 dark:border-gray-800 dark:bg-[#161a23] dark:hover:border-gray-700"
+                className={`relative flex flex-col justify-between overflow-hidden space-y-3.5 sm:space-y-4 rounded-2xl border p-4 sm:p-5 transition-all ${
+                  isMemberLead
+                    ? "border-brand-500/45 bg-white shadow-sm ring-1 ring-brand-500/15 dark:border-brand-500/40 dark:bg-[#161b28]"
+                    : "border-gray-200 bg-white shadow-xs hover:border-gray-300 dark:border-gray-800 dark:bg-[#161a23] dark:hover:border-gray-700"
+                }`}
               >
+                {/* خط علوي رفيع وهادئ بلون البراند الموحد لتمييز كارت الليدر بأناقة */}
+                {isMemberLead && (
+                  <div className="absolute inset-x-0 top-0 h-1 bg-brand-600 dark:bg-brand-500" />
+                )}
+
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="flex flex-wrap items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
-                        <span>{member.name}</span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="truncate text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                          {member.name}
+                        </h3>
                         {isSelfCard && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-bold text-brand-500">
-                            <Shield size={10} /> أنت (قائد الفريق)
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-bold text-brand-500">
+                            <Shield size={10} /> أنت
                           </span>
                         )}
-                      </h3>
-                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                        {jobTitle}
-                      </p>
+                      </div>
+
+                      {/* سطر واحد فقط للمسمى الوظيفي بدون تكرار، مع أيقونة التاج لليدر */}
+                      {isMemberLead ? (
+                        <div className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-brand-500/20 bg-brand-500/10 px-2.5 py-0.5 text-[11px] font-bold text-brand-600 dark:text-brand-400">
+                          <Crown size={12} className="shrink-0 text-brand-500" />
+                          <span>{jobTitle}</span>
+                        </div>
+                      ) : (
+                        <p className="mt-0.5 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                          {jobTitle}
+                        </p>
+                      )}
                     </div>
 
                     <div
-                      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${workload.color}`}
+                      className={`flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full border px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold ${workload.color}`}
                     >
-                      <span className={`h-2 w-2 rounded-full ${workload.dot}`} />
+                      <span className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full ${workload.dot}`} />
                       <span>{workload.text}</span>
                     </div>
                   </div>
@@ -918,25 +952,25 @@ export default function TeamPage() {
                   )}
                 </div>
 
-                <div className="mt-2 flex items-center justify-between gap-2 border-t border-gray-100 pt-3 dark:border-gray-800/60">
+                <div className="mt-2 flex items-center justify-between gap-1.5 sm:gap-2 border-t border-gray-100 pt-3 dark:border-gray-800/60">
                   <button
                     onClick={() => {
                       setSelectedMember(member);
                       setIsViewModalOpen(true);
                     }}
-                    className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-gray-100 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+                    className="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl bg-gray-100 px-2 py-2 text-[11px] sm:text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                   >
-                    <Eye size={13} />
+                    <Eye size={13} className="shrink-0" />
                     <span>الملف</span>
                   </button>
 
                   {canAssignTasks && member.role !== "SALES" && member.role !== "SALES_LEADER" && (
                     <button
                       onClick={() => openTaskModal(member)}
-                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-brand-50 py-2 text-xs font-bold text-brand-600 transition-colors hover:bg-brand-100 dark:bg-brand-600/20 dark:text-brand-400 dark:hover:bg-brand-600/30"
+                      className="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-xl bg-brand-50 px-2 py-2 text-[11px] sm:text-xs font-bold text-brand-600 transition-colors hover:bg-brand-100 dark:bg-brand-600/20 dark:text-brand-400 dark:hover:bg-brand-600/30"
                     >
-                      <PlusCircle size={13} />
-                      <span>{isSelfCard ? "إسناد مهمة لنفسي" : "إسناد مهمة"}</span>
+                      <PlusCircle size={13} className="shrink-0" />
+                      <span className="truncate">{isSelfCard ? "مهمة لنفسي" : "إسناد مهمة"}</span>
                     </button>
                   )}
 
@@ -958,11 +992,11 @@ export default function TeamPage() {
 
       {/* Modal: إسناد مهمة جديدة */}
       {isTaskModalOpen && canAssignTasks && selectedMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md space-y-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
             <div className="flex items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-800">
               <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
                   إسناد مهمة لـ: {selectedMember.name}
                 </h3>
                 <div className="mt-1 flex items-center gap-2">
@@ -1022,7 +1056,7 @@ export default function TeamPage() {
                   />
                 </div>
 
-                <div className={isSuperAdmin ? "grid grid-cols-2 gap-2" : "space-y-1"}>
+                <div className={isSuperAdmin ? "grid grid-cols-1 sm:grid-cols-2 gap-2" : "space-y-1"}>
                   {isSuperAdmin && (
                     <div>
                       <label className="mb-1 block font-bold text-gray-700 dark:text-gray-300">
@@ -1074,10 +1108,10 @@ export default function TeamPage() {
 
       {/* Modal: تعديل بيانات ومهارات العضو */}
       {isEditModalOpen && isSuperAdmin && selectedMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md space-y-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
             <div className="flex items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-800">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                 تعديل بيانات ومهارات: {selectedMember.name}
               </h3>
               <button
@@ -1182,10 +1216,10 @@ export default function TeamPage() {
 
       {/* Modal: إضافة عضو جديد */}
       {isAddModalOpen && isSuperAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
             <div className="flex items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-800">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                 إضافة عضو جديد للفريق
               </h3>
               <button
@@ -1196,7 +1230,7 @@ export default function TeamPage() {
               </button>
             </div>
             <form onSubmit={handleAddMember} className="space-y-3 text-xs">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block font-bold text-gray-700 dark:text-gray-300">
                     الاسم بالكامل
@@ -1338,7 +1372,7 @@ export default function TeamPage() {
                 <label className="block text-xs font-bold text-gray-800 dark:text-gray-300">
                   بيانات تحويل المستحقات والأرباح
                 </label>
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-[11px] text-gray-500">
                       عنوان إنستاباي
@@ -1385,14 +1419,14 @@ export default function TeamPage() {
 
       {/* Modal: عرض الملف الكامل */}
       {isViewModalOpen && selectedMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-xl dark:border-gray-800 dark:bg-[#161a23]">
             <div className="flex items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-800">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                   {selectedMember.name}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-0.5 text-xs font-semibold text-brand-600 dark:text-brand-400">
                   {getJobTitle(
                     selectedMember.role,
                     selectedMember.track,
@@ -1411,9 +1445,9 @@ export default function TeamPage() {
             <div className="space-y-3 text-xs">
               <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-[#11141c]">
                 {isSuperAdmin && (
-                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
+                  <div className="flex flex-wrap justify-between gap-1 text-gray-700 dark:text-gray-300">
                     <span className="text-gray-500">البريد الإلكتروني:</span>
-                    <span className="font-mono">{selectedMember.email}</span>
+                    <span className="font-mono break-all">{selectedMember.email}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between text-gray-700 dark:text-gray-300">
