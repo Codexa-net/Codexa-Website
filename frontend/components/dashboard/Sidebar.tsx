@@ -208,17 +208,22 @@ export default function Sidebar({ initialRole }: { initialRole?: string }) {
         )}
         dir="rtl"
       >
-        <div className="mb-6 flex items-center justify-between px-2">
-          <Link href={defaultHomeLink} className="flex items-center gap-3" dir="ltr">
+        {/* الهيدر: الشعار في اليمين والكلمة في اليسار، وزر الإغلاق في أقصى اليسار (موبايل فقط) */}
+        <div className="mb-6 flex items-center justify-between gap-2 px-2">
+          <Link
+            href={defaultHomeLink}
+            className="flex min-w-0 flex-row-reverse items-center gap-3"
+            dir="ltr"
+          >
             <CodexaLogo className="h-8 w-8 shrink-0" />
-            <span className="text-xl font-black tracking-tight text-[#14161f] dark:text-white font-sans">
+            <span className="truncate text-xl font-black tracking-tight text-[#14161f] dark:text-white font-sans">
               Codexa
             </span>
           </Link>
           <button
             type="button"
             onClick={() => setIsOpenMobile(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-white md:hidden cursor-pointer"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-white md:hidden cursor-pointer"
             aria-label="إغلاق القائمة"
           >
             <X size={18} />

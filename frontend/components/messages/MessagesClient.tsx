@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Mail,
   Trash2,
@@ -21,6 +22,11 @@ import { cn } from "@/lib/utils";
 import type { ContactMessage } from "@/app/dashboard/messages/page";
 
 export type MessageStatus = "جديد" | "قيد المتابعة" | "تم الرد";
+
+const DELETED_KEY = "codexa_messages_deleted";
+const LOCAL_MESSAGES_KEY = "codexa_contact_messages";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://codexa-website-backend.vercel.app";
 
 function formatDate(iso: string) {
   try {
@@ -65,13 +71,67 @@ function resolveStatus(m: ContactMessage): MessageStatus {
   return "جديد";
 }
 
+// ───────── إدارة الرسائل المحذوفة محلياً ─────────
+function getDeletedIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(DELETED_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+function purgeLocalMessage(id: string) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(`msg_status_${id}`);
+    localStorage.removeItem(`msg_read_${id}`);
+    localStorage.removeItem(`notif_read_msg_${id}`);
+
+    // الرسائل المحفوظة محلياً (بيدمجها الـ interceptor مع رسائل السيرفر)
+    const rawLocal = localStorage.getItem(LOCAL_MESSAGES_KEY);
+    if (rawLocal) {
+      const list = JSON.parse(rawLocal);
+      if (Array.isArray(list)) {
+        localStorage.setItem(
+          LOCAL_MESSAGES_KEY,
+          JSON.stringify(list.filter((m: any) => String(m?.id) !== String(id)))
+        );
+      }
+    }
+
+    // قائمة المحذوفات عشان الرسالة ما ترجعش لو السيرفر لسه بيرجّعها
+    const deleted = getDeletedIds();
+    if (!deleted.includes(String(id))) {
+      deleted.push(String(id));
+      localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+    }
+  } catch {}
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (typeof window === "undefined") return headers;
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("adminToken");
+  if (token) headers["Authorization"] = `Bearer ${token.replace(/^Bearer\s+/i, "")}`;
+  return headers;
+}
+
+function prepareItems(requests: ContactMessage[]): ContactMessage[] {
+  const deleted = getDeletedIds();
+  return (requests || [])
+    .filter((m) => !deleted.includes(String(m.id)))
+    .map((m) => ({ ...m, status: resolveStatus(m) }));
+}
+
 export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }) {
-  const [items, setItems] = useState<ContactMessage[]>(() => {
-    return (requests || []).map((m) => ({
-      ...m,
-      status: resolveStatus(m),
-    }));
-  });
+  const router = useRouter();
+  const [items, setItems] = useState<ContactMessage[]>(() => prepareItems(requests));
 
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [toDelete, setToDelete] = useState<ContactMessage | null>(null);
@@ -81,7 +141,7 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
 
   useEffect(() => {
     if (!requests) return;
-    setItems(requests.map((m) => ({ ...m, status: resolveStatus(m) })));
+    setItems(prepareItems(requests));
   }, [requests]);
 
   function updateStatus(msgId: string, newStatus: MessageStatus) {
@@ -179,21 +239,44 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
     }
   }
 
+  // الحذف: تحديث القائمة فوراً + تنظيف localStorage + طلب DELETE للباك إند
   function confirmDelete() {
     if (!toDelete) return;
-    const id = toDelete.id;
+    const id = String(toDelete.id);
+
+    // 1) تحديث فوري للواجهة والتخزين المحلي
+    purgeLocalMessage(id);
+    setItems((list) => list.filter((m) => String(m.id) !== id));
+    if (selected && String(selected.id) === id) setSelected(null);
+    setToDelete(null);
+
+    try {
+      window.dispatchEvent(new Event("messagesUpdated"));
+    } catch {}
+
+    // 2) حذف من الباك إند (الـ Server Action أولاً، ولو فشل DELETE مباشر)
     startTransition(async () => {
-      const result = await deleteMessageAction(id);
-      if (result.success) {
+      let deletedOnServer = false;
+
+      try {
+        const result = await deleteMessageAction(id);
+        deletedOnServer = !!result?.success;
+      } catch {}
+
+      if (!deletedOnServer) {
         try {
-          localStorage.removeItem(`msg_status_${id}`);
-          localStorage.removeItem(`msg_read_${id}`);
-          window.dispatchEvent(new Event("messagesUpdated"));
+          const res = await fetch(`${API_BASE}/contact-messages/${id}`, {
+            method: "DELETE",
+            headers: getAuthHeaders(),
+            credentials: "include",
+          });
+          deletedOnServer = res.ok;
         } catch {}
-        setItems((list) => list.filter((m) => m.id !== id));
-        if (selected?.id === id) setSelected(null);
       }
-      setToDelete(null);
+
+      try {
+        router.refresh();
+      } catch {}
     });
   }
 
@@ -277,8 +360,9 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
                           <button
                             type="button"
                             onClick={() => setToDelete(r)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
                             title="حذف"
+                            aria-label="حذف الرسالة"
                           >
                             <Trash2 size={15} />
                           </button>
@@ -357,7 +441,6 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
 
               {/* قسم الإجراءات بالأسفل */}
               <div className="flex flex-col gap-3 border-t border-gray-100 p-6 dark:border-gray-800">
-                {/* زر إرسال رابط المتابعة الرسمي عبر EmailJS (يظهر إذا توفر إيميل) */}
                 {hasValidEmail && (
                   <button
                     type="button"
@@ -379,7 +462,6 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
                   </button>
                 )}
 
-                {/* تنبيه حالة إرسال الإيميل */}
                 {emailFeedback && (
                   <div
                     className={cn(
@@ -449,14 +531,14 @@ export function MessagesClient({ requests = [] }: { requests: ContactMessage[] }
                   <button
                     type="button"
                     onClick={() => setToDelete(selected)}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:bg-gray-800 dark:hover:bg-rose-950/30"
+                    className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:bg-gray-800 dark:hover:bg-rose-950/30"
                     title="حذف الرسالة"
+                    aria-label="حذف الرسالة"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
-
             </div>
           )}
         </div>

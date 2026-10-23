@@ -252,28 +252,31 @@ function decodeJwtFromClient(): any {
   }
 }
 
+// قراءة الصورة المعزولة بحساب المستخدم (بالـ id أو الإيميل) مع رجوع للصورة القادمة من السيرفر
 function getUserScopedAvatar(userId?: string, email?: string, serverAvatar?: string | null): string {
   if (typeof window === 'undefined') return serverAvatar || '';
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanId = (userId || '').trim();
 
   try {
+    // 1) المفاتيح المعزولة المباشرة (أدق مصدر)
+    if (cleanEmail) {
+      const scopedByEmail = localStorage.getItem(`codexa_avatar_${cleanEmail}`);
+      if (scopedByEmail) return scopedByEmail;
+    }
+    if (cleanId) {
+      const scopedById = localStorage.getItem(`codexa_avatar_${cleanId}`);
+      if (scopedById) return scopedById;
+    }
+
+    // 2) الـ overrides (نعتمدها فقط لو فيها صورة فعلية، عشان القيمة null ما تمنع باقي المصادر)
     const rawOv = localStorage.getItem('codexa_users_overrides');
     if (rawOv) {
       const overrides = JSON.parse(rawOv);
       const userOv = (cleanId && overrides[cleanId]) || (cleanEmail && overrides[cleanEmail]);
-      if (userOv && userOv.avatar !== undefined) {
-        return userOv.avatar || '';
+      if (userOv && typeof userOv.avatar === 'string' && userOv.avatar) {
+        return userOv.avatar;
       }
-    }
-
-    if (cleanEmail) {
-      const scopedByEmail = localStorage.getItem(`codexa_avatar_${cleanEmail}`);
-      if (scopedByEmail !== null) return scopedByEmail;
-    }
-    if (cleanId) {
-      const scopedById = localStorage.getItem(`codexa_avatar_${cleanId}`);
-      if (scopedById !== null) return scopedById;
     }
   } catch {}
 
@@ -308,6 +311,72 @@ function saveUserScopedAvatar(userId?: string, email?: string, avatarValue?: str
 
     localStorage.setItem('codexa_users_overrides', JSON.stringify(overrides));
   } catch {}
+}
+
+// تحديد هوية المستخدم النشط مباشرة (للحالة الأولية للهيدر) من كل المصادر المتاحة
+function resolveInitialIdentity(user?: any) {
+  const fallback = {
+    id: '',
+    name: 'عضو الفريق',
+    email: '',
+    role: 'DEVELOPER',
+    avatar: '',
+  };
+
+  const candidates: any[] = [];
+
+  if (user && (user.email || user.id) && user.name !== 'المستخدم') {
+    candidates.push(user);
+  }
+
+  if (typeof window !== 'undefined') {
+    const win = window as unknown as { __codexaActiveUser?: any };
+    if (win.__codexaActiveUser) candidates.push(win.__codexaActiveUser);
+
+    for (const key of ['user', 'codexa_user']) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) candidates.push(JSON.parse(raw));
+      } catch {}
+    }
+
+    try {
+      const rawCookie = getCookie('codexa_user');
+      if (rawCookie) candidates.push(JSON.parse(rawCookie));
+    } catch {}
+
+    const jwt = decodeJwtFromClient();
+    if (jwt) candidates.push(jwt);
+  }
+
+  if (user && user.name && user.name !== 'المستخدم' && candidates.length === 0) {
+    candidates.push(user);
+  }
+
+  for (const c of candidates) {
+    const matched = findMemberInDirectory(c);
+    const id = String(c?.id || c?.sub || c?.userId || matched?.id || '').trim();
+    const email = String(c?.email || matched?.email || '').trim();
+    if (!id && !email) continue;
+
+    let role = String(c?.role || matched?.role || 'DEVELOPER').toUpperCase();
+    if (email.toLowerCase() === 'mooazmohammed110@codexa.com' && role === 'DEVELOPER') {
+      role = 'MOBILE_APP_LEAD';
+    }
+
+    const name =
+      (c?.name && c.name !== 'المستخدم' ? c.name : '') || matched?.name || fallback.name;
+
+    return {
+      id,
+      name,
+      email,
+      role,
+      avatar: getUserScopedAvatar(id, email, c?.avatar || user?.avatar),
+    };
+  }
+
+  return fallback;
 }
 
 function getRoleSortPriority(role?: string): number {
@@ -674,9 +743,12 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       method === 'GET'
     ) {
       let localMsgs: any[] = [];
+      let deletedMsgIds: string[] = [];
       try {
         const rawLocal = localStorage.getItem('codexa_contact_messages');
         if (rawLocal) localMsgs = JSON.parse(rawLocal);
+        const rawDeleted = localStorage.getItem('codexa_messages_deleted');
+        if (rawDeleted) deletedMsgIds = JSON.parse(rawDeleted).map(String);
       } catch {}
 
       try {
@@ -692,6 +764,7 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
           const combined = [...localMsgs, ...serverArr];
           const seen = new Set();
           const unique = combined.filter((m) => {
+            if (deletedMsgIds.includes(String(m.id))) return false;
             const key = m.id || `${m.email}_${m.subject}`;
             if (seen.has(key)) return false;
             seen.add(key);
@@ -704,7 +777,8 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
         }
       } catch {}
 
-      return new Response(JSON.stringify({ data: localMsgs, items: localMsgs }), {
+      const filteredLocal = localMsgs.filter((m) => !deletedMsgIds.includes(String(m.id)));
+      return new Response(JSON.stringify({ data: filteredLocal, items: filteredLocal }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -811,12 +885,11 @@ export function playNotificationChime() {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    // النغمة الأولى
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(587.33, now); // D5
-    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.14); // A5
+    osc1.frequency.setValueAtTime(587.33, now);
+    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.14);
     gain1.gain.setValueAtTime(0.25, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
     osc1.connect(gain1);
@@ -824,12 +897,11 @@ export function playNotificationChime() {
     osc1.start(now);
     osc1.stop(now + 0.45);
 
-    // النغمة الثانية المتناغمة
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = 'triangle';
     osc2.frequency.setValueAtTime(880, now + 0.12);
-    osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.28); // D6
+    osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.28);
     gain2.gain.setValueAtTime(0.2, now + 0.12);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
     osc2.connect(gain2);
@@ -847,6 +919,7 @@ export default function TopNav({ user }: { user?: any }) {
   const [activeMenu, setActiveMenu] = useState<'notifications' | 'user' | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [liveToast, setLiveToast] = useState<AppNotification | null>(null);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const knownNotifIdsRef = useRef<Set<string>>(new Set());
@@ -856,19 +929,8 @@ export default function TopNav({ user }: { user?: any }) {
     syncAndProtectClientSession(user);
   }
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    const matched = findMemberInDirectory(user);
-    const uId = user?.id || matched?.id || '';
-    const email = user?.email || matched?.email || '';
-
-    return {
-      id: uId,
-      name: user?.name || matched?.name || 'عضو الفريق',
-      email: email,
-      role: (user?.role || matched?.role || 'DEVELOPER').toUpperCase(),
-      avatar: getUserScopedAvatar(uId, email, user?.avatar),
-    };
-  });
+  // الحالة الأولية: نحدد المستخدم النشط ونقرأ صورته المعزولة بإيميله فوراً (بدون انتظار أي effect)
+  const [currentUser, setCurrentUser] = useState(() => resolveInitialIdentity(user));
 
   const API_BASE =
     process.env.NEXT_PUBLIC_API_URL || 'https://codexa-website-backend.vercel.app';
@@ -899,7 +961,7 @@ export default function TopNav({ user }: { user?: any }) {
     }
   }, [user]);
 
-  // 🟢 تحديث الصورة فوراً من المسار المعزول لحساب المستخدم الحالي بدون مسحها بالخطأ
+  // تحديث الصورة فوراً من المسار المعزول لحساب المستخدم الحالي
   useEffect(() => {
     const handleAvatarUpdate = () => {
       try {
@@ -913,15 +975,26 @@ export default function TopNav({ user }: { user?: any }) {
       } catch {}
     };
 
+    // قراءة إضافية فور تركيب الهيدر (تغطي حالة تأخر التخزين على الموبايل)
+    handleAvatarUpdate();
+
     window.addEventListener('avatarUpdated', handleAvatarUpdate);
     window.addEventListener('profileUpdated', handleAvatarUpdate);
+    window.addEventListener('codexaUserSynced', handleAvatarUpdate);
     window.addEventListener('storage', handleAvatarUpdate);
+    window.addEventListener('pageshow', handleAvatarUpdate);
     return () => {
       window.removeEventListener('avatarUpdated', handleAvatarUpdate);
       window.removeEventListener('profileUpdated', handleAvatarUpdate);
+      window.removeEventListener('codexaUserSynced', handleAvatarUpdate);
       window.removeEventListener('storage', handleAvatarUpdate);
+      window.removeEventListener('pageshow', handleAvatarUpdate);
     };
   }, [currentUser.id, currentUser.email]);
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [currentUser.avatar]);
 
   const rawRole = (currentUser.role || 'DEVELOPER').toUpperCase();
   const isSalesOrAdmin =
@@ -1365,11 +1438,15 @@ export default function TopNav({ user }: { user?: any }) {
               onClick={() => toggleMenu('user')}
               className="flex cursor-pointer items-center gap-2.5 rounded-full p-0.5 sm:p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60"
             >
-              <div className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-sm font-bold text-white shadow-sm ring-1 ring-brand-500/20">
-                {currentUser.avatar ? (
+              <div
+                className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-sm font-bold text-white shadow-sm ring-1 ring-brand-500/20"
+                suppressHydrationWarning
+              >
+                {currentUser.avatar && !avatarFailed ? (
                   <img
                     src={currentUser.avatar}
                     alt={`صورة ${currentUser.name}`}
+                    onError={() => setAvatarFailed(true)}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -1416,7 +1493,7 @@ export default function TopNav({ user }: { user?: any }) {
         </div>
       </header>
 
-      {/* 🔔 إشعار منبثق حي (Live Toast Notification) يظهر على الشاشة مع الصوت عند وصول أي تحديث جديد */}
+      {/* 🔔 إشعار منبثق حي (Live Toast Notification) */}
       {liveToast && (
         <div
           dir="rtl"
