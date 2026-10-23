@@ -131,19 +131,13 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 }}
               />
 
-              {/*
-                1. قائمة الـ 5 خطوات:
-                - في الموبايل: صف علوي مستقل في البداية (يمين بالعربي، شمال بالإنجليزي) بعيد تماماً عن العنوان.
-                - في اللابتوب: ثابتة في منتصف الجانب (يمين بالعربي، شمال بالإنجليزي).
-              */}
+              {/* القائمة الجانبية للـ 5 خطوات متمركزة تماماً */}
               <nav
                 aria-label="Process steps"
                 dir={isArabic ? 'rtl' : 'ltr'}
                 className={cn(
-                  'relative z-20 flex shrink-0 flex-col gap-1 self-start sm:gap-1.5 lg:absolute lg:top-1/2 lg:-translate-y-1/2 lg:gap-3.5',
-                  isArabic
-                    ? 'items-start text-right lg:right-12'
-                    : 'items-start text-left lg:left-12',
+                  'relative z-20 flex shrink-0 items-center justify-center gap-3 self-center sm:gap-5 lg:absolute lg:top-1/2 lg:right-auto lg:left-12 lg:-translate-y-1/2 lg:flex-col lg:items-start lg:gap-3.5',
+                  isArabic ? 'lg:right-12 lg:left-auto lg:items-end' : '',
                 )}
               >
                 {items.map((step, index) => {
@@ -157,7 +151,7 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                     <span
                       key={step.title}
                       className={cn(
-                        'whitespace-nowrap text-[11px] font-bold leading-snug transition-all duration-300 sm:text-xs',
+                        'whitespace-nowrap text-xs font-bold transition-all duration-300 sm:text-sm',
                         isCurrent
                           ? 'scale-105 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
                           : 'text-white/30',
@@ -169,8 +163,8 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 })}
               </nav>
 
-              {/* 2. المحتوى المركزي واخد صف مستقل بعرض الشاشة بالكامل على الموبايل بدون أي تصادم */}
-              <div className="relative z-10 my-auto flex w-full items-center justify-center py-2 lg:my-0 lg:h-full lg:px-48">
+              {/* المحتوى المركزي في المنتصف تماماً */}
+              <div className="relative z-10 my-auto flex w-full items-center justify-center py-4 lg:my-0 lg:h-full lg:px-48">
                 <StickyScrollContent
                   activeIndex={activeIndex}
                   className="mx-auto w-full max-w-3xl px-2 text-center"
@@ -184,14 +178,14 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
 
                   <h2
                     dir={isArabic ? 'rtl' : 'ltr'}
-                    className="mt-2.5 text-2xl font-black leading-[1.22] tracking-tight text-white sm:mt-5 sm:text-5xl md:text-6xl lg:text-[3.85rem]"
+                    className="mt-3 text-2xl font-black leading-[1.22] tracking-tight text-white sm:mt-5 sm:text-5xl md:text-6xl lg:text-[3.85rem]"
                   >
                     {displayHeadline}
                   </h2>
 
                   <p
                     dir={isArabic ? 'rtl' : 'ltr'}
-                    className="mx-auto mt-3 max-w-2xl text-xs leading-relaxed text-white/70 sm:mt-6 sm:text-lg md:text-xl"
+                    className="mx-auto mt-3.5 max-w-2xl text-xs leading-relaxed text-white/70 sm:mt-6 sm:text-lg md:text-xl"
                   >
                     {item.description}
                   </p>
@@ -214,18 +208,18 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 </StickyScrollContent>
               </div>
 
-              {/* 3. الرقم المفرغ الكبير (01 - 05): صف سفلي مستقل في الجهة المقابلة (شمال بالعربي، يمين بالإنجليزي) */}
+              {/* الرقم الكبير بالأسفل */}
               <div
                 aria-hidden="true"
                 dir="ltr"
                 className={cn(
-                  'pointer-events-none relative z-0 shrink-0 self-end select-none lg:absolute lg:bottom-8',
+                  'pointer-events-none relative z-0 shrink-0 self-center select-none lg:absolute lg:bottom-8',
                   isArabic ? 'lg:left-12' : 'lg:right-12',
                 )}
               >
                 <span
                   style={{
-                    fontSize: 'clamp(3.75rem, 15vw, 12.5rem)',
+                    fontSize: 'clamp(4rem, 15vw, 12.5rem)',
                     fontWeight: 800,
                     lineHeight: 0.9,
                     color: 'transparent',
