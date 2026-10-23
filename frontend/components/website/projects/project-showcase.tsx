@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowUpLeft, ArrowUpRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 import { cn } from '@/lib/utils'
 import { type Locale } from '@/lib/i18n/config'
 import { type Project } from '@/types/project'
-import { Container } from '@/components/shared/container'
 
 interface ProjectShowcaseProps {
   projects: Project[]
@@ -32,21 +32,23 @@ function PortraitCard({
   return (
     <div
       className={cn(
-        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-b p-3.5 text-white shadow-xl transition-colors duration-300 sm:rounded-[24px] sm:p-5',
+        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-b px-5 pt-5 pb-4 text-white shadow-[0_24px_60px_-15px_rgba(75,63,223,0.4)] sm:rounded-[24px] sm:px-6 sm:pt-6 sm:pb-5',
         themeClass,
       )}
     >
-      <div className="relative z-10 pt-1 text-center sm:pt-2" dir={isAr ? 'rtl' : 'ltr'}>
-        <p className="line-clamp-1 text-base font-black tracking-tight text-white sm:text-2xl">
+      <div className="pointer-events-none absolute -top-10 left-1/2 size-40 -translate-x-1/2 rounded-full bg-white/15 blur-2xl" />
+
+      <div className="relative z-10 pt-1 text-center" dir={isAr ? 'rtl' : 'ltr'}>
+        <p className="line-clamp-1 text-lg font-black tracking-tight text-white sm:text-2xl">
           {title}
         </p>
-        <p className="mt-0.5 line-clamp-1 text-[10px] font-medium text-white/80 sm:mt-1 sm:text-[11px]">
+        <p className="mt-1 line-clamp-1 text-[10px] font-medium text-white/80 sm:text-[11px]">
           {tagline}
         </p>
       </div>
 
-      <div className="relative z-10 mt-auto pt-2.5 sm:pt-4">
-        <div className="relative mx-auto w-full overflow-hidden rounded-t-xl border-[2.5px] border-b-0 border-neutral-950 bg-neutral-900 shadow-xl sm:border-[3px]">
+      <div className="relative z-10 mt-auto pt-3 sm:pt-4">
+        <div className="relative mx-auto w-[92%] overflow-hidden rounded-t-xl border-[2.5px] border-b-0 border-neutral-950 bg-neutral-900 shadow-2xl sm:border-[3px]">
           <div className="flex h-3.5 items-center gap-1 border-b border-white/10 bg-neutral-950 px-2 sm:h-4">
             <span className="size-1.5 rounded-full bg-rose-400/80" />
             <span className="size-1.5 rounded-full bg-amber-400/80" />
@@ -62,7 +64,7 @@ function PortraitCard({
                 loading="eager"
                 decoding="async"
                 onError={onImageError}
-                className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <div className="space-y-2 p-3">
@@ -74,12 +76,12 @@ function PortraitCard({
               </div>
             )}
 
-            <span className="absolute bottom-2 right-2 flex size-7 items-center justify-center rounded-full bg-[#5745e7] text-white shadow-md ring-2 ring-white/25 sm:size-8">
-              {isAr ? <ArrowUpLeft className="size-4" /> : <ArrowUpRight className="size-4" />}
+            <span className="absolute bottom-2 right-2 flex size-6.5 items-center justify-center rounded-full bg-[#5745e7] text-white shadow-lg ring-2 ring-white/25 transition-transform duration-300 group-hover:scale-110 sm:size-7.5">
+              {isAr ? <ArrowUpLeft className="size-3.5" /> : <ArrowUpRight className="size-3.5" />}
             </span>
           </div>
         </div>
-        <div className="mx-auto h-1.5 w-[104%] -translate-x-[2%] rounded-b-lg bg-neutral-800 sm:h-2" />
+        <div className="mx-auto h-1.5 w-[96%] rounded-b-lg bg-neutral-800 shadow-md sm:h-2" />
       </div>
     </div>
   )
@@ -93,7 +95,6 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
 
   const total = projects.length
 
-  // تحميل مسبق لصور المشاريع الـ 7 لضمان تبديل فوري أثناء السكرول بدون أي تقطيع
   useEffect(() => {
     projects.forEach((p) => {
       if (typeof p.image === 'string' && p.image.trim()) {
@@ -103,7 +104,6 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
     })
   }, [projects])
 
-  // مستمع سكرول خفيف جداً وعالي الأداء يغير المشروع بسلاسة وسرعة مع حركة السكرول
   useEffect(() => {
     if (total <= 1) return
     let rafId: number | null = null
@@ -119,7 +119,7 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
 
       if (scrollableDistance <= 0) return
 
-      const rawProgress = (-rect.top + viewportHeight * 0.12) / scrollableDistance
+      const rawProgress = -rect.top / scrollableDistance
       const clamped = Math.max(0, Math.min(0.9999, rawProgress))
       const nextIdx = Math.floor(clamped * total)
 
@@ -165,133 +165,134 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
   return (
     <div
       ref={sectionRef}
-      className="relative w-full"
-      // مسافة سكرول قصيرة وسريعة (30svh لكل مشروع) ليتحرك مع السكرول بخفة وبدون تعليق
-      style={{ height: `calc(100svh + ${(total - 1) * 30}svh)` }}
+      className="relative mt-8 w-full bg-background sm:mt-12 lg:mt-14"
+      style={{ height: `calc(100svh + ${(total - 1) * 65}svh)` }}
     >
-      <div className="sticky top-[70px] flex min-h-[calc(100svh-76px)] items-center py-3 sm:top-[80px] sm:min-h-[calc(100svh-88px)] sm:py-6">
-        <Container className="w-full">
-          <article className="relative flex transform-gpu flex-col overflow-hidden rounded-2xl border border-dashed border-border/80 bg-white shadow-sm transition-colors duration-200 sm:rounded-3xl dark:bg-[#0d0b1f]">
-            {/* الشريط العلوي: العداد 01 / 07 على اليسار + أعمالنا على اليمين */}
-            <div
-              className="flex items-center justify-between px-4 pb-2.5 pt-3 sm:px-8 sm:pb-4 sm:pt-5"
-              style={{ direction: 'ltr' }}
+      {/* إطار الشاشة بنفس أبعاد وتباعد فيجما (Top/Bottom 48px, Left/Right 77px) */}
+      <div className="sticky top-[64px] flex h-[calc(100svh-64px)] w-full flex-col justify-between overflow-hidden bg-background px-5 pt-5 pb-3 sm:top-[72px] sm:h-[calc(100svh-72px)] sm:px-10 sm:pt-9 sm:pb-6 lg:px-[77px] lg:pt-11 lg:pb-8">
+        {/* 1. الشريط العلوي بدون خط فاصل تحته تماماً مثل فيجما */}
+        <div
+          className="mx-auto flex w-full max-w-[1440px] shrink-0 items-center justify-between"
+          style={{ direction: 'ltr' }}
+        >
+          <div className="flex items-center gap-1 font-mono text-xs font-extrabold">
+            <span className="text-[#4b3fdf] dark:text-[#8173ff]">{currentFormatted}</span>
+            <span className="text-muted-foreground/50">/ {totalFormatted}</span>
+          </div>
+
+          <Link
+            href={`/${locale}/our-work`}
+            className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-foreground transition-colors hover:text-[#4b3fdf]"
+            style={{ direction: isAr ? 'rtl' : 'ltr' }}
+          >
+            <span className="size-1.5 shrink-0 rounded-full bg-[#4b3fdf]" />
+            {isAr ? 'أعمالنا' : 'Our Work'}
+          </Link>
+        </div>
+
+        {/* 2. المحتوى الأوسط متمركز للداخل بتباعد متوازن بين البوستر والنص مثل فيجما */}
+        <div className="mx-auto my-auto w-full max-w-[960px] xl:max-w-[1020px]">
+          <motion.div
+            key={project.id}
+            initial={{ opacity: 0.25, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            dir="ltr"
+            className="flex w-full transform-gpu flex-col-reverse items-center gap-4 sm:gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-20 xl:gap-28"
+          >
+            {/* البوستر على اليسار */}
+            <Link
+              href={`/${locale}/our-work`}
+              className="mx-auto block w-full max-w-[170px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[235px] lg:mx-0 lg:w-[275px] xl:w-[295px]"
+              style={{ aspectRatio: '3/3.75' }}
             >
-              <div className="flex items-center gap-1 font-mono text-xs font-extrabold sm:text-sm">
-                <span className="text-[#4b3fdf] dark:text-[#8173ff]">{currentFormatted}</span>
-                <span className="text-muted-foreground/60">/ {totalFormatted}</span>
-              </div>
+              <PortraitCard
+                title={displayTitle}
+                tagline={
+                  project.category?.[locale] ||
+                  (isAr ? 'حلول رقمية متكاملة' : 'Digital Solutions')
+                }
+                themeClass={themeClass}
+                imageSrc={hasValidImage ? imageSrc : undefined}
+                isAr={isAr}
+                onImageError={() =>
+                  setFailedImages((prev) => ({ ...prev, [String(project.id)]: true }))
+                }
+              />
+            </Link>
 
-              <Link
-                href={`/${locale}/our-work`}
-                className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-foreground transition-colors hover:text-[#4b3fdf]"
-                style={{ direction: isAr ? 'rtl' : 'ltr' }}
-              >
-                <span className="size-1.5 shrink-0 rounded-full bg-[#4b3fdf]" />
-                {isAr ? 'أعمالنا' : 'Our Work'}
-              </Link>
-            </div>
-
-            <div className="mx-4 border-t border-dashed border-border/60 sm:mx-8" />
-
-            {/* محتوى المشروع يتحدث فوراً مع السكرول بدون أي تداخل نصوص */}
+            {/* تفاصيل المشروع على اليمين بحجم متناسق وغير مترامي الأطراف */}
             <div
-              key={project.id}
-              dir="ltr"
-              className="animate-in fade-in duration-150 flex w-full flex-col-reverse items-center gap-4 px-4 pt-3.5 pb-2 sm:gap-10 sm:px-10 sm:pt-8 lg:flex-row lg:justify-between lg:gap-16 lg:px-20"
+              className="flex w-full max-w-[420px] flex-col justify-center"
+              style={{ direction: isAr ? 'rtl' : 'ltr' }}
             >
-              {/* البوستر العمودي */}
-              <Link
-                href={`/${locale}/our-work`}
-                className="mx-auto block w-full max-w-[175px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[245px] lg:mx-0 lg:w-[265px]"
-                style={{ aspectRatio: '3/3.5' }}
-              >
-                <PortraitCard
-                  title={displayTitle}
-                  tagline={
-                    project.category?.[locale] ||
-                    (isAr ? 'حلول رقمية متكاملة' : 'Digital Solutions')
-                  }
-                  themeClass={themeClass}
-                  imageSrc={hasValidImage ? imageSrc : undefined}
-                  isAr={isAr}
-                  onImageError={() =>
-                    setFailedImages((prev) => ({ ...prev, [String(project.id)]: true }))
-                  }
-                />
-              </Link>
+              <h3 className="text-xl font-black leading-snug tracking-tight text-foreground sm:text-3xl lg:text-[2.15rem]">
+                {displayTitle}
+              </h3>
 
-              {/* تفاصيل المشروع */}
-              <div
-                className="flex w-full flex-1 flex-col justify-center"
-                style={{ direction: isAr ? 'rtl' : 'ltr' }}
-              >
-                <h3 className="text-xl font-black leading-snug tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                  {displayTitle}
-                </h3>
+              <p className="mt-2 line-clamp-3 text-[11px] leading-[1.8] text-muted-foreground sm:mt-3 sm:line-clamp-none sm:text-[13.5px]">
+                {description}
+              </p>
 
-                <p className="mt-1.5 line-clamp-3 max-w-lg text-[11px] leading-relaxed text-muted-foreground sm:mt-4 sm:line-clamp-none sm:text-base">
-                  {description}
-                </p>
-
-                <div className="mt-3 flex flex-wrap items-start gap-5 text-[11px] sm:mt-7 sm:gap-10 sm:text-sm">
-                  <div className="shrink-0">
-                    <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
-                      {isAr ? 'السنة' : 'Year'}
-                    </span>
-                    <span className="mt-0.5 block font-bold text-foreground">{year}</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
-                      {isAr ? 'الخدمات والتقنيات' : 'Services & Stack'}
-                    </span>
-                    <span
-                      className="mt-0.5 block font-semibold leading-relaxed text-foreground"
-                      dir="ltr"
-                      style={{ textAlign: isAr ? 'right' : 'left' }}
-                    >
-                      {services}
-                    </span>
-                  </div>
+              {/* الخدمات والسنة بنفس ترتيب وتباعد فيجما */}
+              <div className="mt-4 flex flex-wrap items-start justify-between gap-6 text-[11px] sm:mt-6 sm:justify-start sm:gap-12 sm:text-xs">
+                <div className="min-w-0">
+                  <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
+                    {isAr ? 'الخدمات والتقنيات' : 'Services & Stack'}
+                  </span>
+                  <span
+                    className="mt-1 block font-semibold leading-relaxed text-foreground"
+                    dir="ltr"
+                    style={{ textAlign: isAr ? 'right' : 'left' }}
+                  >
+                    {services}
+                  </span>
                 </div>
 
-                {pills.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-6 sm:gap-2">
-                    {pills.map((pill, idx) => (
-                      <span
-                        key={idx}
-                        className="rounded-full border border-border bg-background px-2.5 py-0.5 text-[10px] font-medium text-foreground sm:px-4 sm:py-1.5 sm:text-xs"
-                      >
-                        {pill[locale]}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div className="shrink-0">
+                  <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
+                    {isAr ? 'السنة' : 'Year'}
+                  </span>
+                  <span className="mt-1 block font-bold text-foreground">{year}</span>
+                </div>
               </div>
-            </div>
 
-            {/* العلامة المائية السفلية مع التوهج */}
-            <div className="relative mt-2 flex items-end justify-center overflow-hidden px-2 pb-1 pt-2 sm:mt-6 sm:pt-6">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-14 sm:h-28"
-                style={{
-                  background: `radial-gradient(ellipse 60% 100% at 50% 100%, ${glowColor}38 0%, transparent 75%)`,
-                }}
-              />
-              <p
-                aria-hidden="true"
-                className="relative max-w-full truncate text-center font-black leading-none tracking-tight select-none"
-                style={{
-                  fontSize: 'clamp(1.65rem, 6.5vw, 6rem)',
-                  color: `${glowColor}20`,
-                }}
-              >
-                {displayTitle}
-              </p>
+              {pills.length > 0 && (
+                <div className="mt-3.5 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
+                  {pills.map((pill, idx) => (
+                    <span
+                      key={idx}
+                      className="rounded-full border border-border/80 bg-background px-3 py-1 text-[10px] font-medium text-foreground sm:px-3.5 sm:text-[11px]"
+                    >
+                      {pill[locale]}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          </article>
-        </Container>
+          </motion.div>
+        </div>
+
+        {/* 3. العلامة المائية والتوهج السفلي ظاهران بالكامل في أسفل المنتصف مثل فيجما */}
+        <div className="relative flex w-full shrink-0 items-end justify-center pt-2">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 -bottom-6 mx-auto h-24 w-full max-w-xl sm:h-32"
+            style={{
+              background: `radial-gradient(ellipse 55% 90% at 50% 85%, ${glowColor}2e 0%, transparent 75%)`,
+            }}
+          />
+          <p
+            aria-hidden="true"
+            className="relative max-w-full truncate px-4 text-center font-black leading-none tracking-tight select-none"
+            style={{
+              fontSize: 'clamp(1.85rem, 5.5vw, 4.75rem)',
+              color: `${glowColor}1a`,
+            }}
+          >
+            {displayTitle}
+          </p>
+        </div>
       </div>
     </div>
   )

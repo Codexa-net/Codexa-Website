@@ -30,6 +30,7 @@ const FIGMA_STEP_META = [
     bilingualEyebrowEn: '01 — UNDERSTANDING',
     shortAr: 'الفهم',
     shortEn: 'Understanding',
+    overrideTitleAr: null,
     keywordsAr: ['بحث', 'تحليل', 'إنصات'],
     keywordsEn: ['Research', 'Analysis', 'Listening'],
   },
@@ -38,6 +39,7 @@ const FIGMA_STEP_META = [
     bilingualEyebrowEn: '02 — ARCHITECTURE',
     shortAr: 'المنطق',
     shortEn: 'Logic',
+    overrideTitleAr: null,
     keywordsAr: ['هيكلة', 'رحلة المستخدم', 'خطة واضحة'],
     keywordsEn: ['User Flow', 'Wireframes', 'Strategy'],
   },
@@ -46,6 +48,7 @@ const FIGMA_STEP_META = [
     bilingualEyebrowEn: '03 — CRAFT & UI/UX',
     shortAr: 'الفكرة',
     shortEn: 'The Idea',
+    overrideTitleAr: null,
     keywordsAr: ['هوية بصرية', 'واجهات تفاعلية', 'تجربة سلسة'],
     keywordsEn: ['Visual Identity', 'Interactive UI', 'Seamless UX'],
   },
@@ -54,6 +57,8 @@ const FIGMA_STEP_META = [
     bilingualEyebrowEn: '04 — ENGINEERING',
     shortAr: 'التنفيذ',
     shortEn: 'Execution',
+    // صياغة احترافية قوية بدلاً من "من الشاشة لحاجة شغالة فعلاً"
+    overrideTitleAr: 'من تصميم ثابت، لمنتج حقيقي يعيش.',
     keywordsAr: ['كود نظيف', 'سرعة فائقة', 'أمان عالي'],
     keywordsEn: ['Clean Code', 'High Speed', 'Security'],
   },
@@ -62,6 +67,7 @@ const FIGMA_STEP_META = [
     bilingualEyebrowEn: '05 — LAUNCH & SCALE',
     shortAr: 'الإطلاق',
     shortEn: 'Launch',
+    overrideTitleAr: null,
     keywordsAr: ['اختبار شامل', 'إطلاق', 'دعم مستمر'],
     keywordsEn: ['QA Testing', 'Deployment', 'Ongoing Support'],
   },
@@ -77,7 +83,7 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
 
   return (
     <div id="why-choose-us" dir={isArabic ? 'rtl' : 'ltr'}>
-      {/* ── القسم التمهيدي الأبيض ── */}
+      {/* ── القسم التمهيدي ── */}
       <Section noContainer className="bg-white py-16 sm:py-28 lg:py-36 dark:bg-[#0d0b1f]">
         <Container>
           <Reveal>
@@ -106,11 +112,13 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
           const colors = STEP_COLORS[activeIndex % STEP_COLORS.length]
           const meta = FIGMA_STEP_META[activeIndex % FIGMA_STEP_META.length]
           const keywords = isArabic ? meta.keywordsAr : meta.keywordsEn
+          const displayHeadline =
+            isArabic && meta.overrideTitleAr ? meta.overrideTitleAr : item.title
 
           return (
             <div
               dir={isArabic ? 'rtl' : 'ltr'}
-              className="relative h-full w-full overflow-hidden text-white"
+              className="relative flex h-full w-full flex-col justify-between overflow-hidden px-5 pt-20 pb-5 text-white sm:px-10 sm:pt-24 sm:pb-8 lg:block lg:p-0"
             >
               {/* الخلفية المتدرجة */}
               <motion.div
@@ -118,40 +126,25 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 className="absolute inset-0"
                 initial={{ opacity: 0.92 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.45, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
                 style={{
                   background: `radial-gradient(circle at 50% 35%, #262170 0%, ${colors.from} 45%, ${colors.to} 100%)`,
                 }}
               />
 
-              {/* الرقم المفرغ الكبير (01 - 05): في العربي على اليسار، وفي الإنجليزي على اليمين */}
-              <span
-                aria-hidden="true"
-                dir="ltr"
-                className={cn(
-                  'pointer-events-none absolute bottom-4 z-0 select-none sm:bottom-8',
-                  isArabic ? 'left-4 sm:left-10' : 'right-4 sm:right-10',
-                )}
-                style={{
-                  fontSize: 'clamp(4.75rem, 18vw, 13.5rem)',
-                  fontWeight: 800,
-                  lineHeight: 1,
-                  color: 'transparent',
-                  WebkitTextStroke: '1.5px rgba(255,255,255,0.14)',
-                }}
-              >
-                {stepNumber}
-              </span>
-
-              {/* القائمة الجانبية للخطوات الـ 5: ظاهرة على الموبايل واللابتوب (يمين في العربي، يسار في الإنجليزي) */}
+              {/*
+                القائمة الجانبية للـ 5 خطوات:
+                - على الموبايل: صف علوي منفصل (يمين في العربي، شمال في الإنجليزي) يستحيل يتداخل مع العنوان.
+                - على اللابتوب: ثابتة في منتصف الجنب (يمين في العربي، شمال في الإنجليزي).
+              */}
               <nav
                 aria-label="Process steps"
                 dir={isArabic ? 'rtl' : 'ltr'}
                 className={cn(
-                  'absolute top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2 sm:gap-3.5',
+                  'relative z-20 flex flex-col gap-1 self-start sm:gap-1.5 lg:absolute lg:top-1/2 lg:-translate-y-1/2 lg:gap-3.5',
                   isArabic
-                    ? 'right-2.5 items-end text-right sm:right-6 lg:right-10'
-                    : 'left-2.5 items-start text-left sm:left-6 lg:left-10',
+                    ? 'items-start text-right lg:right-12'
+                    : 'items-start text-left lg:left-12',
                 )}
               >
                 {items.map((step, index) => {
@@ -165,7 +158,7 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                     <span
                       key={step.title}
                       className={cn(
-                        'max-w-[90px] truncate text-[10px] font-bold transition-all duration-300 sm:max-w-[140px] sm:text-xs',
+                        'whitespace-nowrap text-[11px] font-bold transition-all duration-300 sm:text-xs',
                         isCurrent
                           ? 'scale-105 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
                           : 'text-white/30',
@@ -177,48 +170,39 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 })}
               </nav>
 
-              {/* المحتوى المركزي في المنتصف مع ترك مسافة جانبية للقائمة على الموبايل */}
-              <div className="relative z-10 flex h-full items-center justify-center">
+              {/* المحتوى المركزي في المنتصف بعرض كامل ومريح على الموبايل وبدون أي تداخل على اللابتوب */}
+              <div className="relative z-10 my-auto flex w-full items-center justify-center lg:my-0 lg:h-full lg:px-44">
                 <StickyScrollContent
                   activeIndex={activeIndex}
-                  className={cn(
-                    'mx-auto max-w-3xl text-center',
-                    isArabic
-                      ? 'pl-4 pr-16 sm:px-16'
-                      : 'pl-16 pr-4 sm:px-16',
-                  )}
+                  className="mx-auto w-full max-w-3xl text-center"
                 >
-                  {/* العنوان العلوي الثنائي اللغة */}
                   <p
                     dir="ltr"
-                    className="text-[10px] font-semibold tracking-widest text-white/60 uppercase sm:text-sm"
+                    className="text-[11px] font-semibold tracking-widest text-white/60 uppercase sm:text-sm"
                   >
                     {isArabic ? meta.bilingualEyebrowAr : meta.bilingualEyebrowEn}
                   </p>
 
-                  {/* العنوان الرئيسي باتجاه اللغة الصحيح */}
                   <h2
                     dir={isArabic ? 'rtl' : 'ltr'}
-                    className="mt-3 text-2xl font-black leading-[1.22] tracking-tight text-white sm:mt-6 sm:text-5xl md:text-6xl lg:text-[4rem]"
+                    className="mt-3 text-2xl font-black leading-[1.22] tracking-tight text-white sm:mt-5 sm:text-5xl md:text-6xl lg:text-[4rem]"
                   >
-                    {item.title}
+                    {displayHeadline}
                   </h2>
 
-                  {/* الوصف باتجاه اللغة الصحيح لمنع انقلاب النقطة في الإنجليزي */}
                   <p
                     dir={isArabic ? 'rtl' : 'ltr'}
-                    className="mx-auto mt-4 max-w-2xl text-xs leading-relaxed text-white/70 sm:mt-7 sm:text-lg md:text-xl"
+                    className="mx-auto mt-3.5 max-w-2xl text-xs leading-relaxed text-white/70 sm:mt-6 sm:text-lg md:text-xl"
                   >
                     {item.description}
                   </p>
 
-                  {/* الكلمات المفتاحية الثلاث */}
                   <div
                     dir={isArabic ? 'rtl' : 'ltr'}
-                    className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-[11px] font-semibold text-white/60 sm:mt-10 sm:gap-4 sm:text-sm"
+                    className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-white/60 sm:mt-9 sm:gap-4 sm:text-sm"
                   >
                     {keywords.map((word, idx) => (
-                      <span key={word} className="inline-flex items-center gap-2.5 sm:gap-4">
+                      <span key={word} className="inline-flex items-center gap-3 sm:gap-4">
                         <span>{word}</span>
                         {idx < keywords.length - 1 && (
                           <span aria-hidden="true" className="text-white/30">
@@ -229,6 +213,30 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                     ))}
                   </div>
                 </StickyScrollContent>
+              </div>
+
+              {/* الرقم المفرغ الكبير (01 - 05): شمال بالأسفل في العربي، ويمين بالأسفل في الإنجليزي */}
+              <div
+                aria-hidden="true"
+                dir="ltr"
+                className={cn(
+                  'pointer-events-none relative z-0 flex w-full select-none lg:absolute lg:bottom-8 lg:w-auto',
+                  isArabic
+                    ? 'justify-start lg:left-12'
+                    : 'justify-end lg:right-12',
+                )}
+              >
+                <span
+                  style={{
+                    fontSize: 'clamp(4.25rem, 16vw, 13rem)',
+                    fontWeight: 800,
+                    lineHeight: 0.9,
+                    color: 'transparent',
+                    WebkitTextStroke: '1.5px rgba(255,255,255,0.14)',
+                  }}
+                >
+                  {stepNumber}
+                </span>
               </div>
             </div>
           )
