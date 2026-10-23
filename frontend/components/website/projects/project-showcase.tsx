@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowUpLeft, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowUpLeft, ArrowUpRight } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { type Locale } from '@/lib/i18n/config'
@@ -33,7 +32,7 @@ function PortraitCard({
   return (
     <div
       className={cn(
-        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-b p-4 text-white shadow-xl sm:rounded-[24px] sm:p-5',
+        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-b p-3.5 text-white shadow-xl transition-colors duration-300 sm:rounded-[24px] sm:p-5',
         themeClass,
       )}
     >
@@ -63,7 +62,7 @@ function PortraitCard({
                 loading="eager"
                 decoding="async"
                 onError={onImageError}
-                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
               />
             ) : (
               <div className="space-y-2 p-3">
@@ -89,28 +88,60 @@ function PortraitCard({
 export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
   const isAr = locale === 'ar'
   const [activeIndex, setActiveIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({})
-  const touchStartX = useRef<number | null>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
 
   const total = projects.length
 
-  const nextSlide = useCallback(() => {
-    if (total <= 1) return
-    setActiveIndex((prev) => (prev + 1) % total)
-  }, [total])
-
-  const prevSlide = useCallback(() => {
-    if (total <= 1) return
-    setActiveIndex((prev) => (prev - 1 + total) % total)
-  }, [total])
-
-  // تقليب تلقائي كل 3.8 ثانية يتوقف مؤقتاً عند لمس الكارت أو الوقوف عليه بالماوس
+  // تحميل مسبق لصور المشاريع الـ 7 لضمان تبديل فوري أثناء السكرول بدون أي تقطيع
   useEffect(() => {
-    if (isPaused || total <= 1) return
-    const timer = setInterval(nextSlide, 3800)
-    return () => clearInterval(timer)
-  }, [isPaused, nextSlide, total])
+    projects.forEach((p) => {
+      if (typeof p.image === 'string' && p.image.trim()) {
+        const img = new window.Image()
+        img.src = p.image.trim()
+      }
+    })
+  }, [projects])
+
+  // مستمع سكرول خفيف جداً وعالي الأداء يغير المشروع بسلاسة وسرعة مع حركة السكرول
+  useEffect(() => {
+    if (total <= 1) return
+    let rafId: number | null = null
+
+    const updateOnScroll = () => {
+      rafId = null
+      const el = sectionRef.current
+      if (!el) return
+
+      const rect = el.getBoundingClientRect()
+      const viewportHeight = window.innerHeight || 1
+      const scrollableDistance = rect.height - viewportHeight
+
+      if (scrollableDistance <= 0) return
+
+      const rawProgress = (-rect.top + viewportHeight * 0.12) / scrollableDistance
+      const clamped = Math.max(0, Math.min(0.9999, rawProgress))
+      const nextIdx = Math.floor(clamped * total)
+
+      setActiveIndex((prev) => (prev !== nextIdx ? nextIdx : prev))
+    }
+
+    const onScroll = () => {
+      if (rafId === null) {
+        rafId = window.requestAnimationFrame(updateOnScroll)
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    updateOnScroll()
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (rafId !== null) window.cancelAnimationFrame(rafId)
+    }
+  }, [total])
 
   if (total === 0) return null
 
@@ -131,111 +162,49 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
   const currentFormatted = String(activeIndex + 1).padStart(2, '0')
   const totalFormatted = String(total).padStart(2, '0')
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true)
-    touchStartX.current = e.touches[0].clientX
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current !== null) {
-      const diff = touchStartX.current - e.changedTouches[0].clientX
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) nextSlide()
-        else prevSlide()
-      }
-    }
-    touchStartX.current = null
-    setTimeout(() => setIsPaused(false), 2000)
-  }
-
   return (
-    <section className="py-8 sm:py-14">
-      <Container>
-        <div
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          className="relative flex flex-col overflow-hidden rounded-2xl border border-dashed border-border/80 bg-white shadow-sm sm:rounded-3xl dark:bg-[#0d0b1f]"
-        >
-          {/* الشريط العلوي: العداد 01 / 07 وأزرار التنقل السريع + رابط أعمالنا */}
-          <div
-            className="flex items-center justify-between px-4 pb-3 pt-3.5 sm:px-8 sm:pb-4 sm:pt-5"
-            style={{ direction: 'ltr' }}
-          >
-            <div className="flex items-center gap-3">
+    <div
+      ref={sectionRef}
+      className="relative w-full"
+      // مسافة سكرول قصيرة وسريعة (30svh لكل مشروع) ليتحرك مع السكرول بخفة وبدون تعليق
+      style={{ height: `calc(100svh + ${(total - 1) * 30}svh)` }}
+    >
+      <div className="sticky top-[70px] flex min-h-[calc(100svh-76px)] items-center py-3 sm:top-[80px] sm:min-h-[calc(100svh-88px)] sm:py-6">
+        <Container className="w-full">
+          <article className="relative flex transform-gpu flex-col overflow-hidden rounded-2xl border border-dashed border-border/80 bg-white shadow-sm transition-colors duration-200 sm:rounded-3xl dark:bg-[#0d0b1f]">
+            {/* الشريط العلوي: العداد 01 / 07 على اليسار + أعمالنا على اليمين */}
+            <div
+              className="flex items-center justify-between px-4 pb-2.5 pt-3 sm:px-8 sm:pb-4 sm:pt-5"
+              style={{ direction: 'ltr' }}
+            >
               <div className="flex items-center gap-1 font-mono text-xs font-extrabold sm:text-sm">
                 <span className="text-[#4b3fdf] dark:text-[#8173ff]">{currentFormatted}</span>
                 <span className="text-muted-foreground/60">/ {totalFormatted}</span>
               </div>
 
-              {/* أزرار تقليب سريعة */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={prevSlide}
-                  aria-label="Previous project"
-                  className="flex size-7 cursor-pointer items-center justify-center rounded-full border border-border/70 bg-background text-foreground transition-colors hover:border-[#4b3fdf] hover:text-[#4b3fdf]"
-                >
-                  <ChevronLeft className="size-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={nextSlide}
-                  aria-label="Next project"
-                  className="flex size-7 cursor-pointer items-center justify-center rounded-full border border-border/70 bg-background text-foreground transition-colors hover:border-[#4b3fdf] hover:text-[#4b3fdf]"
-                >
-                  <ChevronRight className="size-3.5" />
-                </button>
-              </div>
+              <Link
+                href={`/${locale}/our-work`}
+                className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-foreground transition-colors hover:text-[#4b3fdf]"
+                style={{ direction: isAr ? 'rtl' : 'ltr' }}
+              >
+                <span className="size-1.5 shrink-0 rounded-full bg-[#4b3fdf]" />
+                {isAr ? 'أعمالنا' : 'Our Work'}
+              </Link>
             </div>
 
-            {/* نقاط تقدم المشاريع الـ 7 */}
-            <div className="hidden items-center gap-1.5 sm:flex">
-              {projects.map((p, idx) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setActiveIndex(idx)}
-                  aria-label={`Project ${idx + 1}`}
-                  className={cn(
-                    'h-1.5 cursor-pointer rounded-full transition-all duration-300',
-                    idx === activeIndex
-                      ? 'w-6 bg-[#4b3fdf] dark:bg-[#8173ff]'
-                      : 'w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50',
-                  )}
-                />
-              ))}
-            </div>
+            <div className="mx-4 border-t border-dashed border-border/60 sm:mx-8" />
 
-            <Link
-              href={`/${locale}/our-work`}
-              className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-foreground transition-colors hover:text-[#4b3fdf]"
-              style={{ direction: isAr ? 'rtl' : 'ltr' }}
-            >
-              <span className="size-1.5 shrink-0 rounded-full bg-[#4b3fdf]" />
-              {isAr ? 'أعمالنا' : 'Our Work'}
-            </Link>
-          </div>
-
-          <div className="mx-4 border-t border-dashed border-border/60 sm:mx-8" />
-
-          {/* محتوى المشروع المتغير بنعومة فائقة وبدون أي تداخل نصوص */}
-          <AnimatePresence mode="wait">
-            <motion.div
+            {/* محتوى المشروع يتحدث فوراً مع السكرول بدون أي تداخل نصوص */}
+            <div
               key={project.id}
-              initial={{ opacity: 0, x: isAr ? -18 : 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: isAr ? 18 : -18 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
               dir="ltr"
-              className="flex w-full flex-col-reverse items-center gap-5 px-4 pt-4 pb-2 sm:gap-10 sm:px-10 sm:pt-8 lg:flex-row lg:justify-between lg:gap-16 lg:px-20"
+              className="animate-in fade-in duration-150 flex w-full flex-col-reverse items-center gap-4 px-4 pt-3.5 pb-2 sm:gap-10 sm:px-10 sm:pt-8 lg:flex-row lg:justify-between lg:gap-16 lg:px-20"
             >
               {/* البوستر العمودي */}
               <Link
                 href={`/${locale}/our-work`}
-                className="mx-auto block w-full max-w-[180px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[250px] lg:mx-0 lg:w-[265px]"
-                style={{ aspectRatio: '3/3.55' }}
+                className="mx-auto block w-full max-w-[175px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[245px] lg:mx-0 lg:w-[265px]"
+                style={{ aspectRatio: '3/3.5' }}
               >
                 <PortraitCard
                   title={displayTitle}
@@ -261,11 +230,11 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
                   {displayTitle}
                 </h3>
 
-                <p className="mt-2 line-clamp-3 max-w-lg text-xs leading-relaxed text-muted-foreground sm:mt-4 sm:line-clamp-none sm:text-base">
+                <p className="mt-1.5 line-clamp-3 max-w-lg text-[11px] leading-relaxed text-muted-foreground sm:mt-4 sm:line-clamp-none sm:text-base">
                   {description}
                 </p>
 
-                <div className="mt-3.5 flex flex-wrap items-start gap-5 text-xs sm:mt-7 sm:gap-10 sm:text-sm">
+                <div className="mt-3 flex flex-wrap items-start gap-5 text-[11px] sm:mt-7 sm:gap-10 sm:text-sm">
                   <div className="shrink-0">
                     <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
                       {isAr ? 'السنة' : 'Year'}
@@ -287,11 +256,11 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
                 </div>
 
                 {pills.length > 0 && (
-                  <div className="mt-3.5 flex flex-wrap gap-1.5 sm:mt-6 sm:gap-2">
+                  <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-6 sm:gap-2">
                     {pills.map((pill, idx) => (
                       <span
                         key={idx}
-                        className="rounded-full border border-border bg-background px-3 py-0.5 text-[10px] font-medium text-foreground sm:px-4 sm:py-1.5 sm:text-xs"
+                        className="rounded-full border border-border bg-background px-2.5 py-0.5 text-[10px] font-medium text-foreground sm:px-4 sm:py-1.5 sm:text-xs"
                       >
                         {pill[locale]}
                       </span>
@@ -299,49 +268,31 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
                   </div>
                 )}
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
 
-          {/* نقاط التنقل على الموبايل */}
-          <div className="mt-3 flex items-center justify-center gap-1.5 sm:hidden" dir="ltr">
-            {projects.map((p, idx) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setActiveIndex(idx)}
-                aria-label={`Project ${idx + 1}`}
-                className={cn(
-                  'h-1.5 cursor-pointer rounded-full transition-all duration-300',
-                  idx === activeIndex
-                    ? 'w-5 bg-[#4b3fdf] dark:bg-[#8173ff]'
-                    : 'w-1.5 bg-muted-foreground/30',
-                )}
+            {/* العلامة المائية السفلية مع التوهج */}
+            <div className="relative mt-2 flex items-end justify-center overflow-hidden px-2 pb-1 pt-2 sm:mt-6 sm:pt-6">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-14 sm:h-28"
+                style={{
+                  background: `radial-gradient(ellipse 60% 100% at 50% 100%, ${glowColor}38 0%, transparent 75%)`,
+                }}
               />
-            ))}
-          </div>
-
-          {/* العلامة المائية السفلية مع التوهج */}
-          <div className="relative mt-2 flex items-end justify-center overflow-hidden px-2 pb-1 pt-3 sm:mt-6 sm:pt-6">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-14 sm:h-28"
-              style={{
-                background: `radial-gradient(ellipse 60% 100% at 50% 100%, ${glowColor}38 0%, transparent 75%)`,
-              }}
-            />
-            <p
-              aria-hidden="true"
-              className="relative max-w-full truncate text-center font-black leading-none tracking-tight select-none"
-              style={{
-                fontSize: 'clamp(1.65rem, 6.5vw, 6rem)',
-                color: `${glowColor}20`,
-              }}
-            >
-              {displayTitle}
-            </p>
-          </div>
-        </div>
-      </Container>
-    </section>
+              <p
+                aria-hidden="true"
+                className="relative max-w-full truncate text-center font-black leading-none tracking-tight select-none"
+                style={{
+                  fontSize: 'clamp(1.65rem, 6.5vw, 6rem)',
+                  color: `${glowColor}20`,
+                }}
+              >
+                {displayTitle}
+              </p>
+            </div>
+          </article>
+        </Container>
+      </div>
+    </div>
   )
 }
