@@ -6,7 +6,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { type Project } from '@/types/project'
 import { HeroSection } from '@/components/website/home/hero-section'
 import { MarqueeBanner } from '@/components/website/home/marquee-banner'
-import { WorksShowcase } from '@/components/website/projects/works-showcase'
+import { ProjectShowcase } from '@/components/website/projects/project-showcase'
 import { ServicesSection } from '@/components/website/home/services-section'
 import { WhyChooseUsSection } from '@/components/website/home/why-choose-us-section'
 
@@ -278,13 +278,9 @@ export default async function HomePage(props: PageProps<'/[lang]'>) {
         <MarqueeBanner locale={locale} />
       </div>
 
+      {/* عرض المشاريع الـ 7 بتقليب تلقائي وسحب ناعم باللمس بدون ثقل في السكرول */}
       <div className="codexa-home-showcase relative z-10">
-        <WorksShowcase
-          projects={projects}
-          locale={locale}
-          variant="sticky"
-          labels={{ viewProject: dict.home.projects.viewProject }}
-        />
+        <ProjectShowcase projects={projects} locale={locale} />
       </div>
 
       <ServicesSection dict={dict} />

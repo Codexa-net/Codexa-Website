@@ -13,19 +13,6 @@ interface ProjectsGridProps {
   columns?: 2 | 3
 }
 
-/**
- * ProjectsGrid — responsive staggered grid of ProjectCards.
- * Used by both the Home "selected projects" section and the Our Work page.
- *
- * Usage:
- * ```tsx
- * <ProjectsGrid
- *   projects={getFeaturedProjects(3)}
- *   locale={locale}
- *   viewLabel={dict.ourWork.viewProject}
- * />
- * ```
- */
 export function ProjectsGrid({
   projects,
   locale,
@@ -38,14 +25,14 @@ export function ProjectsGrid({
   return (
     <Stagger
       className={cn(
-        'grid gap-6',
-        columns === 2 && 'grid-cols-1 sm:grid-cols-2',
-        columns === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+        'grid grid-cols-2 gap-3 sm:gap-5',
+        columns === 2 && 'sm:grid-cols-2',
+        columns === 3 && 'sm:grid-cols-2 lg:grid-cols-3',
         className,
       )}
     >
       {projects.map((project) => (
-        <StaggerItem key={project.id}>
+        <StaggerItem key={project.id} className="h-full">
           <ProjectCard
             project={project}
             locale={locale}
@@ -55,4 +42,4 @@ export function ProjectsGrid({
       ))}
     </Stagger>
   )
-}
+} 

@@ -17,9 +17,6 @@ interface WorkSlideProps {
   className?: string
 }
 
-/**
- * PortraitProjectCard — بوستر المشروع بتصميم فيجما مع عرض صورة المشروع الحقيقية داخل اللابتوب فوراً
- */
 function PortraitProjectCard({
   title,
   tagline,
@@ -38,43 +35,35 @@ function PortraitProjectCard({
   return (
     <div
       className={cn(
-        'group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-[22px] sm:rounded-[24px] bg-gradient-to-b p-3.5 sm:p-5 text-white shadow-[0_24px_60px_-15px_rgba(75,63,223,0.45)]',
+        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[20px] bg-gradient-to-b p-3.5 text-white shadow-xl sm:rounded-[24px] sm:p-5',
         themeClass,
       )}
     >
-      {/* إضاءة خلفية ناعمة أعلى البوستر */}
-      <div className="pointer-events-none absolute -top-10 left-1/2 size-40 -translate-x-1/2 rounded-full bg-white/15 blur-2xl" />
-
-      {/* اسم المشروع الحقيقي والوصف المختصر في أعلى المنتصف تماماً مثل فيجما */}
-      <div className="relative z-10 pt-1 sm:pt-2 text-center" dir={isAr ? 'rtl' : 'ltr'}>
-        <p className="line-clamp-1 text-base sm:text-2xl font-black tracking-tight text-white drop-shadow-xs">
+      <div className="relative z-10 pt-1 text-center sm:pt-2" dir={isAr ? 'rtl' : 'ltr'}>
+        <p className="line-clamp-1 text-sm font-black tracking-tight text-white sm:text-2xl">
           {title}
         </p>
-        <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] font-medium text-white/80 line-clamp-1">
+        <p className="mt-0.5 line-clamp-1 text-[10px] font-medium text-white/80 sm:mt-1 sm:text-[11px]">
           {tagline}
         </p>
       </div>
 
-      {/* مجسم اللابتوب في الأسفل مع قاعدة الصخرة الداكنة وزر السهم البنفسجي */}
-      <div className="relative z-10 mt-auto pt-2.5 sm:pt-4">
-        <div className="relative mx-auto w-full overflow-hidden rounded-t-xl border-[2.5px] sm:border-[3px] border-b-0 border-neutral-950 bg-slate-900 shadow-2xl">
-          {/* شريط نافذة اللابتوب */}
-          <div className="flex h-3.5 sm:h-4 items-center gap-1 border-b border-white/10 bg-neutral-950 px-2">
+      <div className="relative z-10 mt-auto pt-2 sm:pt-4">
+        <div className="relative mx-auto w-full overflow-hidden rounded-t-xl border-[2px] border-b-0 border-neutral-950 bg-slate-900 shadow-lg sm:border-[3px]">
+          <div className="flex h-3 items-center gap-1 border-b border-white/10 bg-neutral-950 px-2 sm:h-4">
             <span className="size-1.5 rounded-full bg-red-400/80" />
             <span className="size-1.5 rounded-full bg-amber-400/80" />
             <span className="size-1.5 rounded-full bg-green-400/80" />
-            <div className="mx-auto h-1 w-10 sm:w-12 rounded-full bg-white/15" />
+            <div className="mx-auto h-1 w-8 rounded-full bg-white/15 sm:w-12" />
           </div>
 
-          {/* شاشة اللابتوب تعرض صورة المشروع الحقيقية بتحميل فوري */}
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
             {imageSrc ? (
               <img
                 src={imageSrc}
                 alt={title}
-                loading="eager"
+                loading="lazy"
                 decoding="async"
-                fetchPriority="high"
                 onError={onImageError}
                 className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
               />
@@ -88,24 +77,22 @@ function PortraitProjectCard({
               </div>
             )}
 
-            {/* زر السهم البنفسجي الدائري فوق شاشة اللابتوب كما في فيجما */}
-            <span className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 flex size-7 sm:size-8 items-center justify-center rounded-full bg-[#5745e7] text-white shadow-lg ring-2 ring-white/25 transition-transform duration-300 group-hover:scale-110">
-              {isAr ? <ArrowUpLeft className="size-3.5 sm:size-4" /> : <ArrowUpRight className="size-3.5 sm:size-4" />}
+            <span className="absolute bottom-1.5 right-1.5 flex size-6.5 items-center justify-center rounded-full bg-[#5745e7] text-white shadow-md ring-2 ring-white/25 sm:bottom-2 sm:right-2 sm:size-8">
+              {isAr ? (
+                <ArrowUpLeft className="size-3.5 sm:size-4" />
+              ) : (
+                <ArrowUpRight className="size-3.5 sm:size-4" />
+              )}
             </span>
           </div>
         </div>
 
-        {/* قاعدة اللابتوب والظل السفلي */}
-        <div className="mx-auto h-1.5 sm:h-2 w-[104%] -translate-x-[2%] rounded-b-lg bg-neutral-800 shadow-md" />
-        <div className="pointer-events-none mx-auto mt-1 h-2 w-4/5 rounded-full bg-black/50 blur-md" />
+        <div className="mx-auto h-1.5 w-[104%] -translate-x-[2%] rounded-b-lg bg-neutral-800 sm:h-2" />
       </div>
     </div>
   )
 }
 
-/**
- * WorkSlide — يعرض المشاريع الـ 7 الحقيقية (01 / 07) بنفس تصميم فيجما ومتجاوب بالكامل مع الموبايل
- */
 export function WorkSlide({
   project,
   locale,
@@ -145,13 +132,12 @@ export function WorkSlide({
   return (
     <article
       className={cn(
-        'relative flex flex-col overflow-hidden rounded-2xl border border-dashed border-border/60 bg-background/80 backdrop-blur-xs sm:rounded-3xl',
+        'relative flex transform-gpu flex-col overflow-hidden rounded-2xl border border-dashed border-border/70 bg-background shadow-sm sm:rounded-3xl',
         className,
       )}
     >
-      {/* ── الشريط العلوي: العداد 01 / 07 على اليسار + أعمالنا على اليمين ── */}
       <div
-        className="flex items-center justify-between px-3.5 pb-2.5 pt-3 sm:px-6 sm:pb-4 sm:pt-5"
+        className="flex items-center justify-between px-4 pb-2.5 pt-3 sm:px-6 sm:pb-4 sm:pt-5"
         style={{ direction: 'ltr' }}
       >
         <div className="flex items-center gap-1 font-mono text-xs font-extrabold sm:text-sm">
@@ -161,7 +147,7 @@ export function WorkSlide({
 
         <Link
           href={`/${locale}/our-work`}
-          className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-foreground outline-none transition-colors hover:text-[#4b3fdf] focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-foreground outline-none transition-colors hover:text-[#4b3fdf]"
           style={{ direction: isAr ? 'rtl' : 'ltr' }}
         >
           <span className="size-1.5 shrink-0 rounded-full bg-[#4b3fdf]" />
@@ -169,23 +155,22 @@ export function WorkSlide({
         </Link>
       </div>
 
-      {/* Dashed separator */}
-      <div className="mx-3.5 border-t border-dashed border-border/60 sm:mx-6" />
+      <div className="mx-4 border-t border-dashed border-border/60 sm:mx-6" />
 
-      {/* ── المحتوى الرئيسي: متوازن على الموبايل والديسك توب ── */}
       <div
         dir="ltr"
-        className="flex flex-col-reverse items-center gap-4 px-3.5 pt-3.5 pb-2 sm:gap-8 sm:px-10 sm:pt-8 lg:flex-row lg:items-center lg:justify-between lg:gap-14 lg:px-20"
+        className="flex flex-col-reverse items-center gap-4 px-4 pt-3.5 pb-2 sm:gap-8 sm:px-10 sm:pt-8 lg:flex-row lg:items-center lg:justify-between lg:gap-14 lg:px-20"
       >
-        {/* LEFT — Portrait poster card */}
         <Link
           href={`/${locale}/our-work`}
-          className="mx-auto block w-full max-w-[185px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[250px] lg:mx-0 lg:w-[255px] xl:w-[275px]"
-          style={{ aspectRatio: '3/3.6' }}
+          className="mx-auto block w-full max-w-[175px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[245px] lg:mx-0 lg:w-[255px]"
+          style={{ aspectRatio: '3/3.5' }}
         >
           <PortraitProjectCard
             title={displayTitle}
-            tagline={project.category?.[locale] || (isAr ? 'حلول رقمية متكاملة' : 'Digital Solutions')}
+            tagline={
+              project.category?.[locale] || (isAr ? 'حلول رقمية متكاملة' : 'Digital Solutions')
+            }
             themeClass={themeClass}
             imageSrc={validImageSrc}
             isAr={isAr}
@@ -193,29 +178,27 @@ export function WorkSlide({
           />
         </Link>
 
-        {/* RIGHT — project details */}
         <div
           className="flex w-full flex-1 flex-col justify-center"
           style={{ direction: isAr ? 'rtl' : 'ltr' }}
         >
-          <h3 className="text-xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          <h3 className="text-lg font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
             {displayTitle}
           </h3>
 
-          <p className="mt-2 max-w-lg text-[11px] leading-relaxed text-muted-foreground sm:mt-4 sm:text-base line-clamp-3 sm:line-clamp-none">
+          <p className="mt-1.5 line-clamp-3 max-w-lg text-[11px] leading-relaxed text-muted-foreground sm:mt-4 sm:line-clamp-none sm:text-base">
             {description}
           </p>
 
-          {/* Meta: Year + Services */}
-          <div className="mt-3 flex flex-wrap items-start gap-4 text-[11px] sm:mt-8 sm:gap-8 sm:text-sm">
+          <div className="mt-3 flex flex-wrap items-start gap-4 text-[11px] sm:mt-7 sm:gap-8 sm:text-sm">
             <div>
-              <span className="block text-[10px] sm:text-[11px] font-semibold text-muted-foreground/60">
+              <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
                 {isAr ? 'السنة' : 'Year'}
               </span>
               <span className="mt-0.5 block font-bold text-foreground">{year}</span>
             </div>
             <div>
-              <span className="block text-[10px] sm:text-[11px] font-semibold text-muted-foreground/60">
+              <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
                 {isAr ? 'الخدمات والتقنيات' : 'Services & Stack'}
               </span>
               <span
@@ -228,7 +211,6 @@ export function WorkSlide({
             </div>
           </div>
 
-          {/* Pills */}
           <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
             {pills.map((pill, idx) => (
               <span
@@ -242,13 +224,12 @@ export function WorkSlide({
         </div>
       </div>
 
-      {/* ── Bottom: large watermark + radial color glow ── */}
-      <div className="relative mt-2 flex items-end justify-center overflow-hidden pb-1 pt-2 sm:mt-6 sm:pt-6">
+      <div className="relative mt-2 flex items-end justify-center overflow-hidden pb-1 pt-2 sm:mt-5 sm:pt-5">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 sm:h-32"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-14 sm:h-28"
           style={{
-            background: `radial-gradient(ellipse 60% 100% at 50% 100%, ${glowColor}50 0%, ${glowColor}25 45%, transparent 75%)`,
+            background: `radial-gradient(ellipse 60% 100% at 50% 100%, ${glowColor}40 0%, transparent 75%)`,
           }}
         />
 
@@ -256,8 +237,8 @@ export function WorkSlide({
           aria-hidden="true"
           className="relative max-w-full truncate px-4 font-black leading-none tracking-tight select-none"
           style={{
-            fontSize: 'clamp(1.75rem, 7vw, 6.5rem)',
-            color: `${glowColor}22`,
+            fontSize: 'clamp(1.6rem, 6.5vw, 6rem)',
+            color: `${glowColor}20`,
           }}
         >
           {watermarkText}
