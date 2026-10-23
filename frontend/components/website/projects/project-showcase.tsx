@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowUpLeft, ArrowUpRight } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 import { cn } from '@/lib/utils'
 import { type Locale } from '@/lib/i18n/config'
@@ -15,24 +14,33 @@ interface ProjectShowcaseProps {
 }
 
 function PortraitCard({
-  title,
-  tagline,
-  themeClass,
-  imageSrc,
+  projects,
+  activeIndex,
+  locale,
   isAr,
+  failedImages,
   onImageError,
 }: {
-  title: string
-  tagline: string
-  themeClass: string
-  imageSrc?: string
+  projects: Project[]
+  activeIndex: number
+  locale: Locale
   isAr: boolean
-  onImageError?: () => void
+  failedImages: Record<string, boolean>
+  onImageError: (id: string) => void
 }) {
+  const activeProject = projects[activeIndex] || projects[0]
+  const title =
+    activeProject.title[locale] || activeProject.watermark || activeProject.title.en
+  const tagline =
+    activeProject.category?.[locale] ||
+    (isAr ? 'حلول رقمية متكاملة' : 'Digital Solutions')
+  const themeClass =
+    activeProject.themeClass ?? 'from-[#1e1b4b] via-[#312e81] to-[#4338ca]'
+
   return (
     <div
       className={cn(
-        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-b px-5 pt-5 pb-4 text-white shadow-[0_24px_60px_-15px_rgba(75,63,223,0.4)] sm:rounded-[24px] sm:px-6 sm:pt-6 sm:pb-5',
+        'group relative flex h-full w-full transform-gpu flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-b px-5 pt-5 pb-4 text-white shadow-[0_24px_60px_-15px_rgba(75,63,223,0.4)] transition-all duration-300 sm:rounded-[24px] sm:px-6 sm:pt-6 sm:pb-5',
         themeClass,
       )}
     >
@@ -56,28 +64,40 @@ function PortraitCard({
             <div className="mx-auto h-1 w-10 rounded-full bg-white/15" />
           </div>
 
+          {/* الصور الـ 7 محمّلة مسبقاً وتتبادل بالـ opacity فقط بدون إعادة بناء الكارت لضمان سكرول خفيف جداً */}
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-950">
-            {imageSrc ? (
-              <img
-                src={imageSrc}
-                alt={title}
-                loading="eager"
-                decoding="async"
-                onError={onImageError}
-                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
-              <div className="space-y-2 p-3">
-                <div className="h-2 w-2/3 rounded-full bg-indigo-400/40" />
-                <div className="rounded-lg bg-white/10 p-2">
-                  <div className="h-1.5 w-1/2 rounded bg-indigo-400/30" />
-                  <div className="mt-1 h-1 w-4/5 rounded bg-white/15" />
-                </div>
-              </div>
-            )}
+            {projects.map((p, idx) => {
+              const src = typeof p.image === 'string' ? p.image.trim() : ''
+              const isValid =
+                src.length > 0 &&
+                !src.startsWith('/images/') &&
+                !failedImages[String(p.id)]
+              const isCurrent = idx === activeIndex
 
-            <span className="absolute bottom-2 right-2 flex size-6.5 items-center justify-center rounded-full bg-[#5745e7] text-white shadow-lg ring-2 ring-white/25 transition-transform duration-300 group-hover:scale-110 sm:size-7.5">
-              {isAr ? <ArrowUpLeft className="size-3.5" /> : <ArrowUpRight className="size-3.5" />}
+              if (!isValid) return null
+
+              return (
+                <img
+                  key={p.id}
+                  src={src}
+                  alt={p.title[locale] || p.title.en}
+                  loading="eager"
+                  decoding="async"
+                  onError={() => onImageError(String(p.id))}
+                  className={cn(
+                    'absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300 group-hover:scale-105',
+                    isCurrent ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none',
+                  )}
+                />
+              )
+            })}
+
+            <span className="absolute bottom-2 right-2 z-20 flex size-6.5 items-center justify-center rounded-full bg-[#5745e7] text-white shadow-lg ring-2 ring-white/25 transition-transform duration-300 group-hover:scale-110 sm:size-7.5">
+              {isAr ? (
+                <ArrowUpLeft className="size-3.5" />
+              ) : (
+                <ArrowUpRight className="size-3.5" />
+              )}
             </span>
           </div>
         </div>
@@ -94,15 +114,6 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
 
   const total = projects.length
-
-  useEffect(() => {
-    projects.forEach((p) => {
-      if (typeof p.image === 'string' && p.image.trim()) {
-        const img = new window.Image()
-        img.src = p.image.trim()
-      }
-    })
-  }, [projects])
 
   useEffect(() => {
     if (total <= 1) return
@@ -148,34 +159,27 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
   const project = projects[activeIndex] || projects[0]
   const displayTitle = project.title[locale] || project.watermark || project.title.en
   const description = project.description[locale]
-  const themeClass = project.themeClass ?? 'from-[#1e1b4b] via-[#312e81] to-[#4338ca]'
   const year = project.year ?? '2026'
   const services = project.services?.[locale] ?? 'UX Research · UI Design · Development'
   const pills = project.pills ?? []
   const glowColor = project.glowColor ?? '#4f46e5'
-  const imageSrc = typeof project.image === 'string' ? project.image.trim() : ''
-  const hasValidImage =
-    imageSrc.length > 0 &&
-    !imageSrc.startsWith('/images/') &&
-    !failedImages[String(project.id)]
 
   const currentFormatted = String(activeIndex + 1).padStart(2, '0')
   const totalFormatted = String(total).padStart(2, '0')
 
   return (
-    <div
+    <section
       ref={sectionRef}
-      className="relative mt-8 w-full bg-background sm:mt-12 lg:mt-14"
-      style={{ height: `calc(100svh + ${(total - 1) * 65}svh)` }}
+      // مسافة سكرول متزنة ومريحة: 40svh للمشروع الواحد على الموبايل و52svh على اللابتوب + خلفية شفافة تماماً بدون أي صندوق أو لون مختلف
+      className="relative mt-6 h-[340svh] w-full bg-transparent sm:mt-10 lg:mt-12 lg:h-[412svh]"
     >
-      {/* إطار الشاشة بنفس أبعاد وتباعد فيجما (Top/Bottom 48px, Left/Right 77px) */}
-      <div className="sticky top-[64px] flex h-[calc(100svh-64px)] w-full flex-col justify-between overflow-hidden bg-background px-5 pt-5 pb-3 sm:top-[72px] sm:h-[calc(100svh-72px)] sm:px-10 sm:pt-9 sm:pb-6 lg:px-[77px] lg:pt-11 lg:pb-8">
-        {/* 1. الشريط العلوي بدون خط فاصل تحته تماماً مثل فيجما */}
+      <div className="sticky top-[64px] flex h-[calc(100svh-64px)] w-full flex-col justify-between overflow-hidden bg-transparent px-5 pt-4 pb-3 sm:top-[72px] sm:h-[calc(100svh-72px)] sm:px-10 sm:pt-8 sm:pb-6 lg:px-[77px] lg:pt-10 lg:pb-8">
+        {/* 1. الشريط العلوي بدون أي إطار أو خط فاصل، مندمج بالكامل مع لون الصفحة */}
         <div
           className="mx-auto flex w-full max-w-[1440px] shrink-0 items-center justify-between"
           style={{ direction: 'ltr' }}
         >
-          <div className="flex items-center gap-1 font-mono text-xs font-extrabold">
+          <div className="flex items-center gap-1 font-mono text-xs font-extrabold sm:text-sm">
             <span className="text-[#4b3fdf] dark:text-[#8173ff]">{currentFormatted}</span>
             <span className="text-muted-foreground/50">/ {totalFormatted}</span>
           </div>
@@ -190,52 +194,45 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
           </Link>
         </div>
 
-        {/* 2. المحتوى الأوسط متمركز للداخل بتباعد متوازن بين البوستر والنص مثل فيجما */}
+        {/* 2. المحتوى الأوسط بنفس تباعد فيجما وبانتقال خفيف وسلس */}
         <div className="mx-auto my-auto w-full max-w-[960px] xl:max-w-[1020px]">
-          <motion.div
-            key={project.id}
-            initial={{ opacity: 0.25, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          <div
             dir="ltr"
             className="flex w-full transform-gpu flex-col-reverse items-center gap-4 sm:gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-20 xl:gap-28"
           >
             {/* البوستر على اليسار */}
             <Link
               href={`/${locale}/our-work`}
-              className="mx-auto block w-full max-w-[170px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[235px] lg:mx-0 lg:w-[275px] xl:w-[295px]"
-              style={{ aspectRatio: '3/3.75' }}
+              className="mx-auto block w-full max-w-[172px] shrink-0 transition-transform duration-300 hover:-translate-y-1 sm:max-w-[235px] lg:mx-0 lg:w-[275px] xl:w-[295px]"
+              style={{ aspectRatio: '3/3.7' }}
             >
               <PortraitCard
-                title={displayTitle}
-                tagline={
-                  project.category?.[locale] ||
-                  (isAr ? 'حلول رقمية متكاملة' : 'Digital Solutions')
-                }
-                themeClass={themeClass}
-                imageSrc={hasValidImage ? imageSrc : undefined}
+                projects={projects}
+                activeIndex={activeIndex}
+                locale={locale}
                 isAr={isAr}
-                onImageError={() =>
-                  setFailedImages((prev) => ({ ...prev, [String(project.id)]: true }))
+                failedImages={failedImages}
+                onImageError={(id) =>
+                  setFailedImages((prev) => ({ ...prev, [id]: true }))
                 }
               />
             </Link>
 
-            {/* تفاصيل المشروع على اليمين بحجم متناسق وغير مترامي الأطراف */}
+            {/* تفاصيل المشروع على اليمين */}
             <div
-              className="flex w-full max-w-[420px] flex-col justify-center"
+              key={project.id}
+              className="animate-in fade-in duration-200 flex w-full max-w-[430px] flex-col justify-center"
               style={{ direction: isAr ? 'rtl' : 'ltr' }}
             >
-              <h3 className="text-xl font-black leading-snug tracking-tight text-foreground sm:text-3xl lg:text-[2.15rem]">
+              <h3 className="text-xl font-black leading-snug tracking-tight text-foreground sm:text-3xl lg:text-[2.2rem]">
                 {displayTitle}
               </h3>
 
-              <p className="mt-2 line-clamp-3 text-[11px] leading-[1.8] text-muted-foreground sm:mt-3 sm:line-clamp-none sm:text-[13.5px]">
+              <p className="mt-2 line-clamp-3 text-[11.5px] leading-[1.75] text-muted-foreground sm:mt-3 sm:line-clamp-none sm:text-[13.5px]">
                 {description}
               </p>
 
-              {/* الخدمات والسنة بنفس ترتيب وتباعد فيجما */}
-              <div className="mt-4 flex flex-wrap items-start justify-between gap-6 text-[11px] sm:mt-6 sm:justify-start sm:gap-12 sm:text-xs">
+              <div className="mt-3.5 flex flex-wrap items-start justify-between gap-6 text-[11px] sm:mt-6 sm:justify-start sm:gap-12 sm:text-xs">
                 <div className="min-w-0">
                   <span className="block text-[10px] font-semibold text-muted-foreground/60 sm:text-[11px]">
                     {isAr ? 'الخدمات والتقنيات' : 'Services & Stack'}
@@ -258,11 +255,11 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
               </div>
 
               {pills.length > 0 && (
-                <div className="mt-3.5 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
+                <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
                   {pills.map((pill, idx) => (
                     <span
                       key={idx}
-                      className="rounded-full border border-border/80 bg-background px-3 py-1 text-[10px] font-medium text-foreground sm:px-3.5 sm:text-[11px]"
+                      className="rounded-full border border-border/75 bg-transparent px-3 py-1 text-[10px] font-medium text-foreground sm:px-3.5 sm:text-[11px]"
                     >
                       {pill[locale]}
                     </span>
@@ -270,23 +267,23 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* 3. العلامة المائية والتوهج السفلي ظاهران بالكامل في أسفل المنتصف مثل فيجما */}
-        <div className="relative flex w-full shrink-0 items-end justify-center pt-2">
+        {/* 3. العلامة المائية والتوهج السفلي مندمجان مع نفس لون الشاشة */}
+        <div className="relative flex w-full shrink-0 items-end justify-center pt-1">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 -bottom-6 mx-auto h-24 w-full max-w-xl sm:h-32"
+            className="pointer-events-none absolute inset-x-0 -bottom-6 mx-auto h-20 w-full max-w-xl transition-all duration-300 sm:h-32"
             style={{
-              background: `radial-gradient(ellipse 55% 90% at 50% 85%, ${glowColor}2e 0%, transparent 75%)`,
+              background: `radial-gradient(ellipse 55% 90% at 50% 85%, ${glowColor}2c 0%, transparent 75%)`,
             }}
           />
           <p
             aria-hidden="true"
-            className="relative max-w-full truncate px-4 text-center font-black leading-none tracking-tight select-none"
+            className="relative max-w-full truncate px-4 text-center font-black leading-none tracking-tight select-none transition-colors duration-300"
             style={{
-              fontSize: 'clamp(1.85rem, 5.5vw, 4.75rem)',
+              fontSize: 'clamp(1.75rem, 5.5vw, 4.75rem)',
               color: `${glowColor}1a`,
             }}
           >
@@ -294,6 +291,6 @@ export function ProjectShowcase({ projects, locale }: ProjectShowcaseProps) {
           </p>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
