@@ -73,6 +73,49 @@ const KNOWN_MEMBER_TRACKS: Record<string, { role: string; track: string | null; 
   "mooazmohammed110@codexa.com": { role: "MOBILE_APP_LEAD", track: "MOBILE_APP" },
 };
 
+// دالة ضغط الصورة الشخصية إلى 256x256 لتكون خفيفة جداً (~15KB) ويقبلها سيرفر Vercel وقاعدة البيانات فوراً
+function compressAvatarImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 256;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.82);
+        resolve(compressedBase64);
+      };
+      img.onerror = reject;
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ProfilePage() {
   const API_BASE =
     process.env.NEXT_PUBLIC_API_URL || "https://codexa-website-backend.vercel.app";
@@ -104,17 +147,17 @@ export default function ProfilePage() {
   };
 
   const getUserScopedAvatar = (userId?: string, email?: string, serverAvatar?: string | null): string => {
-    if (typeof window === 'undefined') return serverAvatar || '';
-    const cleanEmail = (email || '').trim().toLowerCase();
-    const cleanId = (userId || '').trim();
+    if (typeof window === "undefined") return serverAvatar || "";
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const cleanId = (userId || "").trim();
 
     try {
-      const rawOv = localStorage.getItem('codexa_users_overrides');
+      const rawOv = localStorage.getItem("codexa_users_overrides");
       if (rawOv) {
         const overrides = JSON.parse(rawOv);
         const userOv = (cleanId && overrides[cleanId]) || (cleanEmail && overrides[cleanEmail]);
         if (userOv && userOv.avatar !== undefined) {
-          return userOv.avatar || '';
+          return userOv.avatar || "";
         }
       }
 
@@ -128,14 +171,14 @@ export default function ProfilePage() {
       }
     } catch {}
 
-    return serverAvatar || '';
+    return serverAvatar || "";
   };
 
   const saveUserScopedAvatar = (userId?: string, email?: string, avatarValue?: string | null) => {
-    if (typeof window === 'undefined') return;
-    const cleanEmail = (email || '').trim().toLowerCase();
-    const cleanId = (userId || '').trim();
-    const val = avatarValue || '';
+    if (typeof window === "undefined") return;
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const cleanId = (userId || "").trim();
+    const val = avatarValue || "";
 
     try {
       if (cleanEmail) {
@@ -147,7 +190,7 @@ export default function ProfilePage() {
         else localStorage.removeItem(`codexa_avatar_${cleanId}`);
       }
 
-      const rawOv = localStorage.getItem('codexa_users_overrides');
+      const rawOv = localStorage.getItem("codexa_users_overrides");
       const overrides = rawOv ? JSON.parse(rawOv) : {};
 
       if (cleanId) {
@@ -157,7 +200,7 @@ export default function ProfilePage() {
         overrides[cleanEmail] = { ...(overrides[cleanEmail] || {}), avatar: val || null };
       }
 
-      localStorage.setItem('codexa_users_overrides', JSON.stringify(overrides));
+      localStorage.setItem("codexa_users_overrides", JSON.stringify(overrides));
     } catch {}
   };
 
@@ -180,7 +223,11 @@ export default function ProfilePage() {
       role = "MOBILE_APP_LEAD";
     }
 
-    const finalAvatar = getUserScopedAvatar(u.id, u.email, userOv.avatar !== undefined ? userOv.avatar : u.avatar);
+    const finalAvatar = getUserScopedAvatar(
+      u.id,
+      u.email,
+      userOv.avatar !== undefined ? userOv.avatar : u.avatar,
+    );
 
     const merged: UserProfile = {
       ...u,
@@ -245,7 +292,7 @@ export default function ProfilePage() {
     return () => window.removeEventListener("codexaUserSynced", onSynced);
   }, [loadProfile]);
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -254,42 +301,55 @@ export default function ProfilePage() {
       return;
     }
 
-    if (file.size > 3 * 1024 * 1024) {
-      alert("حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 3 ميجابايت");
+    if (file.size > 8 * 1024 * 1024) {
+      alert("حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 8 ميجابايت");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") setAvatar(reader.result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressedDataUrl = await compressAvatarImage(file);
+      setAvatar(compressedDataUrl);
+    } catch {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") setAvatar(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleRemoveAvatar = async () => {
     if (!profile) return;
     setIsRemovingAvatar(true);
     try {
-      await fetch(`${API_BASE}/admin-users/${profile.id}`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify({ avatar: null }),
-      }).catch(() => null);
+      await Promise.allSettled([
+        fetch(`${API_BASE}/admin-users/${profile.id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify({ avatar: null }),
+        }),
+        fetch(`${API_BASE}/auth/profile`, {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify({ avatar: null }),
+        }),
+      ]);
 
       setAvatar("");
       if (fileInputRef.current) fileInputRef.current.value = "";
-      
+
       saveUserScopedAvatar(profile.id, profile.email, null);
 
       try {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-          const parsed = JSON.parse(savedUser);
-          parsed.avatar = null;
-          localStorage.setItem("user", JSON.stringify(parsed));
-          localStorage.setItem("codexa_user", JSON.stringify(parsed));
-        }
+        const updated = { ...profile, avatar: null };
+        setProfile(updated);
+        localStorage.setItem("user", JSON.stringify(updated));
+        localStorage.setItem("codexa_user", JSON.stringify(updated));
+        const win = window as unknown as { __codexaActiveUser?: any };
+        win.__codexaActiveUser = updated;
+
         window.dispatchEvent(new Event("storage"));
         window.dispatchEvent(new Event("avatarUpdated"));
         window.dispatchEvent(new Event("profileUpdated"));
@@ -362,17 +422,25 @@ export default function ProfilePage() {
       const win = window as unknown as { __codexaActiveUser?: any };
       win.__codexaActiveUser = updatedProfile;
 
-      await fetch(`${API_BASE}/admin-users/${profile.id}`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify(payload),
-      }).catch(() => null);
+      await Promise.allSettled([
+        fetch(`${API_BASE}/admin-users/${profile.id}`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify(payload),
+        }),
+        fetch(`${API_BASE}/auth/profile`, {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify(payload),
+        }),
+      ]);
 
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("avatarUpdated"));
       window.dispatchEvent(new Event("profileUpdated"));
-      
+
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 3000);
     } catch {
@@ -398,7 +466,7 @@ export default function ProfilePage() {
     );
   }
 
-  const firstLetter = profile.name ? profile.name.charAt(0).toUpperCase() : "ي";
+  const firstLetter = profile.name ? profile.name.charAt(0).toUpperCase() : "ع";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-12 text-right" dir="rtl">
@@ -712,7 +780,7 @@ export default function ProfilePage() {
                 placeholder="username@instapay"
                 value={instaPay}
                 onChange={(e) => setInstaPay(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2 text-gray-900 outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-[#161a23] dark:text-white"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2 text-gray-900 outline-none focus:border-brand-500 dark:border-gray-800 dark:bg-[#161a23] dark:text-white"
               />
             </div>
 

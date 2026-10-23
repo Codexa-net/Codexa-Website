@@ -19,6 +19,7 @@ import {
   Sparkles,
   ClipboardList,
   Menu,
+  X,
 } from 'lucide-react';
 import { logoutAction } from '@/actions/auth';
 
@@ -38,7 +39,6 @@ const ROLE_TRANSLATIONS: Record<string, string> = {
   PROJECT_MANAGER: 'مدير مشاريع',
 };
 
-// الدليل المعتمد للفريق بدون فرض أي صورة ثابتة لأي عضو
 const TEAM_DIRECTORY = [
   {
     id: 'ebb68484-a5b3-450c-84b9-2bfae2430008',
@@ -252,7 +252,6 @@ function decodeJwtFromClient(): any {
   }
 }
 
-// قراءة الصورة الخاصة بمستخدم محدد فقط دون الخلط بين الحسابات على نفس المتصفح
 function getUserScopedAvatar(userId?: string, email?: string, serverAvatar?: string | null): string {
   if (typeof window === 'undefined') return serverAvatar || '';
   const cleanEmail = (email || '').trim().toLowerCase();
@@ -281,7 +280,6 @@ function getUserScopedAvatar(userId?: string, email?: string, serverAvatar?: str
   return serverAvatar || '';
 }
 
-// حفظ صورة المستخدم في مساره المعزول وفي سجل الفريق ليراها أعضاء فريقه والسوبر أدمن
 function saveUserScopedAvatar(userId?: string, email?: string, avatarValue?: string | null) {
   if (typeof window === 'undefined') return;
   const cleanEmail = (email || '').trim().toLowerCase();
@@ -373,7 +371,6 @@ function enrichTeamList(rawList: any[], viewerRole?: string): any[] {
           ? u.technologies
           : [];
 
-      // جلب صورة العضو الخاصة به فقط (من السيرفر أو من تعديله الشخصي المحفوظ)
       const memberAvatar = getUserScopedAvatar(resolvedId, emailLower, u.avatar);
       const isLeadMember = rawMergedRole.endsWith('_LEAD') || rawMergedRole === 'SALES_LEADER';
 
@@ -527,19 +524,6 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       );
       resolvedUser.avatar = scopedAvatar || '';
 
-      // синхronize active user's own avatar with localStorage so /dashboard/profile reads the right one
-      const previousOwner = localStorage.getItem('codexa_avatar_owner');
-      if (previousOwner !== emailLower) {
-        localStorage.setItem('codexa_avatar_owner', emailLower);
-        if (scopedAvatar) {
-          localStorage.setItem('codexa_avatar', scopedAvatar);
-          localStorage.setItem('user_avatar', scopedAvatar);
-        } else {
-          localStorage.removeItem('codexa_avatar');
-          localStorage.removeItem('user_avatar');
-        }
-      }
-
       win.__codexaActiveUser = resolvedUser;
 
       const token =
@@ -557,7 +541,6 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       localStorage.setItem('userId', resolvedUser.id);
       localStorage.setItem('userName', resolvedUser.name);
 
-      // حفظ الكوكي بدون وضع صورة Base64 ضخمة بداخلها حتى لا تتجاوز حد الـ 4KB للكوكيز
       const compactAvatar =
         resolvedUser.avatar && !String(resolvedUser.avatar).startsWith('data:')
           ? resolvedUser.avatar
@@ -598,6 +581,8 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       url.includes('/auth/profile') ||
       url.includes('/project-stages') ||
       url.includes('/contact-messages') ||
+      url.includes('/contact') ||
+      url.includes('/messages') ||
       url.includes('/admin-users') ||
       url.includes('/projects');
 
@@ -613,7 +598,7 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       activeUser;
     const currentViewerRole = (currentActive?.role || 'DEVELOPER').toUpperCase();
 
-    // 🟢 التقاط أي تحديث للصورة الشخصية أو البروفايل وحفظه للعضو نفسه ليظهر لكل فريقه وللسوبر أدمن
+    // التقاط تحديث الصورة الشخصية وحفظه للعضو نفسه
     if (
       (method === 'PUT' || method === 'PATCH' || method === 'POST') &&
       (lower.includes('/auth/profile') ||
@@ -625,11 +610,16 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       try {
         const parsedBody = JSON.parse(init.body);
         if ('avatar' in parsedBody) {
-          const targetId = currentActive?.id;
-          const targetEmail = currentActive?.email;
-          saveUserScopedAvatar(targetId, targetEmail, parsedBody.avatar);
+          saveUserScopedAvatar(currentActive?.id, currentActive?.email, parsedBody.avatar);
         }
       } catch {}
+    }
+
+    // تحديث الإشعارات فوراً عند إسناد مهمة أو اعتمادها أو رفضها أو صرف مكافأتها
+    if (method !== 'GET' && lower.includes('/project-stages')) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('tasksUpdated'));
+      }, 400);
     }
 
     if (lower.includes('/auth/me') || lower.includes('/auth/profile')) {
@@ -672,6 +662,49 @@ export function syncAndProtectClientSession(serverUserProp?: any) {
       } catch {}
 
       return new Response(JSON.stringify({ ...currentActive, data: currentActive }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // دمج رسائل التواصل القادمة من الباك إند مع الرسائل المحفوظة محلياً
+    if (
+      (lower.includes('/contact-messages') || lower.includes('/contact') || lower.includes('/messages')) &&
+      !lower.includes('/project') &&
+      method === 'GET'
+    ) {
+      let localMsgs: any[] = [];
+      try {
+        const rawLocal = localStorage.getItem('codexa_contact_messages');
+        if (rawLocal) localMsgs = JSON.parse(rawLocal);
+      } catch {}
+
+      try {
+        const res = await nativeFetch(input, init);
+        if (res.ok) {
+          const clone = res.clone();
+          const json = await clone.json().catch(() => null);
+          const serverArr = Array.isArray(json)
+            ? json
+            : Array.isArray(json?.data)
+              ? json.data
+              : [];
+          const combined = [...localMsgs, ...serverArr];
+          const seen = new Set();
+          const unique = combined.filter((m) => {
+            const key = m.id || `${m.email}_${m.subject}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          return new Response(JSON.stringify({ data: unique, items: unique }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      } catch {}
+
+      return new Response(JSON.stringify({ data: localMsgs, items: localMsgs }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -767,7 +800,8 @@ export interface AppNotification {
   isRead: boolean;
 }
 
-function playNotificationChime() {
+// 🔊 نغمة تنبيه صوتية واضحة واحترافية عند وصول أي إشعار جديد
+export function playNotificationChime() {
   try {
     const AudioCtx =
       window.AudioContext ||
@@ -776,21 +810,32 @@ function playNotificationChime() {
 
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(659.25, now);
-    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+    // النغمة الأولى
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, now); // D5
+    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.14); // A5
+    gain1.gain.setValueAtTime(0.25, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.45);
 
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.5);
+    // النغمة الثانية المتناغمة
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(880, now + 0.12);
+    osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.28); // D6
+    gain2.gain.setValueAtTime(0.2, now + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.12);
+    osc2.stop(now + 0.65);
   } catch {}
 }
 
@@ -801,9 +846,10 @@ export default function TopNav({ user }: { user?: any }) {
 
   const [activeMenu, setActiveMenu] = useState<'notifications' | 'user' | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [liveToast, setLiveToast] = useState<AppNotification | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const prevCountRef = useRef<number | null>(null);
+  const knownNotifIdsRef = useRef<Set<string>>(new Set());
   const isFirstLoadRef = useRef(true);
 
   if (typeof window !== 'undefined' && user?.name && user.name !== 'المستخدم') {
@@ -853,7 +899,7 @@ export default function TopNav({ user }: { user?: any }) {
     }
   }, [user]);
 
-  // 🟢 الاستماع لتغيير أو حذف الصورة من صفحة الملف الشخصي وربطها بحساب العضو الحالي فقط
+  // 🟢 تحديث الصورة فوراً من المسار المعزول لحساب المستخدم الحالي بدون مسحها بالخطأ
   useEffect(() => {
     const handleAvatarUpdate = () => {
       try {
@@ -862,43 +908,20 @@ export default function TopNav({ user }: { user?: any }) {
         const uId = parsedUser?.id || currentUser.id;
         const uEmail = (parsedUser?.email || currentUser.email || '').toLowerCase();
 
-        // قراءة الصورة الجديدة التي رفعتها صفحة الملف الشخصي (أو الفارغة عند الضغط على إزالة الصورة)
-        const latestAvatar =
-          localStorage.getItem('codexa_avatar') ??
-          localStorage.getItem('user_avatar') ??
-          parsedUser?.avatar ??
-          '';
-
-        saveUserScopedAvatar(uId, uEmail, latestAvatar);
-        localStorage.setItem('codexa_avatar_owner', uEmail);
-
-        if (parsedUser) {
-          parsedUser.avatar = latestAvatar;
-          localStorage.setItem('user', JSON.stringify(parsedUser));
-          localStorage.setItem('codexa_user', JSON.stringify(parsedUser));
-        }
-
-        setCurrentUser((prev) => ({ ...prev, avatar: latestAvatar }));
-
-        // إرسال التحديث للباك إند ليظهر لباقي أعضاء التيم على أجهزتهم أيضاً
-        if (uId) {
-          fetch(`${API_BASE}/admin-users/${uId}`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            credentials: 'include',
-            body: JSON.stringify({ avatar: latestAvatar || null }),
-          }).catch(() => null);
-        }
+        const scopedAvatar = getUserScopedAvatar(uId, uEmail, parsedUser?.avatar);
+        setCurrentUser((prev) => ({ ...prev, avatar: scopedAvatar }));
       } catch {}
     };
 
     window.addEventListener('avatarUpdated', handleAvatarUpdate);
     window.addEventListener('profileUpdated', handleAvatarUpdate);
+    window.addEventListener('storage', handleAvatarUpdate);
     return () => {
       window.removeEventListener('avatarUpdated', handleAvatarUpdate);
       window.removeEventListener('profileUpdated', handleAvatarUpdate);
+      window.removeEventListener('storage', handleAvatarUpdate);
     };
-  }, [API_BASE, currentUser.id, currentUser.email]);
+  }, [currentUser.id, currentUser.email]);
 
   const rawRole = (currentUser.role || 'DEVELOPER').toUpperCase();
   const isSalesOrAdmin =
@@ -939,83 +962,108 @@ export default function TopNav({ user }: { user?: any }) {
             : [];
 
         stagesList.forEach((s: any) => {
-          const readKey = `notif_read_${s.id}_${s.status || s.progress}`;
-          if (localStorage.getItem(readKey) === 'true') return;
+          const isAssignedToMe =
+            s.assignedUserId === currentUser.id || s.assignedTo === currentUser.name;
 
-          if (
-            (s.assignedUserId === currentUser.id || s.assignedTo === currentUser.name) &&
-            s.progress === 0 &&
-            !s.isCompleted
-          ) {
-            notifs.push({
-              id: `assign_${s.id}`,
-              type: 'TASK_ASSIGNED',
-              title: 'مهمة جديدة مسندة إليك',
-              body: `تم إسناد مهمة "${s.title}" إليك في مشروع ${s.project?.name || ''}.`,
-              link: '/dashboard/tasks',
-              createdAt: s.createdAt || new Date().toISOString(),
-              isRead: false,
-            });
+          // 1. إشعار إسناد مهمة جديدة
+          if (isAssignedToMe && s.progress === 0 && !s.isCompleted && !s.isLeadApproved) {
+            const notifId = `assign_${s.id}`;
+            if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+              notifs.push({
+                id: notifId,
+                type: 'TASK_ASSIGNED',
+                title: '📋 تم إسناد مهمة جديدة إليك',
+                body: `تم إسناد مهمة "${s.title}" إليك في مشروع ${s.project?.name || 'داخلي'}. اضغط لبدء التنفيذ.`,
+                link: '/dashboard/tasks',
+                createdAt: s.createdAt || new Date().toISOString(),
+                isRead: false,
+              });
+            }
           }
 
+          // 2. إشعار مراجعة المهمة لقائد الفريق أو السوبر أدمن
           if (
-            rawRole === `${s.track}_LEAD` &&
+            (rawRole === `${s.track}_LEAD` || rawRole === 'SUPER_ADMIN') &&
             s.isUnderReview &&
             !s.isLeadApproved &&
-            s.assignedUserId !== currentUser.id
+            !isAssignedToMe
           ) {
-            notifs.push({
-              id: `review_${s.id}`,
-              type: 'TASK_REVIEW',
-              title: 'مهمة مكتملة بانتظار اعتمادك',
-              body: `سلم ${s.assignedUser?.name || s.assignedTo || 'المنفذ'} مهمة "${s.title}" للمراجعة.`,
-              link: '/dashboard/tasks',
-              createdAt: s.updatedAt || new Date().toISOString(),
-              isRead: false,
-            });
+            const notifId = `review_${s.id}`;
+            if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+              notifs.push({
+                id: notifId,
+                type: 'TASK_REVIEW',
+                title: '📤 مهمة مكتملة بانتظار اعتمادك',
+                body: `سلّم ${s.assignedUser?.name || s.assignedTo || 'عضو الفريق'} مهمة "${s.title}" للمراجعة والاعتماد.`,
+                link: '/dashboard/tasks',
+                createdAt: s.updatedAt || new Date().toISOString(),
+                isRead: false,
+              });
+            }
           }
 
+          // 3. إشعار قبول واعتماد المهمة للمنفذ
+          if (isAssignedToMe && (s.isLeadApproved || s.isApproved) && !s.isPaid) {
+            const notifId = `approved_${s.id}`;
+            if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+              notifs.push({
+                id: notifId,
+                type: 'TASK_APPROVED',
+                title: '✅ تم قبول واعتماد مهمتك بنجاح',
+                body: `تم اعتماد مهمة "${s.title}" فنياً، وجاري تجهيز وصرف مكافأتك المالية للمحفظة.`,
+                link: '/dashboard/tasks',
+                createdAt: s.updatedAt || new Date().toISOString(),
+                isRead: false,
+              });
+            }
+          }
+
+          // 4. إشعار للسوبر أدمن بصرف مكافأة المهمة المعتمدة
           if (rawRole === 'SUPER_ADMIN' && s.isLeadApproved && !s.isPaid) {
-            notifs.push({
-              id: `payout_ready_${s.id}`,
-              type: 'TASK_APPROVED',
-              title: 'مهمة معتمدة وبانتظار الصرف',
-              body: `تم الاعتماد الفني لمهمة "${s.title}". بانتظار أمر صرف (${s.reward || 0} ج.م).`,
-              link: '/dashboard/tasks',
-              createdAt: s.updatedAt || new Date().toISOString(),
-              isRead: false,
-            });
+            const notifId = `payout_ready_${s.id}`;
+            if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+              notifs.push({
+                id: notifId,
+                type: 'TASK_APPROVED',
+                title: '💳 مهمة معتمدة بانتظار أمر الصرف',
+                body: `تم الاعتماد الفني لمهمة "${s.title}". بانتظار إصدار أمر صرف (${s.reward || 0} ج.م).`,
+                link: '/dashboard/tasks',
+                createdAt: s.updatedAt || new Date().toISOString(),
+                isRead: false,
+              });
+            }
           }
 
-          if (
-            (s.assignedUserId === currentUser.id || s.assignedTo === currentUser.name) &&
-            s.feedback &&
-            !s.isLeadApproved
-          ) {
-            notifs.push({
-              id: `feedback_${s.id}`,
-              type: 'TASK_REVISION',
-              title: 'ملاحظات وتعديل مطلوب',
-              body: `أرسل المشرف ملاحظات على مهمة "${s.title}": ${s.feedback}`,
-              link: '/dashboard/tasks',
-              createdAt: s.updatedAt || new Date().toISOString(),
-              isRead: false,
-            });
+          // 5. إشعار رفض المهمة أو طلب تعديل
+          if (isAssignedToMe && s.feedback && !s.isLeadApproved) {
+            const notifId = `feedback_${s.id}_${s.feedback.length}`;
+            if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+              notifs.push({
+                id: notifId,
+                type: 'TASK_REVISION',
+                title: '⚠️ تم رفض التسليم وطلب تعديلات على المهمة',
+                body: `ملاحظات القائد على مهمة "${s.title}": ${s.feedback}`,
+                link: '/dashboard/tasks',
+                createdAt: s.updatedAt || new Date().toISOString(),
+                isRead: false,
+              });
+            }
           }
 
-          if (
-            (s.assignedUserId === currentUser.id || s.assignedTo === currentUser.name) &&
-            s.isPaid
-          ) {
-            notifs.push({
-              id: `paid_${s.id}`,
-              type: 'PAYOUT',
-              title: 'تم إيداع المستحقات بنجاح',
-              body: `تم إيداع ${s.reward || 0} ج.م في محفظتك عن إنجاز مهمة "${s.title}".`,
-              link: '/dashboard/wallet',
-              createdAt: s.updatedAt || new Date().toISOString(),
-              isRead: false,
-            });
+          // 6. إشعار إيداع المستحقات والراتب في المحفظة
+          if (isAssignedToMe && s.isPaid) {
+            const notifId = `paid_${s.id}`;
+            if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+              notifs.push({
+                id: notifId,
+                type: 'PAYOUT',
+                title: '💰 تم إيداع مستحقاتك في المحفظة',
+                body: `تم إيداع مبلغ ${s.reward || 0} ج.م عن مهمة "${s.title}". سيتم التواصل معك من المدير لتحويل المبلغ.`,
+                link: '/dashboard/wallet',
+                createdAt: s.updatedAt || new Date().toISOString(),
+                isRead: false,
+              });
+            }
           }
         });
       }
@@ -1039,28 +1087,41 @@ export default function TopNav({ user }: { user?: any }) {
               (m: any) => !m.isRead && localStorage.getItem(`msg_read_${m.id}`) !== 'true',
             )
             .forEach((m: any) => {
-              notifs.push({
-                id: `msg_${m.id}`,
-                type: 'MESSAGE',
-                title: 'طلب تواصل جديد من عميل',
-                body: `${m.name}: ${m.subject || 'استفسار عن خدمات كوديكسا'}`,
-                link: '/dashboard/messages',
-                createdAt: m.createdAt || new Date().toISOString(),
-                isRead: false,
-              });
+              const notifId = `msg_${m.id}`;
+              if (localStorage.getItem(`notif_read_${notifId}`) !== 'true') {
+                notifs.push({
+                  id: notifId,
+                  type: 'MESSAGE',
+                  title: '📩 طلب مشروع جديد من "تواصل معنا"',
+                  body: `${m.name}: ${m.subject || 'استفسار عن بدء مشروع جديد'}`,
+                  link: '/dashboard/messages',
+                  createdAt: m.createdAt || new Date().toISOString(),
+                  isRead: false,
+                });
+              }
             });
         }
       }
 
-      if (!isFirstLoadRef.current && notifs.length > (prevCountRef.current || 0)) {
+      // تشغيل الصوت وإظهار الرسالة المنبثقة (Toast) لأي إشعار جديد وصل للتو
+      const newlyArrived = notifs.find((n) => !knownNotifIdsRef.current.has(n.id));
+      if (!isFirstLoadRef.current && newlyArrived) {
         playNotificationChime();
+        setLiveToast(newlyArrived);
       }
 
-      prevCountRef.current = notifs.length;
+      knownNotifIdsRef.current = new Set(notifs.map((n) => n.id));
       isFirstLoadRef.current = false;
       setNotifications(notifs);
     } catch {}
   }, [API_BASE, currentUser.id, currentUser.name, rawRole, isSalesOrAdmin]);
+
+  // إخفاء الـ Toast المنبثق تلقائياً بعد 6 ثوانٍ
+  useEffect(() => {
+    if (!liveToast) return;
+    const timer = setTimeout(() => setLiveToast(null), 6500);
+    return () => clearTimeout(timer);
+  }, [liveToast]);
 
   useEffect(() => {
     setMounted(true);
@@ -1071,7 +1132,7 @@ export default function TopNav({ user }: { user?: any }) {
 
     fetchAllNotifications();
 
-    const interval = setInterval(fetchAllNotifications, 15000);
+    const interval = setInterval(fetchAllNotifications, 10000);
     const handleSync = () => fetchAllNotifications();
     window.addEventListener('messagesUpdated', handleSync);
     window.addEventListener('tasksUpdated', handleSync);
@@ -1100,6 +1161,7 @@ export default function TopNav({ user }: { user?: any }) {
     } catch {}
 
     setNotifications((prev) => prev.filter((n) => n.id !== item.id));
+    if (liveToast?.id === item.id) setLiveToast(null);
     setActiveMenu(null);
     router.push(item.link);
   };
@@ -1114,6 +1176,7 @@ export default function TopNav({ user }: { user?: any }) {
       } catch {}
     });
     setNotifications([]);
+    setLiveToast(null);
     setActiveMenu(null);
   };
 
@@ -1121,7 +1184,6 @@ export default function TopNav({ user }: { user?: any }) {
     setActiveMenu((prev) => (prev === menu ? null : menu));
   };
 
-  // 🟢 تسجيل خروج نظيف يمسح الجلسة والمفاتيح المؤقتة حتى لا تظهر صورة المستخدم السابق للمستخدم الجديد
   async function handleLogout() {
     try {
       const win = window as unknown as { __codexaActiveUser?: any };
@@ -1148,17 +1210,17 @@ export default function TopNav({ user }: { user?: any }) {
   const getNotifIcon = (type: AppNotification['type']) => {
     switch (type) {
       case 'TASK_ASSIGNED':
-        return <ClipboardList size={15} className="text-blue-500" />;
+        return <ClipboardList size={16} className="text-blue-500" />;
       case 'TASK_REVIEW':
-        return <Send size={15} className="text-amber-500" />;
+        return <Send size={16} className="text-amber-500" />;
       case 'TASK_APPROVED':
-        return <CheckCircle2 size={15} className="text-emerald-500" />;
+        return <CheckCircle2 size={16} className="text-emerald-500" />;
       case 'TASK_REVISION':
-        return <AlertTriangle size={15} className="text-rose-500" />;
+        return <AlertTriangle size={16} className="text-rose-500" />;
       case 'PAYOUT':
-        return <Coins size={15} className="text-emerald-400" />;
+        return <Coins size={16} className="text-emerald-400" />;
       case 'MESSAGE':
-        return <Mail size={15} className="text-purple-500" />;
+        return <Mail size={16} className="text-purple-500" />;
     }
   };
 
@@ -1167,190 +1229,232 @@ export default function TopNav({ user }: { user?: any }) {
   const unreadCount = notifications.length;
 
   return (
-    <header
-      className="sticky top-0 z-30 flex h-14 sm:h-16 w-full items-center justify-between border-b border-gray-100 bg-white/95 px-3 sm:px-6 md:px-8 backdrop-blur-md transition-colors dark:border-gray-800 dark:bg-[#0d111a]/95"
-      dir="rtl"
-    >
-      {/* زر القائمة الجانبية في شاشات الموبايل */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event('toggleSidebar'))}
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 md:hidden"
-          aria-label="فتح القائمة"
-        >
-          <Menu size={18} />
-        </button>
-        <span className="font-black text-sm sm:text-base tracking-tight text-gray-900 dark:text-white md:hidden font-sans">
-          Codexa
-        </span>
-      </div>
+    <>
+      <header
+        className="sticky top-0 z-30 flex h-14 sm:h-16 w-full items-center justify-between border-b border-gray-100 bg-white/95 px-3 sm:px-6 md:px-8 backdrop-blur-md transition-colors dark:border-gray-800 dark:bg-[#0d111a]/95"
+        dir="rtl"
+      >
+        {/* زر القائمة الجانبية في شاشات الموبايل */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('toggleSidebar'))}
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 md:hidden"
+            aria-label="فتح القائمة"
+          >
+            <Menu size={18} />
+          </button>
+          <span className="font-black text-sm sm:text-base tracking-tight text-gray-900 dark:text-white md:hidden font-sans">
+            Codexa
+          </span>
+        </div>
 
-      <div ref={containerRef} className="flex items-center gap-1.5 sm:gap-3.5">
-        <div className="flex items-center gap-1 sm:gap-2 border-e border-gray-200 pe-1.5 sm:pe-4 dark:border-gray-700">
-          {mounted && (
-            <button
-              type="button"
-              onClick={toggleDashboardTheme}
-              className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              title="مظهر الداشبورد"
-            >
-              {dashTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-          )}
+        <div ref={containerRef} className="flex items-center gap-1.5 sm:gap-3.5">
+          <div className="flex items-center gap-1 sm:gap-2 border-e border-gray-200 pe-1.5 sm:pe-4 dark:border-gray-700">
+            {mounted && (
+              <button
+                type="button"
+                onClick={toggleDashboardTheme}
+                className="flex h-8.5 w-8.5 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                title="مظهر الداشبورد"
+              >
+                {dashTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+            )}
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => toggleMenu('notifications')}
+                className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                aria-label="الإشعارات"
+              >
+                <Bell size={16} />
+                {unreadCount > 0 ? (
+                  <span className="absolute -end-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-black text-white shadow-md ring-2 ring-white dark:ring-[#0d111a]">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-60" />
+                    <span className="relative z-10">{unreadCount > 9 ? '+9' : unreadCount}</span>
+                  </span>
+                ) : (
+                  <span
+                    className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#0d111a]"
+                    title="جميع التحديثات مقروءة"
+                  />
+                )}
+              </button>
+
+              {activeMenu === 'notifications' && (
+                <div className="animate-in fade-in zoom-in-95 fixed inset-x-3 top-15 z-50 w-auto max-w-[calc(100vw-1.5rem)] sm:absolute sm:inset-x-auto sm:end-0 sm:top-11 sm:w-96 sm:max-w-none rounded-3xl border border-gray-200/80 bg-white p-4 text-right shadow-2xl duration-150 dark:border-gray-800 dark:bg-[#111827]">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-gray-900 dark:text-white">
+                        <Sparkles size={14} className="text-brand-500 shrink-0" />
+                        <span>مركز التحديثات والإشعارات</span>
+                      </span>
+                      {unreadCount > 0 && (
+                        <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-600 dark:bg-brand-950/50 dark:text-brand-400">
+                          {unreadCount} جديد
+                        </span>
+                      )}
+                    </div>
+
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleMarkAllRead}
+                        className="flex cursor-pointer items-center gap-1 text-[10px] font-semibold text-gray-400 transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+                      >
+                        <CheckCheck size={13} />
+                        قراءة الكل
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-2 max-h-72 sm:max-h-80 divide-y divide-gray-100 overflow-y-auto dark:divide-gray-800/60">
+                    {unreadCount > 0 ? (
+                      notifications.map((n) => (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => handleNotificationClick(n)}
+                          className="group flex w-full cursor-pointer items-start gap-3 rounded-2xl px-2 py-3 text-right transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                        >
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
+                            {getNotifIcon(n.type)}
+                          </div>
+                          <div className="flex-1 space-y-0.5 overflow-hidden">
+                            <p className="truncate text-xs font-bold text-gray-900 dark:text-gray-100">
+                              {n.title}
+                            </p>
+                            <p className="line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                              {n.body}
+                            </p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="space-y-1 py-8 text-center text-xs text-gray-400">
+                        <CheckCircle2 className="mx-auto mb-2 size-7 text-emerald-500 opacity-80" />
+                        <p className="font-bold text-gray-700 dark:text-gray-200">
+                          لا توجد إشعارات جديدة
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          أنت مطلع على جميع المهام والعمليات أولاً بأول.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {isSalesOrAdmin && (
+              <Link
+                href="/dashboard/messages"
+                className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-gray-800"
+                title="إدارة طلبات التواصل والعملاء"
+              >
+                <MessageSquare size={16} />
+              </Link>
+            )}
+          </div>
 
           <div className="relative">
             <button
               type="button"
-              onClick={() => toggleMenu('notifications')}
-              className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              aria-label="الإشعارات"
+              onClick={() => toggleMenu('user')}
+              className="flex cursor-pointer items-center gap-2.5 rounded-full p-0.5 sm:p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60"
             >
-              <Bell size={16} />
-              {unreadCount > 0 ? (
-                <span className="absolute -end-1 -top-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-black text-white shadow-md ring-2 ring-white dark:ring-[#0d111a]">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-60" />
-                  <span className="relative z-10">{unreadCount > 9 ? '+9' : unreadCount}</span>
-                </span>
-              ) : (
-                <span
-                  className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#0d111a]"
-                  title="جميع التحديثات مقروءة"
-                />
-              )}
+              <div className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-sm font-bold text-white shadow-sm ring-1 ring-brand-500/20">
+                {currentUser.avatar ? (
+                  <img
+                    src={currentUser.avatar}
+                    alt={`صورة ${currentUser.name}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span>{firstLetter}</span>
+                )}
+              </div>
+
+              <div className="hidden sm:block text-right">
+                <div className="text-xs font-bold dark:text-white leading-tight">
+                  {currentUser.name || 'عضو الفريق'}
+                </div>
+                <div className="text-[10px] text-gray-400">{displayRole}</div>
+              </div>
             </button>
 
-            {activeMenu === 'notifications' && (
-              <div className="animate-in fade-in zoom-in-95 fixed inset-x-3 top-15 z-50 w-auto max-w-[calc(100vw-1.5rem)] sm:absolute sm:inset-x-auto sm:end-0 sm:top-11 sm:w-88 sm:max-w-none rounded-3xl border border-gray-200/80 bg-white p-4 text-right shadow-2xl duration-150 dark:border-gray-800 dark:bg-[#111827]">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-gray-900 dark:text-white">
-                      <Sparkles size={14} className="text-brand-500 shrink-0" />
-                      <span>مركز التحديثات والمهام</span>
-                    </span>
-                    {unreadCount > 0 && (
-                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-600 dark:bg-brand-950/50 dark:text-brand-400">
-                        {unreadCount} جديد
-                      </span>
-                    )}
-                  </div>
-
-                  {unreadCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleMarkAllRead}
-                      className="flex cursor-pointer items-center gap-1 text-[10px] font-semibold text-gray-400 transition-colors hover:text-brand-600 dark:hover:text-brand-400"
-                    >
-                      <CheckCheck size={13} />
-                      قراءة الكل
-                    </button>
-                  )}
+            {activeMenu === 'user' && (
+              <div className="absolute end-0 top-11 sm:top-12 z-50 w-52 rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-[#111827]">
+                <div className="border-b border-gray-100 px-3 py-2 sm:hidden dark:border-gray-800">
+                  <p className="truncate text-xs font-bold text-gray-900 dark:text-white">
+                    {currentUser.name || 'عضو الفريق'}
+                  </p>
+                  <p className="truncate text-[10px] text-gray-400">{displayRole}</p>
                 </div>
 
-                <div className="mt-2 max-h-72 sm:max-h-80 divide-y divide-gray-100 overflow-y-auto dark:divide-gray-800/60">
-                  {unreadCount > 0 ? (
-                    notifications.map((n) => (
-                      <button
-                        key={n.id}
-                        type="button"
-                        onClick={() => handleNotificationClick(n)}
-                        className="group flex w-full cursor-pointer items-start gap-3 rounded-2xl px-2 py-3 text-right transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
-                          {getNotifIcon(n.type)}
-                        </div>
-                        <div className="flex-1 space-y-0.5 overflow-hidden">
-                          <p className="truncate text-xs font-bold text-gray-900 dark:text-gray-100">
-                            {n.title}
-                          </p>
-                          <p className="line-clamp-2 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
-                            {n.body}
-                          </p>
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="space-y-1 py-8 text-center text-xs text-gray-400">
-                      <CheckCircle2 className="mx-auto mb-2 size-7 text-emerald-500 opacity-80" />
-                      <p className="font-bold text-gray-700 dark:text-gray-200">
-                        لا توجد إشعارات جديدة
-                      </p>
-                      <p className="text-[10px] text-gray-400">
-                        أنت مطلع على جميع المهام والعمليات أولاً بأول.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <Link
+                  href="/dashboard/profile"
+                  onClick={() => setActiveMenu(null)}
+                  className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  <User size={15} />
+                  الملف الشخصي
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                >
+                  <LogOut size={15} />
+                  تسجيل الخروج
+                </button>
               </div>
             )}
           </div>
-
-          {isSalesOrAdmin && (
-            <Link
-              href="/dashboard/messages"
-              className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-gray-800"
-              title="إدارة طلبات التواصل والعملاء"
-            >
-              <MessageSquare size={16} />
-            </Link>
-          )}
         </div>
+      </header>
 
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => toggleMenu('user')}
-            className="flex cursor-pointer items-center gap-2.5 rounded-full p-0.5 sm:p-1 hover:bg-gray-50 dark:hover:bg-gray-800/60"
-          >
-            <div className="relative flex h-8.5 w-8.5 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-sm font-bold text-white shadow-sm ring-1 ring-brand-500/20">
-              {currentUser.avatar ? (
-                <img
-                  src={currentUser.avatar}
-                  alt={`صورة ${currentUser.name}`}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span>{firstLetter}</span>
-              )}
+      {/* 🔔 إشعار منبثق حي (Live Toast Notification) يظهر على الشاشة مع الصوت عند وصول أي تحديث جديد */}
+      {liveToast && (
+        <div
+          dir="rtl"
+          className="animate-in slide-in-from-top-5 fade-in fixed inset-x-3 top-18 z-50 mx-auto max-w-sm sm:inset-x-auto sm:left-6 sm:top-20 sm:w-96 rounded-2xl border border-brand-500/30 bg-white/95 p-4 text-right shadow-2xl backdrop-blur-md duration-200 dark:bg-[#111827]/95"
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 dark:bg-brand-500/20">
+              {getNotifIcon(liveToast.type)}
             </div>
-
-            <div className="hidden sm:block text-right">
-              <div className="text-xs font-bold dark:text-white leading-tight">
-                {currentUser.name || 'عضو الفريق'}
-              </div>
-              <div className="text-[10px] text-gray-400">{displayRole}</div>
-            </div>
-          </button>
-
-          {activeMenu === 'user' && (
-            <div className="absolute end-0 top-11 sm:top-12 z-50 w-52 rounded-2xl border border-gray-100 bg-white p-1.5 shadow-xl dark:border-gray-800 dark:bg-[#111827]">
-              <div className="border-b border-gray-100 px-3 py-2 sm:hidden dark:border-gray-800">
-                <p className="truncate text-xs font-bold text-gray-900 dark:text-white">
-                  {currentUser.name || 'عضو الفريق'}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-xs font-black text-gray-900 dark:text-white">
+                  {liveToast.title}
                 </p>
-                <p className="truncate text-[10px] text-gray-400">{displayRole}</p>
+                <button
+                  type="button"
+                  onClick={() => setLiveToast(null)}
+                  className="cursor-pointer rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-white"
+                >
+                  <X size={14} />
+                </button>
               </div>
-
-              <Link
-                href="/dashboard/profile"
-                onClick={() => setActiveMenu(null)}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
-              >
-                <User size={15} />
-                الملف الشخصي
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
-              >
-                <LogOut size={15} />
-                تسجيل الخروج
-              </button>
+              <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+                {liveToast.body}
+              </p>
+              <div className="mt-2.5 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleNotificationClick(liveToast)}
+                  className="cursor-pointer rounded-xl bg-brand-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-xs transition-all hover:bg-brand-500"
+                >
+                  عرض التفاصيل الآن
+                </button>
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 }
