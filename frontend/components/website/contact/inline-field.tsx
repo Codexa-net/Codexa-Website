@@ -31,9 +31,13 @@ export function InlineField({
   const showHint = !hasValue && !focused
 
   return (
-    <span className="relative inline-flex items-end my-2 ">
+    <span className="relative mx-1 my-1 inline-flex items-end align-baseline pt-4 sm:pt-2">
       <AnimatePresence>
-        {showHint && <HintBadge  label={hintLabel} icon="pen" />}
+        {showHint && (
+          <span className="pointer-events-none absolute -top-2.5 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap sm:-top-3">
+            <HintBadge label={hintLabel} icon="pen" />
+          </span>
+        )}
       </AnimatePresence>
 
       <input
@@ -49,9 +53,9 @@ export function InlineField({
         dir={isArabic ? 'rtl' : 'ltr'}
         style={{ width: `${displayLength}ch` }}
         className={cn(
-          'mt-1 bg-transparent outline-none pb-0.5',
+          'max-w-[80vw] bg-transparent pb-0.5 text-center outline-none',
           'border-b-2 border-dashed transition-colors duration-300',
-          'text-inherit font-bold placeholder:font-normal placeholder:text-[#4b3fdf]/30 dark:placeholder:text-brand-400/30',
+          'text-inherit font-bold placeholder:font-normal placeholder:text-[#4b3fdf]/35 dark:placeholder:text-brand-400/35',
           isValid
             ? 'border-[#4b3fdf] text-[#4b3fdf] dark:border-brand-400 dark:text-brand-400'
             : focused

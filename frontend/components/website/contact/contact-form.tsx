@@ -1,19 +1,10 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useForm, Controller, type FieldPath } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  MessageCircle,
-  Pencil,
-  Sparkles,
-  ChevronDown,
-  Check,
-  X,
-} from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, MessageCircle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import type { Locale } from '@/lib/i18n/config'
@@ -21,6 +12,8 @@ import type { Dictionary } from '@/lib/i18n/dictionaries'
 import { submitContactFormAction } from '@/actions/contact'
 
 import { contactSchema, type ContactFormValues } from './contact-schema'
+import { InlineField } from './inline-field'
+import { ProjectTypeSelector } from './project-type-selector'
 import { ProgressDots } from './progress-dots'
 
 interface ContactFormProps {
@@ -29,231 +22,6 @@ interface ContactFormProps {
 }
 
 const FORM_FIELDS = ['name', 'projectName', 'projectType', 'email'] as const
-
-/**
- * حقل إدخال مدمج متجاوب مع الموبايل والكمبيوتر بدون تداخل شارة "اكتب هنا" مع النص
- */
-function ResponsiveInlineField({
-  value,
-  onChange,
-  onBlur,
-  placeholder,
-  type = 'text',
-  isArabic,
-  isValid,
-  hintLabel,
-}: {
-  value: string
-  onChange: (val: string) => void
-  onBlur: () => void
-  placeholder: string
-  type?: string
-  isArabic: boolean
-  isValid: boolean
-  hintLabel: string
-}) {
-  const [focused, setFocused] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const hasValue = value && value.trim().length > 0
-
-  return (
-    <span className="relative mx-1.5 my-2 inline-flex flex-col items-center align-middle sm:mx-2.5 sm:my-1">
-      {/* شارة "اكتب هنا" مرفوعة فوق الحقل بدون أن تغطي على النص */}
-      <button
-        type="button"
-        onClick={() => inputRef.current?.focus()}
-        className={cn(
-          'mb-1 inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-normal transition-all duration-200 sm:text-xs',
-          hasValue || isValid
-            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-            : 'bg-[#4b3fdf] text-white shadow-[0_6px_16px_rgba(75,63,223,0.45)] hover:scale-105',
-        )}
-      >
-        {hasValue || isValid ? (
-          <>
-            <Check className="size-3 shrink-0" />
-            <span>{isArabic ? 'تم الإدخال' : 'Done'}</span>
-          </>
-        ) : (
-          <>
-            <Pencil className="size-2.5 shrink-0" />
-            <span>{hintLabel}</span>
-          </>
-        )}
-      </button>
-
-      <input
-        ref={inputRef}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false)
-          onBlur()
-        }}
-        placeholder={placeholder}
-        dir={isArabic ? 'rtl' : 'ltr'}
-        className={cn(
-          'w-auto min-w-[165px] max-w-[270px] border-b-2 border-dashed bg-transparent px-2 pb-1 text-center font-black outline-none transition-all duration-200 sm:min-w-[220px] sm:max-w-[360px]',
-          focused
-            ? 'border-[#4b3fdf] text-[#4b3fdf] dark:border-brand-400 dark:text-brand-400'
-            : hasValue
-              ? 'border-[#4b3fdf]/60 text-[#4b3fdf] dark:border-brand-400/60 dark:text-brand-400'
-              : 'border-gray-400/50 text-gray-500 placeholder:text-gray-400/60 dark:border-gray-600 dark:text-gray-300 dark:placeholder:text-gray-500/70',
-        )}
-      />
-    </span>
-  )
-}
-
-/**
- * قائمة اختيار نوع المشروع متجاوبة 100% على الموبايل (تفتح في منتصف الشاشة بدون أي قصّ للنصوص)
- */
-function ResponsiveProjectTypeSelector({
-  value,
-  onChange,
-  onBlur,
-  options,
-  placeholder,
-  isArabic,
-  isValid,
-  hintLabel,
-}: {
-  value: string
-  onChange: (val: string) => void
-  onBlur: () => void
-  options: string[]
-  placeholder: string
-  isArabic: boolean
-  isValid: boolean
-  hintLabel: string
-}) {
-  const [open, setOpen] = useState(false)
-  const containerRef = useRef<HTMLSpanElement>(null)
-  const hasValue = value && value.trim().length > 0
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [open])
-
-  return (
-    <span
-      ref={containerRef}
-      className="relative mx-1.5 my-2 inline-flex flex-col items-center align-middle sm:mx-2.5 sm:my-1"
-    >
-      {/* شارة "غير الاختيار" */}
-      <button
-        type="button"
-        onClick={() => setOpen((p) => !p)}
-        className={cn(
-          'mb-1 inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-normal transition-all duration-200 sm:text-xs',
-          hasValue || isValid
-            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-            : 'bg-[#4b3fdf] text-white shadow-[0_6px_16px_rgba(75,63,223,0.45)] hover:scale-105',
-        )}
-      >
-        <Sparkles className="size-2.5 shrink-0" />
-        <span>{hintLabel}</span>
-      </button>
-
-      {/* زر عرض القيمة المختارة */}
-      <button
-        type="button"
-        onClick={() => setOpen((p) => !p)}
-        className={cn(
-          'inline-flex min-w-[165px] max-w-[280px] cursor-pointer items-center justify-center gap-1.5 border-b-2 border-dashed px-2 pb-1 text-center font-black outline-none transition-all duration-200 sm:min-w-[220px] sm:max-w-[380px]',
-          open || hasValue
-            ? 'border-[#4b3fdf] text-[#4b3fdf] dark:border-brand-400 dark:text-brand-400'
-            : 'border-gray-400/50 text-[#4b3fdf]/80 dark:border-gray-600 dark:text-brand-400/80',
-        )}
-      >
-        <span className="truncate">{value || placeholder}</span>
-        <ChevronDown
-          className={cn(
-            'size-4 shrink-0 transition-transform duration-200 sm:size-5',
-            open && 'rotate-180',
-          )}
-        />
-      </button>
-
-      {/* القائمة المنبثقة: متمركزة بالكامل في شاشة الموبايل لتظهر كل الحروف بوضوح تام */}
-      <AnimatePresence>
-        {open && (
-          <>
-            {/* خلفية شفافة للموبايل فقط */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setOpen(false)}
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs sm:hidden"
-            />
-
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.96 }}
-              transition={{ duration: 0.18 }}
-              dir={isArabic ? 'rtl' : 'ltr'}
-              className={cn(
-                'fixed inset-x-4 top-1/2 z-50 mx-auto max-h-[75vh] w-auto max-w-sm -translate-y-1/2 overflow-y-auto rounded-3xl border border-gray-200 bg-white p-3 shadow-2xl dark:border-gray-800 dark:bg-[#121026]',
-                'sm:absolute sm:inset-x-auto sm:top-full sm:left-1/2 sm:mt-3 sm:w-80 sm:max-w-none sm:-translate-x-1/2 sm:translate-y-0',
-              )}
-            >
-              <div className="mb-2 flex items-center justify-between border-b border-gray-100 px-2 pb-2 sm:hidden dark:border-gray-800">
-                <span className="text-xs font-bold text-gray-900 dark:text-white">
-                  {isArabic ? 'اختر نوع المشروع' : 'Select Project Type'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-white"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                {options.map((opt) => {
-                  const isSelected = value === opt
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => {
-                        onChange(opt)
-                        onBlur()
-                        setOpen(false)
-                      }}
-                      className={cn(
-                        'flex w-full cursor-pointer items-center justify-between rounded-2xl px-3.5 py-2.5 text-start text-xs font-bold transition-all sm:text-sm',
-                        isSelected
-                          ? 'bg-[#4b3fdf] text-white shadow-sm'
-                          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10',
-                      )}
-                    >
-                      <span className="leading-snug">{opt}</span>
-                      {isSelected && <Check className="size-4 shrink-0" />}
-                    </button>
-                  )
-                })}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </span>
-  )
-}
 
 export function ContactForm({ locale, dict }: ContactFormProps) {
   const isArabic = locale === 'ar'
@@ -316,7 +84,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
       const cleanDigits = rawContact.replace(/\D/g, '') || '000000'
 
       const subjectText = data.projectType
-        ? `${data.projectType} — ${data.projectName.trim()}`
+        ? `${data.projectType} - ${data.projectName.trim()}`
         : data.projectName.trim() || (isArabic ? 'طلب مشروع جديد' : 'New Project Request')
 
       const detailedMessage = `${isArabic ? 'اسم المشروع' : 'Project name'}: ${data.projectName.trim()}\n${
@@ -336,13 +104,11 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
         email: isPhone ? `whatsapp-${cleanDigits}@codexa.net` : rawContact,
         phone: isPhone ? rawContact : undefined,
         subject: subjectText,
-        projectName: data.projectName.trim(),
-        projectType: data.projectType,
         message: detailedMessage,
         status: 'جديد',
       }
 
-      // 1. حفظ نسخة فورية متزامنة لضمان ظهورها في الداشبورد وتفعيل صوت الإشعار فوراً
+      // 1. حفظ الرسالة محلياً وإطلاق حدث تنبيه فوري للداشبورد
       try {
         const localMsg = {
           id: `msg_${Date.now()}`,
@@ -360,20 +126,15 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
         window.dispatchEvent(new Event('messagesUpdated'))
       } catch {}
 
-      // 2. إرسال الطلب عبر الـ Server Action وجميع مسارات الـ API المعتمدة في الباك إند
+      // 2. إرسال الرسالة إلى الباك إند عبر جميع المسارات المعتمدة
       await Promise.allSettled([
         submitContactFormAction({
           name: payload.name,
           email: payload.email,
           phone: payload.phone,
-          projectName: payload.projectName,
-          projectType: payload.projectType,
+          projectName: data.projectName.trim(),
+          projectType: data.projectType,
           message: payload.message,
-        }),
-        fetch(`${apiUrl}/contact-messages`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
         }),
         fetch(`${apiUrl}/contact`, {
           method: 'POST',
@@ -381,6 +142,11 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
           body: JSON.stringify(payload),
         }),
         fetch(`${apiUrl}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }),
+        fetch(`${apiUrl}/contact-messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -401,17 +167,17 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
   return (
     <div
       dir={isArabic ? 'rtl' : 'ltr'}
-      className="relative flex min-h-[calc(100svh-4.5rem)] items-center justify-center overflow-x-hidden bg-[#fafaff] pt-16 pb-16 sm:py-20 dark:bg-[#0d0b1f]"
+      className="relative flex min-h-[calc(100svh-4.5rem)] items-center justify-center overflow-x-hidden bg-[#fafaff] pt-14 pb-12 sm:py-20 dark:bg-[#0d0b1f]"
     >
       <BackgroundDecoration />
 
-      <div className="relative mx-auto w-full max-w-[1050px] px-4 py-6 text-center sm:px-8 lg:py-12">
+      <div className="relative mx-auto w-full max-w-[1000px] px-5 py-8 sm:px-10 lg:py-14">
         {!submitted && (
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-4 text-center text-xs font-bold tracking-widest text-[#4b3fdf] uppercase sm:mb-6 sm:text-sm dark:text-brand-400"
+            className="mb-6 text-center text-xs font-bold tracking-widest text-[#4b3fdf] uppercase sm:mb-8 sm:text-sm dark:text-brand-400"
           >
             {c.eyebrow}
           </motion.p>
@@ -454,19 +220,20 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
             )}
 
             {!submitted && (
-              <motion.div key="form" className="mx-auto max-w-4xl text-center">
-                {/* الجملة متوسطة تماماً في الشاشة مع مسافات مريحة بين الحقول على الموبايل */}
+              <motion.div key="form">
+                {/* تنسيق انسيابي متوازن في المنتصف بدون تباعد مبالغ فيه بين الكلمات */}
                 <div
                   className={cn(
-                    'mx-auto text-center text-[clamp(1.25rem,4.5vw,2.85rem)] font-black leading-[2.3] text-[#0d0b2c] sm:leading-[2.2] dark:text-white',
+                    'mx-auto max-w-[920px] pt-4 text-center text-[clamp(1.2rem,3.8vw,2.75rem)] font-black leading-[2.85] text-[#0d0b2c] sm:pt-2 sm:leading-[2.25] dark:text-white',
+                    '[&_button]:text-[clamp(1.15rem,3.6vw,2.65rem)] [&_input]:text-[clamp(1.15rem,3.6vw,2.65rem)]',
                   )}
                 >
-                  <span className=" align-middle">{c.sentenceName} </span>
+                  <span>{c.sentenceName} </span>
                   <Controller
                     name="name"
                     control={control}
                     render={({ field }) => (
-                      <ResponsiveInlineField
+                      <InlineField
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -477,14 +244,14 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                       />
                     )}
                   />
-                  <span className="align-middle">{isArabic ? '، ' : ', '}</span>
+                  <span>{isArabic ? '، ' : ', '}</span>
 
-                  <span className="align-middle">{c.sentenceProject} </span>
+                  <span>{c.sentenceProject} </span>
                   <Controller
                     name="projectName"
                     control={control}
                     render={({ field }) => (
-                      <ResponsiveInlineField
+                      <InlineField
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -500,7 +267,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                     name="projectType"
                     control={control}
                     render={({ field }) => (
-                      <ResponsiveProjectTypeSelector
+                      <ProjectTypeSelector
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -512,14 +279,14 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                       />
                     )}
                   />
-                  <span className="align-middle">{isArabic ? '، ' : ', '}</span>
+                  <span>{isArabic ? '، ' : ', '}</span>
 
-                  <span className="align-middle">{c.sentenceEmail} </span>
+                  <span>{c.sentenceEmail} </span>
                   <Controller
                     name="email"
                     control={control}
                     render={({ field }) => (
-                      <ResponsiveInlineField
+                      <InlineField
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -533,7 +300,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                       />
                     )}
                   />{' '}
-                  <span className="mt-2 block text-[#6b6879] sm:mt-0 sm:inline dark:text-gray-400">
+                  <span className="block pt-1 text-[#6b6879] sm:inline sm:pt-0 dark:text-gray-400">
                     {c.sentenceEnd}
                   </span>
                 </div>
@@ -543,7 +310,7 @@ export function ContactForm({ locale, dict }: ContactFormProps) {
                   isFieldValid={(f) => isFieldValid(f as FieldPath<ContactFormValues>)}
                 />
 
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-8 sm:gap-4">
+                <div className="mt-6 flex flex-wrap justify-center gap-3 sm:mt-8 sm:gap-4">
                   <button
                     type="submit"
                     disabled={!isValid || isSubmitting}

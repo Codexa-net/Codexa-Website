@@ -45,17 +45,17 @@ const COMMON_SUGGESTIONS = [
 ];
 
 const ROLE_LABELS: Record<string, string> = {
-  SUPER_ADMIN: "مدير النظام (Super Admin)",
-  UI_UX_LEAD: "قائد فريق التصميم و UI/UX",
-  BACKEND_LEAD: "قائد فريق Backend",
-  FRONTEND_LEAD: "قائد فريق Frontend",
-  FULL_STACK_LEAD: "قائد فريق Full-Stack",
-  MOBILE_APP_LEAD: "قائد فريق Mobile",
-  DEVELOPER: "مطور برمجيات",
-  UI_UX_DESIGNER: "مصمم واجهات وتجربة مستخدم",
-  GRAPHIC_DESIGNER: "مصمم جرافيك",
-  SALES: "مسؤول مبيعات",
-  SALES_LEADER: "مشرف مبيعات",
+  SUPER_ADMIN: "Super Admin",
+  UI_UX_LEAD: "UI/UX Lead",
+  BACKEND_LEAD: "Backend Lead",
+  FRONTEND_LEAD: "Frontend Lead",
+  FULL_STACK_LEAD: "Full-Stack Lead",
+  MOBILE_APP_LEAD: "Mobile App Lead",
+  DEVELOPER: "Software Developer",
+  UI_UX_DESIGNER: "UI/UX Designer",
+  GRAPHIC_DESIGNER: "Graphic Designer",
+  SALES: "Sales Specialist",
+  SALES_LEADER: "Sales Lead",
 };
 
 const KNOWN_MEMBER_TRACKS: Record<string, { role: string; track: string | null; isGraphic?: boolean }> = {
@@ -73,7 +73,22 @@ const KNOWN_MEMBER_TRACKS: Record<string, { role: string; track: string | null; 
   "mooazmohammed110@codexa.com": { role: "MOBILE_APP_LEAD", track: "MOBILE_APP" },
 };
 
-// دالة ضغط الصورة الشخصية إلى 256x256 لتكون خفيفة جداً (~15KB) ويقبلها سيرفر Vercel وقاعدة البيانات فوراً
+// استخراج رابط الـ CV والصورة الشخصية المدمجة في قاعدة البيانات
+function unpackCvAndAvatar(rawCvUrl?: string | null, rawAvatar?: string | null) {
+  let cleanCv = rawCvUrl || "";
+  let embeddedAvatar = rawAvatar || "";
+
+  if (cleanCv.includes("||avatar:")) {
+    const parts = cleanCv.split("||avatar:");
+    cleanCv = parts[0] || "";
+    if (!embeddedAvatar && parts[1]) {
+      embeddedAvatar = parts[1];
+    }
+  }
+  cleanCv = cleanCv.replace("#graphic", "");
+  return { cleanCv, embeddedAvatar };
+}
+
 function compressAvatarImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -81,7 +96,7 @@ function compressAvatarImage(file: File): Promise<string> {
       const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const maxDim = 256;
+        const maxDim = 220;
         let width = img.width;
         let height = img.height;
 
@@ -105,8 +120,7 @@ function compressAvatarImage(file: File): Promise<string> {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.82);
-        resolve(compressedBase64);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
       };
       img.onerror = reject;
       img.src = event.target?.result as string;
@@ -151,6 +165,8 @@ export default function ProfilePage() {
     const cleanEmail = (email || "").trim().toLowerCase();
     const cleanId = (userId || "").trim();
 
+    if (serverAvatar) return serverAvatar;
+
     try {
       const rawOv = localStorage.getItem("codexa_users_overrides");
       if (rawOv) {
@@ -171,7 +187,7 @@ export default function ProfilePage() {
       }
     } catch {}
 
-    return serverAvatar || "";
+    return "";
   };
 
   const saveUserScopedAvatar = (userId?: string, email?: string, avatarValue?: string | null) => {
@@ -223,11 +239,16 @@ export default function ProfilePage() {
       role = "MOBILE_APP_LEAD";
     }
 
+    const { cleanCv, embeddedAvatar } = unpackCvAndAvatar(u.cvUrl, u.avatar);
     const finalAvatar = getUserScopedAvatar(
       u.id,
       u.email,
-      userOv.avatar !== undefined ? userOv.avatar : u.avatar,
+      embeddedAvatar || (userOv.avatar !== undefined ? userOv.avatar : u.avatar),
     );
+
+    if (embeddedAvatar) {
+      saveUserScopedAvatar(u.id, u.email, embeddedAvatar);
+    }
 
     const merged: UserProfile = {
       ...u,
@@ -250,7 +271,7 @@ export default function ProfilePage() {
     setPhone(merged.phone || "");
     setInstaPay(merged.instaPay || "");
     setWalletNumber(merged.walletNumber || "");
-    setCvUrl(merged.cvUrl?.replace("#graphic", "") || "");
+    setCvUrl(cleanCv);
   }, []);
 
   const loadProfile = useCallback(async () => {
@@ -266,16 +287,43 @@ export default function ProfilePage() {
         }
       }
 
-      const res = await fetch(`${API_BASE}/auth/me`, {
-        credentials: "include",
-        headers: getAuthHeaders(),
-      });
+      const [meRes, teamRes] = await Promise.all([
+        fetch(`${API_BASE}/auth/me`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        }).catch(() => null),
+        fetch(`${API_BASE}/admin-users`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        }).catch(() => null),
+      ]);
 
-      if (res.ok) {
-        const data = await res.json();
+      let activeEmail = "";
+      if (meRes && meRes.ok) {
+        const data = await meRes.json();
         const u = data?.data ?? data;
         if (u && u.name) {
+          activeEmail = (u.email || "").toLowerCase();
           applyUserDataToState(u);
+        }
+      }
+
+      // جلب سجل العضو من جدول المستخدمين لضمان قراءة الصورة المحفوظة في قاعدة البيانات على أي جهاز (موبايل أو لابتوب)
+      if (teamRes && teamRes.ok) {
+        const teamData = await teamRes.json();
+        const list = Array.isArray(teamData?.data)
+          ? teamData.data
+          : Array.isArray(teamData)
+            ? teamData
+            : [];
+        const targetEmail =
+          activeEmail ||
+          JSON.parse(localStorage.getItem("user") || "{}")?.email?.toLowerCase();
+        const foundInDb = list.find(
+          (m: any) => (m.email || "").toLowerCase() === targetEmail,
+        );
+        if (foundInDb) {
+          applyUserDataToState(foundInDb);
         }
       }
     } catch (err) {
@@ -301,11 +349,6 @@ export default function ProfilePage() {
       return;
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      alert("حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 8 ميجابايت");
-      return;
-    }
-
     try {
       const compressedDataUrl = await compressAvatarImage(file);
       setAvatar(compressedDataUrl);
@@ -322,20 +365,20 @@ export default function ProfilePage() {
     if (!profile) return;
     setIsRemovingAvatar(true);
     try {
-      await Promise.allSettled([
-        fetch(`${API_BASE}/admin-users/${profile.id}`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          credentials: "include",
-          body: JSON.stringify({ avatar: null }),
-        }),
-        fetch(`${API_BASE}/auth/profile`, {
-          method: "PATCH",
-          headers: getAuthHeaders(),
-          credentials: "include",
-          body: JSON.stringify({ avatar: null }),
-        }),
-      ]);
+      const isGraphic =
+        profile.role === "GRAPHIC_DESIGNER" || profile.cvUrl?.includes("#graphic");
+      const cleanCvOnly = cvUrl.trim()
+        ? cvUrl.trim() + (isGraphic ? "#graphic" : "")
+        : isGraphic
+          ? "#graphic"
+          : null;
+
+      await fetch(`${API_BASE}/admin-users/${profile.id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({ avatar: null, cvUrl: cleanCvOnly }),
+      }).catch(() => null);
 
       setAvatar("");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -343,7 +386,7 @@ export default function ProfilePage() {
       saveUserScopedAvatar(profile.id, profile.email, null);
 
       try {
-        const updated = { ...profile, avatar: null };
+        const updated = { ...profile, avatar: null, cvUrl: cleanCvOnly };
         setProfile(updated);
         localStorage.setItem("user", JSON.stringify(updated));
         localStorage.setItem("codexa_user", JSON.stringify(updated));
@@ -386,20 +429,25 @@ export default function ProfilePage() {
 
     const isGraphic =
       profile.role === "GRAPHIC_DESIGNER" || profile.cvUrl?.includes("#graphic");
-    const finalCvUrl = cvUrl.trim()
+    const baseCv = cvUrl.trim()
       ? cvUrl.trim() + (isGraphic ? "#graphic" : "")
       : isGraphic
         ? "#graphic"
-        : null;
+        : "";
 
     const finalAvatar = avatar.trim() ? avatar.trim() : null;
+
+    // 🟢 حفظ الصورة داخل حقل cvUrl المعتمد في قاعدة البيانات لضمان ظهورها على الموبايل واللابتوب وكل الأجهزة
+    const packedCvUrl = finalAvatar
+      ? `${baseCv}||avatar:${finalAvatar}`
+      : baseCv || null;
 
     const payload = {
       avatar: finalAvatar,
       phone: phone.trim() || null,
       instaPay: instaPay.trim() || null,
       walletNumber: walletNumber.trim() || null,
-      cvUrl: finalCvUrl,
+      cvUrl: packedCvUrl,
       technologies: isSalesUser ? [] : technologies,
     };
 
@@ -422,20 +470,12 @@ export default function ProfilePage() {
       const win = window as unknown as { __codexaActiveUser?: any };
       win.__codexaActiveUser = updatedProfile;
 
-      await Promise.allSettled([
-        fetch(`${API_BASE}/admin-users/${profile.id}`, {
-          method: "PUT",
-          headers: getAuthHeaders(),
-          credentials: "include",
-          body: JSON.stringify(payload),
-        }),
-        fetch(`${API_BASE}/auth/profile`, {
-          method: "PATCH",
-          headers: getAuthHeaders(),
-          credentials: "include",
-          body: JSON.stringify(payload),
-        }),
-      ]);
+      await fetch(`${API_BASE}/admin-users/${profile.id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify(payload),
+      }).catch(() => null);
 
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("avatarUpdated"));
@@ -470,7 +510,6 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-12 text-right" dir="rtl">
-      {/* الترويسة */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-5 dark:border-gray-800">
         <div>
           <h1 className="flex items-center gap-2.5 text-2xl font-black text-gray-900 dark:text-white">
@@ -487,12 +526,11 @@ export default function ProfilePage() {
         {successMessage && (
           <div className="animate-fade-in flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-bold text-emerald-400">
             <CheckCircle2 size={16} />
-            <span>تم حفظ التعديلات بنجاح ✓</span>
+            <span>تم حفظ التعديلات ومزامنتها مع كل الأجهزة ✓</span>
           </div>
         )}
       </div>
 
-      {/* كارت الرصيد والمستحقات المالية في البروفايل */}
       <div className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-500/20 bg-gradient-to-l from-emerald-500/15 via-emerald-500/5 to-transparent p-5 shadow-xs md:flex-row md:items-center">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
@@ -530,7 +568,6 @@ export default function ProfilePage() {
       </div>
 
       <form onSubmit={handleSaveProfile} className="space-y-6">
-        {/* كارت المعلومات الأساسية والصورة الشخصية */}
         <Card className="space-y-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
           <h2 className="flex items-center gap-2 border-b border-gray-100 pb-3 text-sm font-bold text-gray-900 dark:border-gray-800 dark:text-white">
             <Briefcase size={17} className="text-brand-500" />
@@ -567,7 +604,7 @@ export default function ProfilePage() {
                   الصورة الشخصية
                 </h3>
                 <p className="mt-0.5 text-[11px] text-gray-400">
-                  ستظهر صورتك في الهيدر، المهام المسندة إليك، وبطاقة فريق العمل.
+                  ستظهر صورتك في الهيدر، المهام المسندة إليك، وبطاقة فريق العمل على اللابتوب والموبايل.
                 </p>
               </div>
 
@@ -646,7 +683,6 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* كارت المهارات والتقنيات */}
         {!isSalesUser && (
           <Card className="space-y-5 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
@@ -736,7 +772,6 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* كارت بيانات التواصل والمستحقات */}
         <Card className="space-y-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
           <h2 className="flex items-center gap-2 border-b border-gray-100 pb-3 text-sm font-bold text-gray-900 dark:border-gray-800 dark:text-white">
             <CreditCard size={17} className="text-brand-500" />
