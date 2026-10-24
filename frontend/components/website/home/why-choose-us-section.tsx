@@ -131,13 +131,20 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 }}
               />
 
-              {/* القائمة الجانبية للـ 5 خطوات متمركزة تماماً */}
+              {/*
+                القائمة الجانبية للـ 5 خطوات:
+                - على الموبايل: متمركزة أفقياً كما هي.
+                - على الشاشات الكبيرة: مضبوطة على مسطرة عمودية مستقيمة تبدأ من اليمين في العربي ومن اليسار في الإنجليزي.
+              */}
               <nav
                 aria-label="Process steps"
                 dir={isArabic ? 'rtl' : 'ltr'}
                 className={cn(
-                  'relative z-20 flex shrink-0 items-center justify-center gap-3 self-center sm:gap-5 lg:absolute lg:top-1/2 lg:right-auto lg:left-12 lg:-translate-y-1/2 lg:flex-col lg:items-start lg:gap-3.5',
-                  isArabic ? 'lg:right-12 lg:left-auto lg:items-end' : '',
+                  'relative z-20 flex shrink-0 items-center justify-center gap-3 self-center sm:gap-5',
+                  'lg:absolute lg:top-1/2 lg:-translate-y-1/2 lg:flex-col lg:items-stretch lg:gap-4.5',
+                  isArabic
+                    ? 'lg:right-24 xl:right-32 2xl:right-10 text-right'
+                    : 'lg:left-24 xl:left-32 2xl:left-40 text-left',
                 )}
               >
                 {items.map((step, index) => {
@@ -151,10 +158,11 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                     <span
                       key={step.title}
                       className={cn(
-                        'whitespace-nowrap text-xs font-bold transition-all duration-300 sm:text-sm',
+                        'block whitespace-nowrap text-xs font-bold transition-all duration-300 sm:text-sm',
+                        isArabic ? 'text-right origin-right' : 'text-left origin-left',
                         isCurrent
-                          ? 'scale-105 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
-                          : 'text-white/30',
+                          ? 'scale-105 text-white font-black drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'
+                          : 'text-white/30 hover:text-white/50',
                       )}
                     >
                       {label}
@@ -164,7 +172,7 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
               </nav>
 
               {/* المحتوى المركزي في المنتصف تماماً */}
-              <div className="relative z-10 my-auto flex w-full items-center justify-center py-4 lg:my-0 lg:h-full lg:px-48">
+              <div className="relative z-10 my-auto flex w-full items-center justify-center py-4 lg:my-0 lg:h-full lg:px-56 xl:px-64">
                 <StickyScrollContent
                   activeIndex={activeIndex}
                   className="mx-auto w-full max-w-3xl px-2 text-center"
@@ -214,7 +222,7 @@ export function WhyChooseUsSection({ dict }: WhyChooseUsSectionProps) {
                 dir="ltr"
                 className={cn(
                   'pointer-events-none relative z-0 shrink-0 self-center select-none lg:absolute lg:bottom-8',
-                  isArabic ? 'lg:left-12' : 'lg:right-12',
+                  isArabic ? 'lg:left-16 xl:left-24' : 'lg:right-16 xl:right-24',
                 )}
               >
                 <span

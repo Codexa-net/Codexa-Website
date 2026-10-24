@@ -14,8 +14,14 @@ interface ProjectCardProps {
   className?: string
 }
 
+const FINTECH_WALLET_PRIMARY =
+  'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&fm=webp&w=900&q=80'
+const FINTECH_WALLET_FALLBACK =
+  'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&fm=webp&w=900&q=80'
+
 export function ProjectCard({ project, locale, viewLabel, className }: ProjectCardProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [useFallbackWallet, setUseFallbackWallet] = useState(false)
   const [imageError, setImageError] = useState(false)
   const isArabic = locale === 'ar'
 
@@ -34,7 +40,28 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
       ? project.description[locale]
       : project.description || project.shortDescription || ''
 
-  const coverSrc = project.cover || (typeof project.image === 'string' ? project.image : '') || ''
+  const rawCover = project.cover || (typeof project.image === 'string' ? project.image : '') || ''
+
+  // استبدال صورة مشروع "تطبيق محفظتي" بصورة FinTech احترافية متناسقة مع الشاشات الكبيرة والموبايل
+  const isWalletProject =
+    String(title).includes('محفظتي') ||
+    String(title).toLowerCase().includes('mahfazty') ||
+    String(title).toLowerCase().includes('wallet') ||
+    String(project.slug || '').toLowerCase().includes('wallet')
+
+  const coverSrc = isWalletProject
+    ? useFallbackWallet
+      ? FINTECH_WALLET_FALLBACK
+      : FINTECH_WALLET_PRIMARY
+    : rawCover
+
+  const handleImgError = () => {
+    if (isWalletProject && !useFallbackWallet) {
+      setUseFallbackWallet(true)
+    } else {
+      setImageError(true)
+    }
+  }
 
   const rawTechs = project.technologies || (project as any).tech || []
   const techList: string[] = Array.isArray(rawTechs)
@@ -67,7 +94,6 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
 
   return (
     <>
-      {/* ── الكارت الخارجي بحجم مدمج ومتناسق مع رفع التصنيف فوق الصورة ── */}
       <article
         id={String(project.id)}
         dir={isArabic ? 'rtl' : 'ltr'}
@@ -77,7 +103,7 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
         )}
         onClick={openModal}
       >
-        {/* شريط التصنيف في الأعلى فوق الصورة حتى لا يغطي على الصورة نهائياً */}
+        {/* شريط التصنيف أعلى الصورة */}
         <div className="flex items-center justify-between gap-1.5 border-b border-white/10 bg-[#181636] px-2.5 py-2 sm:px-4 sm:py-2.5">
           <span className="truncate text-[9px] font-bold text-indigo-300 sm:text-[11px]">
             {category}
@@ -85,7 +111,7 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-400" />
         </div>
 
-        {/* الصورة كاملة وواضحة بدون أي نصوص تغطي عليها */}
+        {/* صورة المشروع متمركزة (object-center) لتظهر بوضوح كامل على الديسك توب والموبايل */}
         <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-slate-900">
           {coverSrc && !imageError ? (
             <img
@@ -93,8 +119,8 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
               alt={title}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-              onError={() => setImageError(true)}
+              className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              onError={handleImgError}
             />
           ) : (
             <div className="flex h-full min-h-28 items-center justify-center bg-gradient-to-br from-[#1e1b4b] to-[#4338ca] p-4 text-center text-xs font-semibold text-white/80">
@@ -103,7 +129,7 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
           )}
         </div>
 
-        {/* تفاصيل الكارت بحجم متوازن وغير مبالغ فيه على الموبايل */}
+        {/* تفاصيل الكارت */}
         <div className="flex flex-1 flex-col justify-between space-y-2.5 p-3 sm:space-y-3.5 sm:p-4">
           <div className="space-y-1 sm:space-y-1.5">
             <h3 className="line-clamp-1 text-xs font-black text-white transition-colors group-hover:text-brand-400 sm:text-base">
@@ -182,8 +208,8 @@ export function ProjectCard({ project, locale, viewLabel, className }: ProjectCa
                 <img
                   src={coverSrc}
                   alt={title}
-                  className="h-full w-full object-cover"
-                  onError={() => setImageError(true)}
+                  className="h-full w-full object-cover object-center"
+                  onError={handleImgError}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm font-bold text-gray-500">
